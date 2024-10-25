@@ -61,9 +61,7 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
 
             logger.debug(`image url: ${url} ${element.attrs}`)
 
-            if (url.startsWith('data:image') && url.includes('base64')) {
-                images.push(url)
-            } else {
+            const readImage = async (url: string) => {
                 const response = await ctx.http(url, {
                     responseType: 'arraybuffer',
                     method: 'get',
@@ -85,6 +83,17 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                 const base64 = Buffer.from(buffer).toString('base64')
 
                 images.push(`data:image/${ext ?? 'jpeg'};base64,${base64}`)
+            }
+
+            if (url.startsWith('data:image') && url.includes('base64')) {
+                images.push(url)
+            } else {
+                try {
+                    await readImage(url)
+                } catch (error) {
+                    logger.warn(`read image error: ${error}`)
+                    return
+                }
             }
 
             message.additional_kwargs.images = images
