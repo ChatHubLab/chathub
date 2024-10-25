@@ -13,7 +13,7 @@ export async function apply(
 ) {
     logger = createLogger(ctx, 'chatluna-vector-store-service')
 
-    await plugin.registerVectorStore('redis', async (params) => {
+    plugin.registerVectorStore('redis', async (params) => {
         const embeddings = params.embeddings
 
         const client = await createClient(config.redisUrl)

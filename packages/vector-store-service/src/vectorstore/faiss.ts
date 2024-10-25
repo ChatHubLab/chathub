@@ -16,7 +16,7 @@ export async function apply(
 ) {
     logger = createLogger(ctx, 'chatluna-vector-store-service')
 
-    await plugin.registerVectorStore('faiss', async (params) => {
+    plugin.registerVectorStore('faiss', async (params) => {
         const embeddings = params.embeddings
         let faissStore: FaissStore
 
@@ -38,6 +38,15 @@ export async function apply(
         try {
             await fs.access(jsonFile)
             faissStore = await FaissStore.load(directory, embeddings)
+
+            // test the embeddings dimension
+            const testEmbedding = await embeddings.embedQuery('test')
+            if (testEmbedding.length !== faissStore.index.getDimension()) {
+                logger.error(
+                    `embeddings dimension mismatch: ${testEmbedding.length} !== ${faissStore.index.getDimension()}. Please check the embeddings.`
+                )
+                faissStore = undefined
+            }
         } catch (e) {
             faissStore = await FaissStore.fromTexts(
                 ['sample'],
@@ -48,8 +57,12 @@ export async function apply(
             try {
                 await faissStore.save(directory)
             } catch (e) {
-                console.error(e)
+                logger.error(e)
             }
+        }
+
+        if (faissStore == null) {
+            throw new Error('failed to load faiss store')
         }
 
         const wrapperStore = new ChatLunaSaveableVectorStore<FaissStore>(

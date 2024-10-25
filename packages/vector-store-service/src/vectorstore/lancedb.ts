@@ -16,7 +16,7 @@ export async function apply(
 ) {
     logger = createLogger(ctx, 'chatluna-vector-store-service')
 
-    await plugin.registerVectorStore('lancedb', async (params) => {
+    plugin.registerVectorStore('lancedb', async (params) => {
         const embeddings = params.embeddings
 
         const directory = path.join(
@@ -41,7 +41,7 @@ export async function apply(
         const testVector = await embeddings.embedDocuments(['test'])
 
         if (tableNames.some((text) => text === 'vectors')) {
-            table = await client.openTable('')
+            table = await client.openTable('vectors')
         } else {
             table = await client.createTable('vectors', [
                 { vector: Array(testVector[0].length), text: 'sample' }
