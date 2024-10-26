@@ -6,17 +6,13 @@ import {
 } from '@langchain/core/messages'
 import { BaseOutputParser } from '@langchain/core/output_parsers'
 import {
-    ChatPromptTemplate,
-    MessagesPlaceholder
-} from '@langchain/core/prompts'
-import {
     RunnableLambda,
     RunnablePassthrough,
     RunnableSequence
 } from '@langchain/core/runnables'
 import { StructuredTool } from '@langchain/core/tools'
 import { AgentAction, AgentFinish, AgentStep } from '@langchain/core/agents'
-import { SystemPrompts } from '../../chain/base'
+import type { ChatHubChatPrompt } from '../../chain/prompt'
 import { ChatLunaChatModel } from '../../platform/model'
 import {
     FunctionsAgentAction,
@@ -90,23 +86,14 @@ export type CreateOpenAIAgentParams = {
     /** Tools this agent has access to. */
     tools: StructuredTool[]
     /** The prompt to use, must have an input key for `agent_scratchpad`. */
-    preset: Promise<SystemPrompts>
+    prompt: ChatHubChatPrompt
 }
 
 export function createOpenAIAgent({
     llm,
     tools,
-    preset
+    prompt
 }: CreateOpenAIAgentParams) {
-    // TODO: move the new prompt template
-    const prompt = ChatPromptTemplate.fromMessages([
-        new MessagesPlaceholder('preset'),
-        new MessagesPlaceholder('chat_history'),
-        new MessagesPlaceholder('input'),
-        // HumanMessagePromptTemplate.fromTemplate('{input_text}'),
-        new MessagesPlaceholder('agent_scratchpad')
-    ])
-
     const llmWithTools = llm.bind({
         tools
     })
@@ -119,8 +106,7 @@ export function createOpenAIAgent({
         RunnablePassthrough.assign({
             // eslint-disable-next-line @typescript-eslint/naming-convention
             agent_scratchpad: (input: { steps: AgentStep[] }) =>
-                _formatIntermediateSteps(input.steps),
-            preset: () => preset
+                _formatIntermediateSteps(input.steps)
             /* // @ts-expect-error eslint-disable-next-line @typescript-eslint/naming-convention
             input_text: (input: { input: BaseMessage[] }) =>
                 getMessageContent(input.input[0].content) */

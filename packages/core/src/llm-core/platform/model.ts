@@ -453,7 +453,7 @@ export class ChatLunaChatModel extends BaseChatModel<ChatLunaModelCallOptions> {
         )
 
         const roleCount = await this.getNumTokens(
-            messageTypeToOpenAIRole(message._getType())
+            messageTypeToOpenAIRole(message.getType())
         )
         const nameCount =
             message.name !== undefined
@@ -463,7 +463,7 @@ export class ChatLunaChatModel extends BaseChatModel<ChatLunaModelCallOptions> {
 
         // From: https://github.com/hmarr/openai-chat-tokens/blob/main/src/index.ts messageTokenEstimate
         const openAIMessage = message
-        if (openAIMessage._getType() === 'function') {
+        if (openAIMessage.getType() === 'function') {
             count -= 2
         }
         if (openAIMessage.additional_kwargs?.function_call) {

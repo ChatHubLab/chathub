@@ -142,6 +142,9 @@ Your goal is to craft a response that intelligently incorporates relevant knowle
         const knowledge = (variables?.['knowledge'] ?? []) as Document[]
         const loreBooks = (variables?.['lore_books'] ?? []) as RoleBook[]
         const authorsNote = variables?.['authors_note'] as AuthorsNote
+        const agentScratchpad = variables?.['agent_scratchpad'] as
+            | BaseMessage[]
+            | BaseMessage
         const [formatAuthorsNote, usedTokensAuthorsNote] = authorsNote
             ? await this._counterAuthorsNote(authorsNote)
             : [null, 0]
@@ -150,6 +153,22 @@ Your goal is to craft a response that intelligently incorporates relevant knowle
         if (usedTokensAuthorsNote > 0) {
             // make authors note
             usedTokens += usedTokensAuthorsNote
+        }
+
+        if (agentScratchpad) {
+            if (Array.isArray(agentScratchpad)) {
+                usedTokens += await agentScratchpad.reduce(
+                    async (accPromise, message) => {
+                        const acc = await accPromise
+                        const messageTokens =
+                            await this._countMessageTokens(message)
+                        return acc + messageTokens
+                    },
+                    Promise.resolve(0)
+                )
+            } else {
+                usedTokens += await this._countMessageTokens(agentScratchpad)
+            }
         }
 
         const formatResult = await this._formatWithMessagesPlaceholder(
@@ -178,6 +197,14 @@ Your goal is to craft a response that intelligently incorporates relevant knowle
                 formatAuthorsNote,
                 usedTokensAuthorsNote
             ])
+        }
+
+        if (agentScratchpad) {
+            if (Array.isArray(agentScratchpad)) {
+                result.push(...agentScratchpad)
+            } else {
+                result.push(agentScratchpad)
+            }
         }
 
         logger?.debug(

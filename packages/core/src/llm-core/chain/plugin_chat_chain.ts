@@ -21,11 +21,13 @@ import {
     ChatLunaErrorCode
 } from 'koishi-plugin-chatluna/utils/error'
 import { PresetTemplate } from 'koishi-plugin-chatluna/llm-core/prompt'
+import { ChatHubChatPrompt } from './prompt'
 
 export interface ChatLunaPluginChainInput {
-    preset: () => Promise<PresetTemplate>
+    prompt: ChatHubChatPrompt
     historyMemory: BufferMemory
     embeddings: ChatHubBaseEmbeddings
+    preset: () => Promise<PresetTemplate>
 }
 
 export class ChatLunaPluginChain
@@ -48,13 +50,16 @@ export class ChatLunaPluginChain
 
     baseMessages: BaseMessage[] = undefined
 
+    prompt: ChatHubChatPrompt
+
     preset: () => Promise<PresetTemplate>
 
     constructor({
         historyMemory,
-        preset,
+        prompt,
         llm,
         tools,
+        preset,
         embeddings
     }: ChatLunaPluginChainInput & {
         tools: ChatHubTool[]
@@ -63,10 +68,11 @@ export class ChatLunaPluginChain
         super()
 
         this.historyMemory = historyMemory
-        this.preset = preset
+        this.prompt = prompt
         this.tools = tools
         this.embeddings = embeddings
         this.llm = llm
+        this.preset = preset
     }
 
     static async fromLLMAndTools(
@@ -74,32 +80,39 @@ export class ChatLunaPluginChain
         tools: ChatHubTool[],
         { historyMemory, preset, embeddings }: ChatLunaPluginChainInput
     ): Promise<ChatLunaPluginChain> {
+        const prompt = new ChatHubChatPrompt({
+            preset,
+            tokenCounter: (text) => llm.getNumTokens(text),
+            sendTokenLimit:
+                llm.invocationParams().maxTokenLimit ??
+                llm.getModelMaxContextSize()
+        })
+
         return new ChatLunaPluginChain({
             historyMemory,
-            preset,
+            prompt,
             llm,
             embeddings,
-            tools
+            tools,
+            preset
         })
     }
 
     private async _createExecutor(
         llm: ChatLunaChatModel,
         tools: StructuredTool[],
-        preset: () => Promise<PresetTemplate>
+        verbose: boolean
     ) {
         return AgentExecutor.fromAgentAndTools({
             tags: ['openai-functions'],
             agent: createOpenAIAgent({
                 llm,
                 tools,
-                preset: preset().then(
-                    (preset) => preset.messages satisfies SystemPrompts
-                )
+                prompt: this.prompt
             }),
             tools,
             memory: undefined,
-            verbose: false
+            verbose
         })
     }
 
@@ -163,9 +176,7 @@ export class ChatLunaPluginChain
             input: [message]
         }
 
-        this.baseMessages =
-            this.baseMessages ??
-            (await this.historyMemory.chatHistory.getMessages())
+        this.baseMessages = await this.historyMemory.chatHistory.getMessages()
 
         requests['chat_history'] = this.baseMessages
 
@@ -194,7 +205,7 @@ export class ChatLunaPluginChain
             this.executor = await this._createExecutor(
                 this.llm,
                 await Promise.all(tools),
-                this.preset
+                session.app.chatluna.config.isLog
             )
 
             this.baseMessages =
