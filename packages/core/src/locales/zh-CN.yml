@@ -537,6 +537,8 @@ chatluna:
         auto_switch: '已为用户 {0} 自动切换到房间 {1}。'
         auto_create: '已为用户 {0} 自动创建房间 {1}。'
         auto_create_template: '已为用户 {0} 自动创建模版克隆房间 {1}。'
+        room_name: '{0} 的房间'
+        template_clone_room_name: '{0} 的模版克隆房间'
     config_changed: '检测到模版房间 {0} 的配置变更，已更新到数据库。'
 
     cooldown_wait_message: '不要发这么快喵，等 {0}s 后我们再聊天喵。'

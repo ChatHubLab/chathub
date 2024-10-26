@@ -60,7 +60,7 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                 if (result === 'Y') {
                     roomResolve.preset =
                         roomResolve.preset ?? config.defaultPreset
-                    roomResolve.name = roomResolve.name ?? '未命名房间'
+                    roomResolve.name = roomResolve.name ?? 'Unnamed Room'
                     roomResolve.chatMode =
                         roomResolve.chatMode ?? config.defaultChatMode
                     roomResolve.password = roomResolve.password ?? null

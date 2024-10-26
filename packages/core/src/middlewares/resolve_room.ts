@@ -111,14 +111,20 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                             ]
                     }
 
-                    await switchConversationRoom(ctx, session, joinRoom.roomId)
+                    if (joinRoom != null) {
+                        await switchConversationRoom(
+                            ctx,
+                            session,
+                            joinRoom.roomId
+                        )
 
-                    logger.success(
-                        session.text('chatluna.room.auto_switch', [
-                            session.userId,
-                            joinRoom.roomName
-                        ])
-                    )
+                        logger.success(
+                            session.text('chatluna.room.auto_switch', [
+                                session.userId,
+                                joinRoom.roomName
+                            ])
+                        )
+                    }
                 }
             }
 
@@ -164,13 +170,18 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
 
                     cloneRoom.roomId = (await getMaxConversationRoomId(ctx)) + 1
 
-                    cloneRoom.roomName = session.isDirect
-                        ? `${session.username ?? session.userId} 的房间`
-                        : `${
-                              session.event.guild.name ??
-                              session.username ??
-                              session.event.guild.id.toString()
-                          } 的房间`
+                    cloneRoom.roomName = session.text(
+                        'chatluna.room.room_name',
+                        [
+                            session.isDirect
+                                ? `${session.username ?? session.userId}`
+                                : `${
+                                      session.event.guild.name ??
+                                      session.username ??
+                                      session.event.guild.id.toString()
+                                  }`
+                        ]
+                    )
 
                     logger.success(
                         session.text('chatluna.room.auto_create', [
@@ -186,13 +197,18 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
 
                     cloneRoom.roomId = (await getMaxConversationRoomId(ctx)) + 1
 
-                    cloneRoom.roomName = session.isDirect
-                        ? `${session.username ?? session.userId} 的模版克隆房间`
-                        : `${
-                              session.event.guild.name ??
-                              session.username ??
-                              session.event.guild.id.toString()
-                          } 的模版克隆房间`
+                    cloneRoom.roomName = session.text(
+                        'chatluna.room.template_clone_room_name',
+                        [
+                            session.isDirect
+                                ? `${session.username ?? session.userId}`
+                                : `${
+                                      session.event.guild.name ??
+                                      session.username ??
+                                      session.event.guild.id.toString()
+                                  }`
+                        ]
+                    )
 
                     logger.success(
                         session.text('chatluna.room.auto_create_template', [
@@ -217,21 +233,26 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                 let needUpdate = false
                 if (
                     joinRoom.preset !== config.defaultPreset ||
-                    joinRoom.chatMode !== config.defaultChatMode
+                    joinRoom.chatMode !== config.defaultChatMode ||
+                    joinRoom.model !== config.defaultModel
                 ) {
                     needUpdate = true
-                } else if (joinRoom.model !== config.defaultModel) {
-                    await ctx.chatluna.clearCache(joinRoom)
                 }
 
                 joinRoom.model = config.defaultModel
                 joinRoom.preset = config.defaultPreset
                 joinRoom.chatMode = config.defaultChatMode
 
-                if (needUpdate) {
-                    await ctx.database.upsert('chathub_room', [joinRoom])
+                if (joinRoom.preset !== config.defaultPreset) {
                     // 需要提前清空聊天记录
                     await ctx.chatluna.clearChatHistory(joinRoom)
+                }
+
+                if (needUpdate) {
+                    await ctx.chatluna.clearCache(joinRoom)
+
+                    await ctx.database.upsert('chathub_room', [joinRoom])
+
                     logger.debug(
                         session.text('chatluna.room.config_changed', [
                             joinRoom.roomName
