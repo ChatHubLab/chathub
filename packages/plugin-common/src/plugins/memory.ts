@@ -4,6 +4,7 @@ import { ChatLunaPlugin } from 'koishi-plugin-chatluna/services/chat'
 import { Config } from '..'
 import { CreateToolParams } from 'koishi-plugin-chatluna/llm-core/platform/types'
 import crypto from 'crypto'
+import { VectorStore } from '@langchain/core/vectorstores'
 
 export async function apply(
     ctx: Context,
@@ -50,24 +51,37 @@ export class MemorySearchTool extends Tool {
         const defaultVectorStoreName =
             this.ctx.chatluna.config.defaultVectorStore
 
-        const vectorStore = await this.ctx.chatluna.platform.createVectorStore(
-            defaultVectorStoreName,
-            {
-                embeddings: this.params.embeddings,
-                key: resolveMemoryKey(this.params.userId, this.params.preset)
-            }
-        )
+        let vectorStore: VectorStore | null = null
+
+        try {
+            vectorStore = await this.ctx.chatluna.platform.createVectorStore(
+                defaultVectorStoreName,
+                {
+                    embeddings: this.params.embeddings,
+                    key: resolveMemoryKey(
+                        this.params.userId,
+                        this.params.preset
+                    )
+                }
+            )
+        } catch (error) {
+            return 'An error occurred while searching for memories.'
+        }
 
         if (!vectorStore) {
             return 'An error occurred while searching for memories.'
         }
-        const result = await vectorStore.similaritySearch(input, 10)
+        try {
+            const result = await vectorStore.similaritySearch(input, 10)
 
-        return result
-            .map((item) => {
-                return item.pageContent
-            })
-            .join('\n')
+            return result
+                .map((item) => {
+                    return item?.pageContent
+                })
+                .join('\n')
+        } catch (error) {
+            return 'An error occurred while searching for memories.'
+        }
     }
 
     // eslint-disable-next-line max-len
