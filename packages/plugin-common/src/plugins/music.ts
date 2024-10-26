@@ -32,6 +32,7 @@ export async function apply(
                         'track',
                         '乐曲',
                         '音乐',
+                        '生成',
                         '歌曲',
                         '旋律',
                         '图',

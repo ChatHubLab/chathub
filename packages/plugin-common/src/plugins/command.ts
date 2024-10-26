@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 
 import { StructuredTool } from '@langchain/core/tools'
-import { Context, Element, Session } from 'koishi'
+import { Context, Element, h, Session } from 'koishi'
 import type { Command as CommandType } from '@satorijs/protocol'
 import { ChatLunaPlugin } from 'koishi-plugin-chatluna/services/chat'
 import {
@@ -296,7 +296,10 @@ export function randomString(size: number) {
 }
 
 export function elementToString(elements: Element[]) {
-    return elements.map((element) => element.toString()).join(' ')
+    return h
+        .select(elements, 'text')
+        .map((element) => element.toString())
+        .join(' ')
 }
 
 type PickCommandType = Omit<CommandType, 'description'> & {
