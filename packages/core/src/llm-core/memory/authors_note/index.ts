@@ -13,10 +13,6 @@ export function apply(ctx: Context, config: Config): void {
             chatInterface,
             chain
         ) => {
-            if (chatInterface.chatMode === 'plugin') {
-                return
-            }
-
             const preset = await chatInterface.preset
 
             const authorsNote = preset.authorsNote

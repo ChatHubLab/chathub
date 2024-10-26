@@ -21,7 +21,7 @@ import {
     ChatLunaErrorCode
 } from 'koishi-plugin-chatluna/utils/error'
 import { PresetTemplate } from 'koishi-plugin-chatluna/llm-core/prompt'
-import { ChatHubChatPrompt } from './prompt'
+import { ChatHubChatPrompt } from 'koishi-plugin-chatluna/llm-core/chain/prompt'
 
 export interface ChatLunaPluginChainInput {
     prompt: ChatHubChatPrompt
@@ -78,7 +78,11 @@ export class ChatLunaPluginChain
     static async fromLLMAndTools(
         llm: ChatLunaChatModel,
         tools: ChatHubTool[],
-        { historyMemory, preset, embeddings }: ChatLunaPluginChainInput
+        {
+            historyMemory,
+            preset,
+            embeddings
+        }: Omit<ChatLunaPluginChainInput, 'prompt'>
     ): Promise<ChatLunaPluginChain> {
         const prompt = new ChatHubChatPrompt({
             preset,
@@ -167,13 +171,14 @@ export class ChatLunaPluginChain
         signal,
         session,
         events,
-        conversationId
+        conversationId,
+        variables
     }: ChatHubLLMCallArg): Promise<ChainValues> {
         const requests: ChainValues & {
             chat_history?: BaseMessage[]
             id?: string
         } = {
-            input: [message]
+            input: message
         }
 
         this.baseMessages = await this.historyMemory.chatHistory.getMessages()
@@ -181,6 +186,7 @@ export class ChatLunaPluginChain
         requests['chat_history'] = this.baseMessages
 
         requests['id'] = conversationId
+        requests['variables'] = variables ?? {}
 
         const [activeTools, recreate] = this._getActiveTools(
             session,

@@ -484,7 +484,7 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
         let iterations = 0
 
         // Add signal check
-        const signal = inputs.signal as AbortSignal | undefined
+        const signal = config?.signal as AbortSignal | undefined
 
         const getOutput = async (
             finishStep: AgentFinish
@@ -514,7 +514,7 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
             return response
         }
 
-        while (this.shouldContinue(iterations) || !signal?.aborted) {
+        while (this.shouldContinue(iterations) && !(signal?.aborted ?? false)) {
             let output: AgentAction[] | AgentAction | AgentFinish
             try {
                 output = await this.agent.plan(

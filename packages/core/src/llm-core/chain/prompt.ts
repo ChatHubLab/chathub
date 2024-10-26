@@ -119,11 +119,13 @@ Your goal is to craft a response that intelligently incorporates relevant knowle
     async formatMessages({
         chat_history: chatHistory,
         input,
-        variables
+        variables,
+        agent_scratchpad: agentScratchpad
     }: {
         input: BaseMessage
         chat_history: BaseMessage[] | string
         variables?: ChainValues
+        agent_scratchpad?: BaseMessage[] | BaseMessage
     }) {
         const result: BaseMessage[] = []
         let usedTokens = 0
@@ -142,9 +144,6 @@ Your goal is to craft a response that intelligently incorporates relevant knowle
         const knowledge = (variables?.['knowledge'] ?? []) as Document[]
         const loreBooks = (variables?.['lore_books'] ?? []) as RoleBook[]
         const authorsNote = variables?.['authors_note'] as AuthorsNote
-        const agentScratchpad = variables?.['agent_scratchpad'] as
-            | BaseMessage[]
-            | BaseMessage
         const [formatAuthorsNote, usedTokensAuthorsNote] = authorsNote
             ? await this._counterAuthorsNote(authorsNote)
             : [null, 0]

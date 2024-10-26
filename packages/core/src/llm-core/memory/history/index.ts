@@ -58,10 +58,6 @@ export function apply(ctx: Context, config: Config): void {
             promptVariables,
             chatInterface
         ) => {
-            const chatMode = chatInterface.chatMode
-
-            if (chatMode === 'plugin') return undefined
-
             if (config.longMemoryExtractModel === '无') {
                 logger?.warn(
                     'Long memory extract model is not set, skip long memory'
