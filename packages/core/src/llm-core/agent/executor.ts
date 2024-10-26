@@ -483,6 +483,9 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
         const steps: AgentStep[] = []
         let iterations = 0
 
+        // Add signal check
+        const signal = inputs.signal as AbortSignal | undefined
+
         const getOutput = async (
             finishStep: AgentFinish
         ): Promise<AgentExecutorOutput> => {
@@ -511,7 +514,7 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
             return response
         }
 
-        while (this.shouldContinue(iterations)) {
+        while (this.shouldContinue(iterations) || !signal?.aborted) {
             let output: AgentAction[] | AgentAction | AgentFinish
             try {
                 output = await this.agent.plan(
@@ -598,7 +601,7 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                             } else {
                                 throw e
                             }
-                            observation = await new ExceptionTool().call(
+                            observation = await new ExceptionTool().invoke(
                                 observation,
                                 runManager?.getChild()
                             )
