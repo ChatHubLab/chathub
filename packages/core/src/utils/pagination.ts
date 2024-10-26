@@ -23,16 +23,15 @@ export class Pagination<T> {
         )
     }
 
-    async getFormattedPage(
+    async formatItems(
+        items: T[],
         page: number = this.input.page,
         limit: number = this.input.limit,
-        key: string = 'default'
+        total: number = Math.ceil(items.length / limit)
     ) {
-        const sliceItems = await this.getPage(page, limit, key)
-
         const buffer = [this.input.formatString.top]
 
-        for (const item of sliceItems) {
+        for (const item of items) {
             const itemLikePromise = this.input.formatItem(item)
 
             if (typeof itemLikePromise === 'string') {
@@ -44,8 +43,6 @@ export class Pagination<T> {
 
         buffer.push(this.input.formatString.bottom)
 
-        const total = Math.ceil(this._cacheMap[key].length / limit)
-
         const formattedPageString = this.input.formatString.pages
             .replaceAll('[page]', Math.min(total, page).toString())
             .replaceAll('[total]', total.toString())
@@ -53,6 +50,32 @@ export class Pagination<T> {
         buffer.push(formattedPageString)
 
         return buffer.join('\n')
+    }
+
+    async getFormattedPage(
+        page: number = this.input.page,
+        limit: number = this.input.limit,
+        key: string = 'default'
+    ) {
+        const sliceItems = await this.getPage(page, limit, key)
+
+        return this.formatItems(
+            sliceItems,
+            page,
+            limit,
+            Math.ceil(this._cacheMap[key].length / limit)
+        )
+    }
+
+    async searchPage(
+        find: (value: T) => boolean,
+        page: number = this.input.page,
+        limit: number = this.input.limit,
+        key: string = 'default'
+    ) {
+        const items = this._cacheMap[key]?.filter(find) ?? []
+
+        return this.formatItems(items, page, limit)
     }
 
     updateFormatString(formatString: PaginationInput<T>['formatString']) {

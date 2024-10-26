@@ -409,6 +409,19 @@ To confirm deletion, enter the result of: {0}.'
                     footer: 'Set default model: chatluna.room.set -m <model>'
                     pages: 'Page: [page] / [total]'
 
+            search:
+                description: 'Search available models.'
+                arguments:
+                    query: 'Search keyword'
+                usage: 'chatluna model search openai --page 1 --limit 10'
+                options:
+                    page: 'Page number'
+                    limit: 'Items per page'
+                messages:
+                    header: 'Search results:'
+                    footer: 'Set default model: chatluna.room.set -m <model>'
+                    pages: 'Page: [page] / [total]'
+
         preset:
             description: 'ChatLuna preset management.'
             list:

@@ -16,4 +16,15 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                 limit: options.limit ?? 5
             })
         })
+
+    ctx.command('chatluna.model.search <query:string>')
+        .option('page', '-p <page:number>')
+        .option('limit', '-l <limit:number>')
+        .action(async ({ options, session }, query) => {
+            await chain.receiveCommand(session, 'search_model', {
+                query,
+                page: options.page ?? 1,
+                limit: options.limit ?? 5
+            })
+        })
 }

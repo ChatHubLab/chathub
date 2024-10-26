@@ -366,7 +366,7 @@ commands:
         balance:
             description: ChatLuna 余额相关指令。
             clear:
-                description: 清除指定用户的余额。将用户的余额重置���0。
+                description: 清除指定用户的余额。将用户的余额重置为0。
                 arguments:
                     user: 目标用户。
                 examples:
@@ -402,6 +402,18 @@ commands:
                     limit: 每页显示的数量。
                 messages:
                     header: '以下是目前可用的模型列表：'
+                    footer: '你可以使用 chatluna.room.set -m <model> 来设置默认使用的模型'
+                    pages: '当前为第 [page] / [total] 页'
+            search:
+                description: 搜索可用的模型。
+                arguments:
+                    query: 搜索关键词。
+                usage: 'chatluna model search openai --page 1 --limit 10'
+                options:
+                    page: 页码。
+                    limit: 每页显示的数量。
+                messages:
+                    header: '以下是目前搜索到的模型列表：'
                     footer: '你可以使用 chatluna.room.set -m <model> 来设置默认使用的模型'
                     pages: '当前为第 [page] / [total] 页'
 

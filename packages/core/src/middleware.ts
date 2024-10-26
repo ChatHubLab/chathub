@@ -41,6 +41,7 @@ import { apply as resolve_room } from './middlewares/resolve_room'
 import { apply as rollback_chat } from './middlewares/rollback_chat'
 import { apply as room_info } from './middlewares/room_info'
 import { apply as room_permission } from './middlewares/room_permission'
+import { apply as search_model } from './middlewares/search_model'
 import { apply as set_auth_group } from './middlewares/set_auth_group'
 import { apply as set_auto_update_room } from './middlewares/set_auto_update_room'
 import { apply as set_balance } from './middlewares/set_balance'
@@ -102,6 +103,7 @@ export async function middleware(ctx: Context, config: Config) {
             rollback_chat,
             room_info,
             room_permission,
+            search_model,
             set_auth_group,
             set_auto_update_room,
             set_balance,

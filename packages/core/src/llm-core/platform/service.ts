@@ -193,7 +193,7 @@ export class PlatformService {
             }
         }
 
-        return allModel
+        return allModel.sort()
     }
 
     getVectorStoreRetrievers() {
