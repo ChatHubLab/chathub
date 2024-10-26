@@ -27,6 +27,9 @@ $inner:
       wikipediaBaseURL: Wikipedia API 基础 URL。
       maxWikipediaDocContentLength: Wikipedia 文档内容最大长度。
 
+    - $desc: SearxNG 设置
+      searxngBaseURL: SearxNG API 基础 URL。
+
     - $desc: 进阶设置
       searchPrompt: 搜索提示词。用于对搜索结果总结的 Prompt。
       newQuestionPrompt: 新问题提示词。用于生成新问题的 Prompt。

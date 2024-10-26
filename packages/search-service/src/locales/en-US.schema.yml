@@ -27,6 +27,9 @@ $inner:
       wikipediaBaseURL: 'Wikipedia API base URL'
       maxWikipediaDocContentLength: 'Wikipedia document content maximum length'
 
+    - $desc: 'SearxNG Settings'
+      searxngBaseURL: 'SearxNG API base URL'
+
     - $desc: 'Advanced Settings'
       searchPrompt: 'Search prompt. Used for summarizing search results.'
       newQuestionPrompt: 'New question prompt. Used for generating new questions.'

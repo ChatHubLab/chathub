@@ -136,6 +136,8 @@ export interface Config extends ChatLunaPlugin.Config {
 
     tavilyApiKey: string
 
+    searxngBaseURL: string
+
     puppeteerTimeout: number
     puppeteerIdleTimeout: number
 
@@ -157,7 +159,8 @@ export const Config: Schema<Config> = Schema.intersect([
                 Schema.const('serper').description('Serper (Google)'),
                 Schema.const('tavily').description('Tavily (API)'),
                 Schema.const('google-web').description('Google (Web)'),
-                Schema.const('wikipedia').description('Wikipedia')
+                Schema.const('wikipedia').description('Wikipedia'),
+                Schema.const('searxng').description('SearxNG')
             ])
         )
             .default(['bing-web'])
@@ -192,6 +195,10 @@ export const Config: Schema<Config> = Schema.intersect([
             'https://mzh.moegirl.org.cn/api.php'
         ]),
         maxWikipediaDocContentLength: Schema.number().default(5000)
+    }),
+
+    Schema.object({
+        searxngBaseURL: Schema.string().default('https://paulgo.io')
     }),
 
     Schema.object({

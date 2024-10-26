@@ -370,7 +370,7 @@ async function createRoom(
         conversationId: randomUUID(),
         model,
         preset,
-        roomName: name ?? '未命名房间',
+        roomName: name ?? 'Unnamed Room',
         roomMasterId: session.userId,
         roomId: (await getConversationRoomCount(ctx)) + 1,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

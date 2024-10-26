@@ -86,7 +86,7 @@ export class SearchManager {
 
         await Promise.all(searchPromises)
 
-        if (searchPromises.length < limit) {
+        if (searchPromises.length > limit) {
             return this._reRankResults(query, searchResults, limit)
         }
 
