@@ -11,7 +11,7 @@ import {
     ChatLunaError,
     ChatLunaErrorCode
 } from 'koishi-plugin-chatluna/utils/error'
-import { sseIterable } from 'koishi-plugin-chatluna/utils/sse'
+import { SSEEvent, sseIterable } from 'koishi-plugin-chatluna/utils/sse'
 import * as fetchType from 'undici/types/fetch'
 import { Config } from '.'
 import {
@@ -68,7 +68,23 @@ export class QWenRequester
 
             const findTools = params.tools != null
 
-            const iterator = sseIterable(response)
+            let iterator: AsyncGenerator<SSEEvent, string, unknown>
+
+            try {
+                iterator = sseIterable(response)
+            } catch (e) {
+                if (
+                    e instanceof ChatLunaError &&
+                    e.message.includes('data_inspection_failed')
+                ) {
+                    throw new ChatLunaError(
+                        ChatLunaErrorCode.API_UNSAFE_CONTENT,
+                        e
+                    )
+                }
+
+                throw e
+            }
 
             const defaultRole: ChatCompletionResponseMessageRoleEnum =
                 'assistant'
@@ -87,30 +103,6 @@ export class QWenRequester
                 try {
                     data = JSON.parse(chunk)
                 } catch (err) {
-                    throw new ChatLunaError(
-                        ChatLunaErrorCode.API_REQUEST_FAILED,
-                        new Error(
-                            'error when calling qwen completion, Result: ' +
-                                chunk
-                        )
-                    )
-                }
-
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                if ((data as any).message) {
-                    // check DataInspectionFailed
-
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    if ((data as any).code === 'DataInspectionFailed') {
-                        throw new ChatLunaError(
-                            ChatLunaErrorCode.API_UNSAFE_CONTENT,
-                            new Error(
-                                'Unsafe content detected, please try again.' +
-                                    chunk
-                            )
-                        )
-                    }
-
                     throw new ChatLunaError(
                         ChatLunaErrorCode.API_REQUEST_FAILED,
                         new Error(
