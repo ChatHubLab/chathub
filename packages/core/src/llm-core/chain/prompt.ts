@@ -145,7 +145,7 @@ Your goal is to craft a response that intelligently incorporates relevant knowle
         const loreBooks = (variables?.['lore_books'] ?? []) as RoleBook[]
         const authorsNote = variables?.['authors_note'] as AuthorsNote
         const [formatAuthorsNote, usedTokensAuthorsNote] = authorsNote
-            ? await this._counterAuthorsNote(authorsNote)
+            ? await this._counterAuthorsNote(authorsNote, variables)
             : [null, 0]
         usedTokens += inputTokens
 
