@@ -121,7 +121,7 @@ export class PuppeteerBrowserTool extends Tool {
         try {
             await this.initBrowser()
             await this.page!.goto(url, {
-                waitUntil: 'networkidle2',
+                waitUntil: 'networkidle0',
                 timeout: this.timeout
             })
             return 'Page opened successfully'
@@ -147,12 +147,117 @@ export class PuppeteerBrowserTool extends Tool {
                 return 'No page is open, please use open action first'
 
             const text = await this.page.evaluate(() => {
-                const baseUrl = window.location.href
-                let structuredText = ''
-
                 // fix esbuild
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 window['__name'] = (func: any) => func
+
+                const findMainContent = () => {
+                    const candidates: {
+                        element: Element
+                        score: number
+                    }[] = []
+
+                    // Helper to calculate text density
+                    const getTextDensity = (element: Element) => {
+                        const text = element.textContent || ''
+                        const html = element.innerHTML
+                        return text.length / (html.length || 1)
+                    }
+
+                    // Helper to check if element is likely navigation/header/footer
+                    const isBoilerplate = (element: Element) => {
+                        const className = element.className.toLowerCase()
+                        const id = element.id.toLowerCase()
+                        return /nav|header|footer|sidebar|comment|menu/i.test(
+                            `${className} ${id}`
+                        )
+                    }
+
+                    // Helper to calculate hierarchical p-tag score
+                    const getParagraphScore = (node: Element): number => {
+                        let value = 0
+
+                        for (const child of Array.from(node.children)) {
+                            if (child.tagName.toLowerCase() === 'p') {
+                                const text = child.textContent || ''
+                                value += text.trim().length
+                            } else {
+                                value += getParagraphScore(child) * 0.5
+                            }
+                        }
+
+                        return value
+                    }
+
+                    // Common content container identifiers
+                    const contentPatterns = [
+                        /article|post|content|main|body|text/i,
+                        /^(article|main|content)$/i
+                    ]
+
+                    // Score each potential content container
+                    document
+                        .querySelectorAll('div, article, main, section')
+                        .forEach((element) => {
+                            if (isBoilerplate(element)) return
+
+                            let score = 0
+
+                            // Score based on tag name
+                            const tagName = element.tagName.toLowerCase()
+                            if (tagName === 'article') score += 30
+                            if (tagName === 'main') score += 25
+
+                            // Score based on id/class names
+                            const identifiers =
+                                `${element.className} ${element.id}`.toLowerCase()
+                            contentPatterns.forEach((pattern) => {
+                                if (pattern.test(identifiers)) score += 20
+                            })
+
+                            // Score based on content density
+                            const density = getTextDensity(element)
+                            score += density * 50
+
+                            // Score based on meaningful descendants
+                            const paragraphs =
+                                element.getElementsByTagName('p').length
+                            score += paragraphs * 3
+
+                            const headings =
+                                element.querySelectorAll(
+                                    'h1,h2,h3,h4,h5,h6'
+                                ).length
+                            score += headings * 5
+
+                            // Add hierarchical p-tag score
+                            const paragraphScore = getParagraphScore(element)
+                            score += paragraphScore * 2
+
+                            // Penalize if too short
+                            const text = element.textContent || ''
+                            if (text.length < 250) score *= 0.7
+
+                            // Position bonus (favor middle of page)
+                            const rect = element.getBoundingClientRect()
+                            const verticalCenter = Math.abs(
+                                0.5 -
+                                    rect.top /
+                                        document.documentElement.scrollHeight
+                            )
+                            score *= 1 - verticalCenter * 0.3
+
+                            candidates.push({ element, score })
+                        })
+
+                    // Return highest scoring element
+                    candidates.sort((a, b) => b.score - a.score)
+                    return candidates[0]?.element || document.body
+                }
+
+                const mainContent = findMainContent()
+                const baseUrl = window.location.href
+                let structuredText = ''
 
                 const processNode = (node: Node, depth: number = 0) => {
                     if (node.nodeType === Node.TEXT_NODE) {
@@ -259,6 +364,44 @@ export class PuppeteerBrowserTool extends Tool {
                             case 'td':
                                 structuredText += ` ${element.textContent?.trim()} |`
                                 break
+                            case 'img': {
+                                const alt = element.getAttribute('alt')
+                                const src = element.getAttribute('src')
+                                if (src) {
+                                    try {
+                                        const fullUrl = new URL(
+                                            src,
+                                            baseUrl
+                                        ).toString()
+                                        structuredText += ` ![${alt || 'image'}](${fullUrl})`
+                                    } catch (error) {
+                                        console.error('Invalid URL:', error)
+                                        structuredText += ` ![${alt || 'image'}](${src})`
+                                    }
+                                }
+                                break
+                            }
+                            case 'mark':
+                            case 'u':
+                                structuredText += ` __${element.textContent?.trim()}__ `
+                                break
+                            case 'del':
+                            case 's':
+                                structuredText += ` ~~${element.textContent?.trim()}~~ `
+                                break
+                            case 'sup':
+                                structuredText += `^${element.textContent?.trim()}`
+                                break
+                            case 'sub':
+                                structuredText += `~${element.textContent?.trim()}`
+                                break
+                            case 'kbd':
+                                structuredText += ` <kbd>${element.textContent?.trim()}</kbd> `
+                                break
+                            case 'cite':
+                            case 'dfn':
+                                structuredText += ` *${element.textContent?.trim()}* `
+                                break
                             case 'span': {
                                 const className = element.className
 
@@ -271,6 +414,70 @@ export class PuppeteerBrowserTool extends Tool {
                                 }
                                 break
                             }
+                            case 'abbr': {
+                                const title = element.getAttribute('title')
+                                structuredText += title
+                                    ? ` ${element.textContent?.trim()} (${title})`
+                                    : ` ${element.textContent?.trim()}`
+                                break
+                            }
+                            case 'q':
+                                structuredText += ` "${element.textContent?.trim()}" `
+                                break
+                            case 'time': {
+                                const datetime =
+                                    element.getAttribute('datetime')
+                                structuredText += datetime
+                                    ? ` ${element.textContent?.trim()} [${datetime}]`
+                                    : ` ${element.textContent?.trim()}`
+                                break
+                            }
+                            case 'details':
+                                structuredText += '\n<details>\n'
+                                for (const child of element.childNodes) {
+                                    processNode(child, depth + 1)
+                                }
+                                structuredText += '\n</details>\n'
+                                break
+                            case 'summary':
+                                structuredText += '<summary>'
+                                for (const child of element.childNodes) {
+                                    processNode(child, depth + 1)
+                                }
+                                structuredText += '</summary>\n'
+                                break
+                            case 'figure':
+                                structuredText += '\n'
+                                for (const child of element.childNodes) {
+                                    processNode(child, depth + 1)
+                                }
+                                structuredText += '\n'
+                                break
+                            case 'figcaption':
+                                structuredText += `\n_${element.textContent?.trim()}_\n`
+                                break
+                            case 'hr':
+                                structuredText += '\n---\n'
+                                break
+                            case 'dl':
+                                structuredText += '\n'
+                                for (const child of element.childNodes) {
+                                    processNode(child, depth + 1)
+                                }
+                                structuredText += '\n'
+                                break
+                            case 'dt':
+                                structuredText += `\n**${element.textContent?.trim()}**`
+                                break
+                            case 'dd':
+                                structuredText += `: ${element.textContent?.trim()}\n`
+                                break
+                            case 'var':
+                                structuredText += ` _${element.textContent?.trim()}_ `
+                                break
+                            case 'samp':
+                                structuredText += ` \`${element.textContent?.trim()}\` `
+                                break
                             default:
                                 if (
                                     tagName !== 'script' &&
@@ -284,7 +491,7 @@ export class PuppeteerBrowserTool extends Tool {
                     }
                 }
 
-                processNode(document.body)
+                processNode(mainContent)
                 return structuredText.trim().replace(/\n{3,}/g, '\n\n')
             })
 

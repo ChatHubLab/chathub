@@ -31,7 +31,6 @@ export function apply(ctx: Context, config: Config) {
             ? await createModel(ctx, config.summaryModel)
             : undefined
 
-        // TODO: Use reranker or vectorstore to rank the results
         const searchManager = new SearchManager(ctx, config, plugin)
 
         providerPlugin(ctx, config, plugin, searchManager)
