@@ -76,7 +76,7 @@
         "apache-arrow": "17.0.0",
         "faiss-node": "^0.5.1",
         "koishi": "^4.18.0",
-        "koishi-plugin-chatluna": "^1.0.0-beta.112",
+        "koishi-plugin-chatluna": "^1.0.0-beta.113",
         "vectordb": "0.4.13"
     },
     "peerDependenciesMeta": {
