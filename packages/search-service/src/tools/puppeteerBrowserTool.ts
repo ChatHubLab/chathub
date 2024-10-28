@@ -168,7 +168,7 @@ export class PuppeteerBrowserTool extends Tool {
                     const isBoilerplate = (element: Element) => {
                         const className = element.className.toLowerCase()
                         const id = element.id.toLowerCase()
-                        return /nav|header|footer|sidebar|comment|menu/i.test(
+                        return /nav|header|footer|sidebar|comment|menu|copyright|related|recommend|advertisement|ad-|social|share/i.test(
                             `${className} ${id}`
                         )
                     }
@@ -189,56 +189,127 @@ export class PuppeteerBrowserTool extends Tool {
                         return value
                     }
 
-                    // Common content container identifiers
+                    // Helper to calculate table content score
+                    const getTableScore = (node: Element): number => {
+                        let score = 0
+
+                        // 计算表格内容的丰富度
+                        const rows = node.querySelectorAll('tr').length
+                        const cells = node.querySelectorAll('td, th').length
+
+                        if (rows > 0 && cells > 0) {
+                            // 基础分数：行数 * 单元格平均数
+                            score += (cells / rows) * rows * 2
+
+                            // 表头加分
+                            const headers = node.querySelectorAll('th').length
+                            if (headers > 0) score += headers * 5
+
+                            // 表格标题加分
+                            const caption = node.querySelector('caption')
+                            if (caption) score += 10
+
+                            // 内容丰富度加分
+                            const textLength = node.textContent?.length || 0
+                            if (textLength > 0) {
+                                score += Math.min(textLength / 100, 50) // 最多加50分
+                            }
+                        }
+
+                        return score
+                    }
+
+                    // Common content patterns
                     const contentPatterns = [
                         /article|post|content|main|body|text/i,
                         /^(article|main|content)$/i
                     ]
 
+                    // Specific class/id scoring patterns
+                    const specificPatterns = {
+                        content:
+                            /content|article-content|post-content|entry-content|main-content/i,
+                        table: /table-content|data-table|grid|list/i,
+                        article: /article|post|entry|blog/i,
+                        main: /main|primary|central/i
+                    }
+
                     // Score each potential content container
                     document
-                        .querySelectorAll('div, article, main, section')
+                        .querySelectorAll('div, article, main, section, table')
                         .forEach((element) => {
                             if (isBoilerplate(element)) return
 
                             let score = 0
+                            const identifiers =
+                                `${element.className} ${element.id}`.toLowerCase()
 
-                            // Score based on tag name
+                            // 标签评分
                             const tagName = element.tagName.toLowerCase()
                             if (tagName === 'article') score += 30
                             if (tagName === 'main') score += 25
+                            if (tagName === 'table') score += 15
 
-                            // Score based on id/class names
-                            const identifiers =
-                                `${element.className} ${element.id}`.toLowerCase()
+                            // 特定类名/ID评分
+                            Object.entries(specificPatterns).forEach(
+                                ([key, pattern]) => {
+                                    if (pattern.test(identifiers)) {
+                                        switch (key) {
+                                            case 'content':
+                                                score += 40
+                                                break
+                                            case 'table':
+                                                score += 25
+                                                break
+                                            case 'article':
+                                                score += 30
+                                                break
+                                            case 'main':
+                                                score += 20
+                                                break
+                                        }
+                                    }
+                                }
+                            )
+
+                            // 通用内容模式评分
                             contentPatterns.forEach((pattern) => {
                                 if (pattern.test(identifiers)) score += 20
                             })
 
-                            // Score based on content density
+                            // 内容密度评分
                             const density = getTextDensity(element)
                             score += density * 50
 
-                            // Score based on meaningful descendants
+                            // 段落评分
                             const paragraphs =
                                 element.getElementsByTagName('p').length
                             score += paragraphs * 3
 
+                            // 标题评分
                             const headings =
                                 element.querySelectorAll(
                                     'h1,h2,h3,h4,h5,h6'
                                 ).length
                             score += headings * 5
 
-                            // Add hierarchical p-tag score
+                            // 表格内容评分
+                            if (
+                                tagName === 'table' ||
+                                element.querySelector('table')
+                            ) {
+                                score += getTableScore(element)
+                            }
+
+                            // 层级段落评分
                             const paragraphScore = getParagraphScore(element)
                             score += paragraphScore * 2
 
-                            // Penalize if too short
+                            // 长度惩罚
                             const text = element.textContent || ''
                             if (text.length < 250) score *= 0.7
 
-                            // Position bonus (favor middle of page)
+                            // 位置评分
                             const rect = element.getBoundingClientRect()
                             const verticalCenter = Math.abs(
                                 0.5 -
@@ -246,6 +317,20 @@ export class PuppeteerBrowserTool extends Tool {
                                         document.documentElement.scrollHeight
                             )
                             score *= 1 - verticalCenter * 0.3
+
+                            // 表格特定优化
+                            if (
+                                tagName === 'table' ||
+                                element.querySelector('table')
+                            ) {
+                                // 如果是数据展示类的表格，降低文本长度惩罚
+                                if (
+                                    text.length < 250 &&
+                                    element.querySelectorAll('td').length > 20
+                                ) {
+                                    score *= 1.5 // 补偿一些分数
+                                }
+                            }
 
                             candidates.push({ element, score })
                         })
