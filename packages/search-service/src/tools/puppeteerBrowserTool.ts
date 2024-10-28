@@ -491,7 +491,139 @@ export class PuppeteerBrowserTool extends Tool {
                     }
                 }
 
+                // 添加相关链接部分
+                const getRelatedLinks = (content: Element) => {
+                    const currentUrl = window.location.href
+                    const currentHost = window.location.hostname
+                    const currentPath = window.location.pathname
+
+                    interface LinkGroup {
+                        samePath: string[]
+                        sameHost: string[]
+                        external: string[]
+                    }
+
+                    const links: LinkGroup = {
+                        samePath: [],
+                        sameHost: [],
+                        external: []
+                    }
+
+                    // 获取链接的上下文（前后50个字符）
+                    const getLinkContext = (link: Element): string => {
+                        const parent = link.parentElement
+                        if (!parent) return ''
+
+                        const text = parent.textContent || ''
+                        const linkText = link.textContent || ''
+                        const linkPos = text.indexOf(linkText)
+
+                        if (linkPos === -1) return ''
+
+                        const start = Math.max(0, linkPos - 50)
+                        const end = Math.min(
+                            text.length,
+                            linkPos + linkText.length + 50
+                        )
+
+                        return text.slice(start, end).trim()
+                    }
+
+                    content.querySelectorAll('a[href]').forEach((link) => {
+                        const href = link.getAttribute('href')
+                        if (!href) return
+
+                        try {
+                            const url = new URL(href, currentUrl)
+                            const linkText = link.textContent?.trim()
+                            const context = getLinkContext(link)
+
+                            // 忽略空链接、锚点链接和常见功能性链接
+                            if (
+                                !linkText ||
+                                url.href === currentUrl ||
+                                href.startsWith('#') ||
+                                /login|signup|register|cart|search|account/i.test(
+                                    url.pathname
+                                )
+                            ) {
+                                return
+                            }
+
+                            const linkMd = `- [${linkText}](${url.href})${context ? `\n  > ${context}` : ''}`
+
+                            if (url.hostname === currentHost) {
+                                if (
+                                    url.pathname.startsWith(currentPath) ||
+                                    currentPath.startsWith(url.pathname)
+                                ) {
+                                    if (!links.samePath.includes(linkMd)) {
+                                        links.samePath.push(linkMd)
+                                    }
+                                } else {
+                                    if (!links.sameHost.includes(linkMd)) {
+                                        links.sameHost.push(linkMd)
+                                    }
+                                }
+                            } else {
+                                if (!links.external.includes(linkMd)) {
+                                    links.external.push(linkMd)
+                                }
+                            }
+                        } catch (e) {
+                            // 忽略无效链接
+                        }
+                    })
+
+                    let relatedLinksText = ''
+
+                    // 只有当有链接时才添加标题
+                    if (
+                        links.samePath.length > 0 ||
+                        links.sameHost.length > 0 ||
+                        links.external.length > 0
+                    ) {
+                        relatedLinksText = '\n\n## Related Links\n\n'
+
+                        if (links.samePath.length > 0) {
+                            relatedLinksText +=
+                                '### Same Section\n' +
+                                links.samePath.slice(0, 5).join('\n') +
+                                '\n\n'
+                        }
+
+                        if (links.sameHost.length > 0) {
+                            relatedLinksText +=
+                                '### Same Site\n' +
+                                links.sameHost.slice(0, 5).join('\n') +
+                                '\n\n'
+                        }
+
+                        if (links.external.length > 0) {
+                            relatedLinksText +=
+                                '### External References\n' +
+                                links.external.slice(0, 5).join('\n') +
+                                '\n\n'
+                        }
+                    }
+
+                    return relatedLinksText
+                }
+
+                // 处理主要内容
                 processNode(mainContent)
+
+                // 添加相关链接
+                structuredText += getRelatedLinks(
+                    mainContent.parentElement?.parentElement?.parentElement
+                        ?.parentElement?.parentElement ??
+                        mainContent.parentElement?.parentElement
+                            .parentElement ??
+                        mainContent.parentElement?.parentElement ??
+                        mainContent.parentElement ??
+                        mainContent
+                )
+
                 return structuredText.trim().replace(/\n{3,}/g, '\n\n')
             })
 
