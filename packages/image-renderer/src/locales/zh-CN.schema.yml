@@ -1,3 +1,6 @@
 $inner:
     - $desc: 基础配置
       qrCode: 是否生成右下角的二维码。
+      background: 背景图片地址，将会随机抽取其一。
+      blurAmount: 模糊程度，0 表示不模糊。
+      backgroundMaskOpacity: 背景蒙版透明度，范围 0-1。

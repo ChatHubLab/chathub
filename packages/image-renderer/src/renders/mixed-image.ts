@@ -20,6 +20,8 @@ import {
 import type {} from 'koishi-plugin-puppeteer'
 import { Config } from '..'
 import path from 'path'
+import { randomArrayItem, renderTemplate } from './image'
+import fs from 'fs/promises'
 
 let logger: Logger
 
@@ -193,7 +195,11 @@ export class MixedImageRenderer extends Renderer {
         )
 
         const templateHtmlPath = path.resolve(templateDir, 'template.html')
-        const outTemplateHtmlPath = path.resolve(templateDir, 'out.html')
+        const randomId = Math.random().toString(36).substring(2, 15)
+        const outTemplateHtmlPath = path.resolve(
+            templateDir,
+            `${randomId}.html`
+        )
 
         const templateHtml = readFileSync(templateHtmlPath).toString()
 
@@ -210,9 +216,13 @@ export class MixedImageRenderer extends Renderer {
         const content = await this._renderMarkdownToHtml(markdownText)
         // ${content} => markdownText'
         // eslint-disable-next-line no-template-curly-in-string
-        const outTemplateHtml = templateHtml
-            .replaceAll('${content}', content)
-            .replaceAll('${qr_data}', qrCode)
+        const outTemplateHtml = renderTemplate(templateHtml, {
+            content,
+            qr_data: qrCode,
+            background: randomArrayItem(this.config.background),
+            blurAmount: this.config.blurAmount.toString(),
+            backgroundMaskOpacity: this.config.backgroundMaskOpacity.toString()
+        })
 
         writeFileSync(outTemplateHtmlPath, outTemplateHtml)
 
@@ -227,6 +237,11 @@ export class MixedImageRenderer extends Renderer {
 
         const clip = await app.boundingBox()
         const result = await page.screenshot({ clip })
+
+        this.ctx.setTimeout(async () => {
+            // delete temp file
+            await fs.unlink(outTemplateHtmlPath)
+        }, 1000)
 
         return result
     }

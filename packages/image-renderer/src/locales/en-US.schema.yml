@@ -1,3 +1,7 @@
 $inner:
     - $desc: Basic Configuration
       qrCode: Whether to generate a QR code in the lower right corner.
+      background: Background image address, which will be randomly selected.
+      blurAmount: Blurring degree, 0 means no blurring.
+      backgroundMaskOpacity: Background mask opacity, range 0-1.
+

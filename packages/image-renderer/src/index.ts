@@ -6,8 +6,10 @@ import { createLogger } from 'koishi-plugin-chatluna/utils/logger'
 import { ImageRenderer } from './renders/image'
 import { MixedImageRenderer } from './renders/mixed-image'
 import path from 'path'
-import { fileURLToPath } from 'url'
+import { fileURLToPath, pathToFileURL } from 'url'
 import fs from 'fs/promises'
+
+// See https://github.com/idranme/koishi-plugin-status-image/blob/main/src/index.ts
 
 export let logger: Logger
 
@@ -28,6 +30,8 @@ export function apply(ctx: Context, config: Config) {
     ctx.on('ready', async () => {
         plugin.registerToService()
 
+        // clear the temp html
+
         const dirname =
             __dirname?.length > 0 ? __dirname : fileURLToPath(import.meta.url)
         const templateHtmlDir = dirname + '/../resources'
@@ -37,6 +41,19 @@ export function apply(ctx: Context, config: Config) {
         } catch (error) {
             await fs.mkdir(templateDir, { recursive: true })
             await fs.cp(templateHtmlDir, templateDir, { recursive: true })
+        }
+
+        const tempHtmlFiles = await fs
+            .readdir(templateDir)
+            .then((files) =>
+                files.filter(
+                    (file) =>
+                        file.endsWith('.html') && !file.startsWith('template')
+                )
+            )
+
+        for (const file of tempHtmlFiles) {
+            await fs.unlink(path.resolve(templateDir, file))
         }
 
         ctx.effect(() =>
@@ -55,10 +72,23 @@ export function apply(ctx: Context, config: Config) {
 
 export interface Config extends ChatLunaPlugin.Config {
     qrCode: boolean
+    background: string[]
+    blurAmount: number
+    backgroundMaskOpacity: number
 }
+
+const dirname =
+    __dirname?.length > 0 ? __dirname : fileURLToPath(import.meta.url)
+
+const imageDir = pathToFileURL(path.join(dirname, '../resources')).href
 
 export const Config: Schema<Config> = Schema.intersect([
     Schema.object({
+        background: Schema.array(String)
+            .role('table')
+            .default([`${imageDir}/background/default.webp`]),
+        blurAmount: Schema.natural().default(12).min(0),
+        backgroundMaskOpacity: Schema.natural().max(1).step(0.01).default(0.5),
         qrCode: Schema.boolean().default(false)
     })
 ]).i18n({
