@@ -20,6 +20,7 @@ import {
 } from 'koishi-plugin-chatluna/llm-core/prompt'
 import { logger } from 'koishi-plugin-chatluna'
 import { SystemPrompts } from 'koishi-plugin-chatluna/llm-core/chain/base'
+import { Logger } from 'koishi'
 
 export interface ChatHubChatPromptInput {
     messagesPlaceholder?: MessagesPlaceholder
@@ -206,10 +207,21 @@ Your goal is to craft a response that intelligently incorporates relevant knowle
             }
         }
 
-        logger?.debug(
-            `Used tokens: ${usedTokens} exceed limit: ${this.sendTokenLimit}`
-        )
-        logger?.debug(`messages: ${JSON.stringify(result)}`)
+        if (logger?.level === Logger.DEBUG) {
+            logger?.debug(
+                `Used tokens: ${usedTokens} exceed limit: ${this.sendTokenLimit}`
+            )
+
+            const mapMessages = result.map((msg) => {
+                const original = msg.toDict()
+                const dict = structuredClone(original)
+                delete dict.data.additional_kwargs['images']
+                delete dict.data.additional_kwargs['preset']
+                return dict
+            })
+
+            logger?.debug(`messages: ${JSON.stringify(mapMessages)})`)
+        }
 
         return result
     }

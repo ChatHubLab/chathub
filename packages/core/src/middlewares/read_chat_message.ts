@@ -59,7 +59,7 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
 
             const url = (element.attrs.url ?? element.attrs.src) as string
 
-            logger.debug(`image url: ${url} ${element.attrs}`)
+            logger.debug(`image url: ${url}`)
 
             const readImage = async (url: string) => {
                 const response = await ctx.http(url, {
