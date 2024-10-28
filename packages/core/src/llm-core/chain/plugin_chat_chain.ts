@@ -104,8 +104,7 @@ export class ChatLunaPluginChain
 
     private async _createExecutor(
         llm: ChatLunaChatModel,
-        tools: StructuredTool[],
-        verbose: boolean
+        tools: StructuredTool[]
     ) {
         return AgentExecutor.fromAgentAndTools({
             tags: ['openai-functions'],
@@ -116,7 +115,7 @@ export class ChatLunaPluginChain
             }),
             tools,
             memory: undefined,
-            verbose
+            verbose: false
         })
     }
 
@@ -210,8 +209,7 @@ export class ChatLunaPluginChain
 
             this.executor = await this._createExecutor(
                 this.llm,
-                await Promise.all(tools),
-                session.app.chatluna.config.isLog
+                await Promise.all(tools)
             )
 
             this.baseMessages =
