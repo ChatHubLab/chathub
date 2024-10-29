@@ -162,7 +162,7 @@ export class OpenAIClient extends PlatformModelAndEmbeddingsClient {
         }
 
         for (const key in modelMaxContextSizeTable) {
-            if (modelName.includes(key)) {
+            if (modelName.toLowerCase().includes(key)) {
                 return modelMaxContextSizeTable[key]
             }
         }
