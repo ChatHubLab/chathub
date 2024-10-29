@@ -22,6 +22,7 @@ import { apply as create_room } from './middlewares/create_room'
 import { apply as delete_memory } from './middlewares/delete_memory'
 import { apply as delete_preset } from './middlewares/delete_preset'
 import { apply as delete_room } from './middlewares/delete_room'
+import { apply as edit_memory } from './middlewares/edit_memory'
 import { apply as invite_room } from './middlewares/invite_room'
 import { apply as join_room } from './middlewares/join_room'
 import { apply as kick_member } from './middlewares/kick_member'
@@ -88,6 +89,7 @@ export async function middleware(ctx: Context, config: Config) {
             delete_memory,
             delete_preset,
             delete_room,
+            edit_memory,
             invite_room,
             join_room,
             kick_member,

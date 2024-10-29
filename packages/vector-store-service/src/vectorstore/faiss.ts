@@ -79,7 +79,6 @@ export async function apply(
                     await store.save(directory)
                 },
                 async deletableFunction(store, options) {
-                    console.log('deletableFunction', options)
                     if (options.deleteAll) {
                         await fs.rm(directory, { recursive: true })
                         console.log('deleted all', directory)
@@ -124,11 +123,6 @@ export async function apply(
                     await store.addDocuments(documents, {
                         ids
                     })
-                },
-                async getDocumentsByIdsFunction(store, ids) {
-                    const docStore = store.getDocstore()
-
-                    return ids.map((id) => docStore.search(id))
                 }
             }
         )

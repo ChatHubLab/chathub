@@ -43,4 +43,14 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                 content
             })
         })
+
+    ctx.command('chatluna.memory.edit <id:string>')
+        .option('type', '-t <type:string>')
+        .action(async ({ session, options }, id, content) => {
+            await chain.receiveCommand(session, 'edit_memory', {
+                memoryId: id,
+                content,
+                type: options.type
+            })
+        })
 }

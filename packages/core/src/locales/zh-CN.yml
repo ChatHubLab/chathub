@@ -468,6 +468,17 @@ commands:
                     add_success: '已添加记忆。'
                     add_failed: '添加记忆失败。'
 
+            edit:
+                description: '编辑记忆。'
+                arguments:
+                    id: '记忆 ID。'
+                options:
+                    type: '记忆所属的预设。'
+                messages:
+                    edit_success: '已编辑记忆。'
+                    edit_failed: '编辑记忆失败。'
+                    edit_memory_start: '请发送你的新记忆内容。'
+
         preset:
             description: 'ChatLuna 预设相关指令。'
             list:

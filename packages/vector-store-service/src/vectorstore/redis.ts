@@ -4,7 +4,6 @@ import { ChatLunaPlugin } from 'koishi-plugin-chatluna/services/chat'
 import { createLogger } from 'koishi-plugin-chatluna/utils/logger'
 import { Config } from '..'
 import { ChatLunaSaveableVectorStore } from 'koishi-plugin-chatluna/llm-core/model/base'
-import { Document } from '@langchain/core/documents'
 
 let logger: Logger
 
@@ -99,29 +98,6 @@ export async function apply(
                         keys,
                         batchSize: options?.batchSize
                     })
-                },
-
-                async getDocumentsByIdsFunction(store, ids) {
-                    const indexName = store.indexName
-                    const documents: Document[] = []
-
-                    for (const id of ids) {
-                        const key = `${indexName}:${id}`
-                        const doc = await client.hGetAll(key)
-                        const content = doc?.[store.contentKey]
-                        if (!content) continue
-
-                        documents.push({
-                            pageContent: content,
-                            metadata: JSON.parse(
-                                unEscapeSpecialChars(
-                                    doc[store.metadataKey] ?? '{}'
-                                )
-                            )
-                        })
-                    }
-
-                    return documents
                 }
             }
         )
@@ -149,17 +125,4 @@ async function importRedis() {
             'Please install redis as a dependency with, e.g. `npm install -S redis`'
         )
     }
-}
-
-/**
- * Unescapes all '-', ':', and '"' characters, returning the original string
- *
- * @param str
- * @returns
- */
-function unEscapeSpecialChars(str: string) {
-    return str
-        .replaceAll('\\-', '-')
-        .replaceAll('\\:', ':')
-        .replaceAll(`\\"`, `"`)
 }

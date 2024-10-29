@@ -16,8 +16,6 @@ export class ChatLunaSaveableVectorStore<T extends VectorStore = VectorStore>
         ...args: Parameters<T['addDocuments']>
     ) => Promise<void>
 
-    getDocumentsByIdsFunction?: (store: T, ids: string[]) => Promise<Document[]>
-
     constructor(
         private _store: T,
         input: ChatLunaSaveableVectorStoreInput<T>
@@ -26,8 +24,6 @@ export class ChatLunaSaveableVectorStore<T extends VectorStore = VectorStore>
         this.saveableFunction = input.saveableFunction ?? (async () => {})
         this.deletableFunction = input.deletableFunction
         this.addDocumentsFunction = input.addDocumentsFunction
-
-        this.getDocumentsByIdsFunction = input.getDocumentsByIdsFunction
     }
 
     addVectors(...args: Parameters<typeof this._store.addVectors>) {
@@ -50,11 +46,6 @@ export class ChatLunaSaveableVectorStore<T extends VectorStore = VectorStore>
     }
 
     async editDocument(oldDocumentId: string, newDocument: Document) {
-        const documentId = await this.getDocumentsByIds([oldDocumentId])
-        if (documentId.length === 0) {
-            throw new Error('Document not found')
-        }
-
         // delete
         await this.delete({ ids: [oldDocumentId] })
 
@@ -62,13 +53,6 @@ export class ChatLunaSaveableVectorStore<T extends VectorStore = VectorStore>
         await (this as ChatLunaSaveableVectorStore<VectorStore>).addDocuments([
             newDocument
         ])
-    }
-
-    async getDocumentsByIds(ids: string[]) {
-        if (this.getDocumentsByIdsFunction) {
-            return await this.getDocumentsByIdsFunction(this._store, ids)
-        }
-        return []
     }
 
     save() {
@@ -98,7 +82,6 @@ export interface ChatLunaSaveableVectorStoreInput<T extends VectorStore> {
         store: T,
         ...args: Parameters<T['addDocuments']>
     ) => Promise<void>
-    getDocumentsByIdsFunction?: (store: T, ids: string[]) => Promise<Document[]>
 }
 
 export interface ChatLunaSaveableVectorDelete

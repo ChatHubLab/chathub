@@ -470,6 +470,17 @@ commands:
                     add_success: 'Memory added successfully.'
                     add_failed: 'Failed to add memory.'
 
+            edit:
+                description: 'Edit memory.'
+                arguments:
+                    id: 'Memory ID.'
+                options:
+                    type: 'Memory preset.'
+                messages:
+                    edit_success: 'Memory edited successfully.'
+                    edit_failed: 'Failed to edit memory.'
+                    edit_memory_start: 'Please send your new memory content.'
+
         preset:
             description: 'ChatLuna preset management.'
             list:
