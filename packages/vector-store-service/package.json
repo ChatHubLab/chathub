@@ -66,30 +66,17 @@
     },
     "devDependencies": {
         "@types/uuid": "^10.0.0",
-        "apache-arrow": "17.0.0",
         "atsc": "^2.1.0",
         "faiss-node": "^0.5.1",
-        "koishi": "^4.18.0",
-        "vectordb": "0.4.13"
+        "koishi": "^4.18.0"
     },
     "peerDependencies": {
-        "apache-arrow": "17.0.0",
         "faiss-node": "^0.5.1",
         "koishi": "^4.18.0",
-        "koishi-plugin-chatluna": "^1.0.0-beta.113",
-        "vectordb": "0.4.13"
+        "koishi-plugin-chatluna": "^1.0.0-beta.113"
     },
     "peerDependenciesMeta": {
-        "@lancedb/lancedb": {
-            "optional": true
-        },
-        "apache-arrow": {
-            "optional": true
-        },
         "faiss-node": {
-            "optional": true
-        },
-        "vectordb": {
             "optional": true
         }
     },

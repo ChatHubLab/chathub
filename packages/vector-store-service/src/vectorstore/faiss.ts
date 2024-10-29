@@ -6,6 +6,7 @@ import fs from 'fs/promises'
 import { createLogger } from 'koishi-plugin-chatluna/utils/logger'
 import { ChatLunaPlugin } from 'koishi-plugin-chatluna/services/chat'
 import { Config } from '..'
+import crypto from 'crypto'
 
 let logger: Logger
 
@@ -15,6 +16,12 @@ export async function apply(
     plugin: ChatLunaPlugin
 ) {
     logger = createLogger(ctx, 'chatluna-vector-store-service')
+
+    if (!config.vectorStore.includes('faiss')) {
+        return
+    }
+
+    await FaissStore.importFaiss()
 
     plugin.registerVectorStore('faiss', async (params) => {
         const embeddings = params.embeddings
@@ -71,8 +78,50 @@ export async function apply(
                 async saveableFunction(store) {
                     await store.save(directory)
                 },
-                async deletableFunction(store) {
-                    await fs.rm(directory, { recursive: true })
+                async deletableFunction(store, options) {
+                    if (options.deleteAll) {
+                        await fs.rm(directory, { recursive: true })
+                        return
+                    }
+
+                    const ids: string[] = []
+                    if (options.ids) {
+                        ids.push(...options.ids)
+                    }
+
+                    if (options.documents) {
+                        const ids = options.documents
+                            ?.map((document) => {
+                                return document.metadata?.raw_id as
+                                    | string
+                                    | undefined
+                            })
+                            .filter((id) => id != null)
+
+                        ids.push(...ids)
+                    }
+
+                    if (ids.length > 0) {
+                        await store.delete({ ids })
+                    }
+                },
+                async addDocumentsFunction(store, documents, options) {
+                    let ids = options?.ids ?? []
+
+                    ids = documents.map((document, i) => {
+                        const id = ids[i] ?? crypto.randomUUID()
+
+                        document.metadata = {
+                            ...document.metadata,
+                            raw_id: id
+                        }
+
+                        return id
+                    })
+
+                    await store.addDocuments(documents, {
+                        ids
+                    })
                 }
             }
         )

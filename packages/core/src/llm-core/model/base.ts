@@ -11,8 +11,9 @@ export class ChatLunaSaveableVectorStore<T extends VectorStore = VectorStore>
         input: ChatLunaSaveableVectorDelete
     ) => Promise<void>
 
-    addDocumentsFunction: (
-        ...args: Parameters<typeof this._store.addDocuments>
+    addDocumentsFunction?: (
+        store: T,
+        ...args: Parameters<T['addDocuments']>
     ) => Promise<void>
 
     constructor(
@@ -29,11 +30,11 @@ export class ChatLunaSaveableVectorStore<T extends VectorStore = VectorStore>
         return this._store.addVectors(...args)
     }
 
-    addDocuments(...args: Parameters<typeof this._store.addDocuments>) {
+    addDocuments(...args: Parameters<T['addDocuments']>) {
         if (this.addDocumentsFunction) {
-            return this.addDocumentsFunction(...args)
+            return this.addDocumentsFunction(this._store, ...args)
         }
-        return this._store.addDocuments(...args)
+        return this._store.addDocuments(args[0], args[1])
     }
 
     similaritySearchVectorWithScore(
@@ -45,7 +46,7 @@ export class ChatLunaSaveableVectorStore<T extends VectorStore = VectorStore>
     }
 
     save() {
-        return this.saveableFunction(this._store)
+        return this?.saveableFunction(this._store)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -65,7 +66,8 @@ export interface ChatLunaSaveableVectorStoreInput<T extends VectorStore> {
         input: ChatLunaSaveableVectorDelete
     ) => Promise<void>
     addDocumentsFunction?: (
-        ...args: Parameters<typeof this._store.addDocuments>
+        store: T,
+        ...args: Parameters<T['addDocuments']>
     ) => Promise<void>
 }
 

@@ -164,11 +164,10 @@ export class PlatformService {
     }
 
     getModels(platform: PlatformClientNames, type: ModelType) {
-        return (
-            PlatformService._models[platform]?.filter(
-                (m) => type === ModelType.all || m.type === type
-            ) ?? []
-        )
+        const models = PlatformService._models[platform] ?? []
+        return models
+            .filter((m) => type === ModelType.all || m.type === type)
+            .sort((a, b) => a.name.localeCompare(b.name))
     }
 
     getTools() {
