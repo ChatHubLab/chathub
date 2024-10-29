@@ -17,6 +17,7 @@ import { apply as clone_preset } from './middlewares/clone_preset'
 import { apply as cooldown_time } from './middlewares/cooldown_time'
 import { apply as create_auth_group } from './middlewares/create_auth_group'
 import { apply as create_room } from './middlewares/create_room'
+import { apply as delete_memory } from './middlewares/delete_memory'
 import { apply as delete_preset } from './middlewares/delete_preset'
 import { apply as delete_room } from './middlewares/delete_room'
 import { apply as invite_room } from './middlewares/invite_room'
@@ -80,6 +81,7 @@ export async function middleware(ctx: Context, config: Config) {
             cooldown_time,
             create_auth_group,
             create_room,
+            delete_memory,
             delete_preset,
             delete_room,
             invite_room,

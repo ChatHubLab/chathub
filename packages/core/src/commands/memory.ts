@@ -17,4 +17,13 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                 query
             })
         })
+
+    ctx.command('chatluna.memory.delete <...ids>')
+        .option('type', '-t <type:string>')
+        .action(async ({ session, options }, ...ids) => {
+            await chain.receiveCommand(session, 'delete_memory', {
+                ids,
+                type: options.type
+            })
+        })
 }

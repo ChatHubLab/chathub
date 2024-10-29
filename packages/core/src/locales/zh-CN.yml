@@ -440,6 +440,15 @@ commands:
                     document_content: '记忆内容： {0}'
                     document_id: '记忆 ID： {0}'
                     pages: '当前为第 [page] / [total] 页'
+            delete:
+                description: '删除记忆。'
+                arguments:
+                    ids: '记忆 ID 列表。'
+                options:
+                    type: '记忆所属的预设。'
+                messages:
+                    delete_success: '已删除记忆。'
+                    delete_failed: '删除记忆失败。'
 
         preset:
             description: 'ChatLuna 预设相关指令。'

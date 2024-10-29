@@ -442,6 +442,16 @@ commands:
                     document_id: 'Memory ID: {0}'
                     pages: 'Page: [page] / [total]'
 
+            delete:
+                description: 'Delete memory.'
+                arguments:
+                    ids: 'Memory ID list.'
+                options:
+                    type: 'Memory preset.'
+                messages:
+                    delete_success: 'Memory deleted successfully.'
+                    delete_failed: 'Failed to delete memory.'
+
         preset:
             description: 'ChatLuna preset management.'
             list:
