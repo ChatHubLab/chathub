@@ -1,3 +1,5 @@
 $inner:
+  - $desc: 向量数据库设置
+    vectorStore: 向量数据库类型
   - $desc: Redis 数据库设置
     redisUrl: Redis url 地址

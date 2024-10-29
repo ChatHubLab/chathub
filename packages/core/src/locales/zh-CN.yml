@@ -244,7 +244,13 @@ commands:
         wipe:
             description: 清空 ChatLuna 的所有使用数据（请谨慎使用）。
             messages:
-                confirm_wipe: '您接下来将要操作的是清除 ChatLuna 的全部相关数据！这些数据包括：\n1. 所有会话数据\n2. 其他缓存在数据库的数据\n3. 本地向量数据库的相关数据\n\n请输入下列算式的结果以确认删除：{0}。'
+                confirm_wipe: |
+                    您接下来将要操作的是清除 ChatLuna 的全部相关数据！这些数据包括：
+                    1. 所有会话数据
+                    2. 其他缓存在数据库的数据
+                    3. 本地向量数据库的相关数据
+
+                    请输入下列算式的结果以确认删除：{0}。
                 timeout: '删除超时，已取消删除'
                 incorrect_input: '你的输入不正确，已取消删除。'
                 success: '已删除相关数据，即将重启完成更改。'
@@ -415,6 +421,24 @@ commands:
                 messages:
                     header: '以下是目前搜索到的模型列表：'
                     footer: '你可以使用 chatluna.room.set -m <model> 来设置默认使用的模型'
+                    pages: '当前为第 [page] / [total] 页'
+
+        memory:
+            description: 'ChatLuna 记忆相关指令。'
+            search:
+                description: '搜索记忆。'
+                arguments:
+                    query: '搜索关键词。'
+                usage: 'chatluna memory search --query "你好" --page 1 --limit 10'
+                options:
+                    page: '页码。'
+                    limit: '每页显示的数量。'
+                    type: '记忆所属的预设。'
+                messages:
+                    header: '以下是使用 {0} 关键词在 {1} 预设下搜索出的记忆列表：'
+                    footer: ''
+                    document_content: '记忆内容： {0}'
+                    document_id: '记忆 ID： {0}'
                     pages: '当前为第 [page] / [total] 页'
 
         preset:

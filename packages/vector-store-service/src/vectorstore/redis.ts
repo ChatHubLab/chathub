@@ -32,7 +32,6 @@ export async function apply(
             redisClient: client,
             indexName: params.key ?? 'chatluna'
         })
-
         const testVector = await embeddings.embedDocuments(['test'])
 
         try {

@@ -244,12 +244,13 @@ commands:
         wipe:
             description: Clear all ChatLuna usage data (use with caution).
             messages:
-                confirm_wipe: 'Warning: You are about to clear all ChatLuna data, including:
-                1. All session data
-                2. Cached database data
-                3. Local vector database data
+                confirm_wipe: |
+                    Warning: You are about to clear all ChatLuna data, including:
+                    1. All session data
+                    2. Cached database data
+                    3. Local vector database data
 
-To confirm deletion, enter the result of: {0}.'
+                    To confirm deletion, enter the result of: {0}.
                 timeout: 'Deletion timed out. Operation cancelled.'
                 incorrect_input: 'Incorrect input. Deletion cancelled.'
                 success: 'Data deleted. Restarting to apply changes.'
@@ -408,7 +409,6 @@ To confirm deletion, enter the result of: {0}.'
                     header: 'Available models:'
                     footer: 'Set default model: chatluna.room.set -m <model>'
                     pages: 'Page: [page] / [total]'
-
             search:
                 description: 'Search available models.'
                 arguments:
@@ -420,6 +420,26 @@ To confirm deletion, enter the result of: {0}.'
                 messages:
                     header: 'Search results:'
                     footer: 'Set default model: chatluna.room.set -m <model>'
+                    pages: 'Page: [page] / [total]'
+
+        memory:
+            description: 'ChatLuna memory-related commands.'
+
+            search:
+                description: 'Search memories.'
+                arguments:
+                    query: 'Search keyword.'
+                usage: 'chatluna memory search --query "Hello" --page 1 --limit 10'
+                options:
+                    page: 'Page number.'
+                    limit: 'Items per page.'
+                    type: 'Memory preset.'
+
+                messages:
+                    header: 'Here is the list of memories found using the keyword {0} under the preset {1}:'
+                    footer: ''
+                    document_content: 'Memory content: {0}'
+                    document_id: 'Memory ID: {0}'
                     pages: 'Page: [page] / [total]'
 
         preset:

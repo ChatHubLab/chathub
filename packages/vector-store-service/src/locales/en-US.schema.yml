@@ -1,3 +1,5 @@
 $inner:
+  - $desc: Vector Database Settings
+    vectorStore: Vector Database Type
   - $desc: Redis Database Settings
     redisUrl: Redis URL Address
