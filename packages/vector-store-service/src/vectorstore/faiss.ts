@@ -122,6 +122,11 @@ export async function apply(
                     await store.addDocuments(documents, {
                         ids
                     })
+                },
+                async getDocumentsByIdsFunction(store, ids) {
+                    const docStore = store.getDocstore()
+
+                    return ids.map((id) => docStore.search(id))
                 }
             }
         )
