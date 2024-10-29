@@ -10,17 +10,17 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
     const services = ctx.chatluna.platform
 
     chain
-        .middleware('delete_memory', async (session, context) => {
+        .middleware('clear_memory', async (session, context) => {
             let {
                 command,
-                options: { type, room, ids }
+                options: { type, room }
             } = context
 
             if (!type) {
                 type = room.preset
             }
 
-            if (command !== 'delete_memory')
+            if (command !== 'clear_memory')
                 return ChainMiddlewareRunStatus.SKIPPED
 
             const [platform, modelName] = parseRawModelName(
@@ -39,13 +39,12 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
             )
 
             try {
-                await vectorStore.delete({ ids })
-
+                await vectorStore.delete({ deleteAll: true })
                 await vectorStore.save()
-                context.message = session.text('.delete_success')
+                context.message = session.text('.clear_success')
             } catch (error) {
                 logger?.error(error)
-                context.message = session.text('.delete_failed')
+                context.message = session.text('.clear_failed')
             }
 
             return ChainMiddlewareRunStatus.STOP
@@ -55,10 +54,6 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
 
 declare module '../chains/chain' {
     interface ChainMiddlewareName {
-        delete_memory: never
-    }
-
-    interface ChainMiddlewareContextOptions {
-        ids?: string[]
+        clear_memory: never
     }
 }

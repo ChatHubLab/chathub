@@ -12,6 +12,7 @@ import { apply as chat_time_limit_check } from './middlewares/chat_time_limit_ch
 import { apply as chat_time_limit_save } from './middlewares/chat_time_limit_save'
 import { apply as check_room } from './middlewares/check_room'
 import { apply as clear_balance } from './middlewares/clear_balance'
+import { apply as clear_memory } from './middlewares/clear_memory'
 import { apply as clear_room } from './middlewares/clear_room'
 import { apply as clone_preset } from './middlewares/clone_preset'
 import { apply as cooldown_time } from './middlewares/cooldown_time'
@@ -76,6 +77,7 @@ export async function middleware(ctx: Context, config: Config) {
             chat_time_limit_save,
             check_room,
             clear_balance,
+            clear_memory,
             clear_room,
             clone_preset,
             cooldown_time,

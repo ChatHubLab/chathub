@@ -26,4 +26,12 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                 type: options.type
             })
         })
+
+    ctx.command('chatluna.memory.clear')
+        .option('type', '-t <type:string>')
+        .action(async ({ session, options }) => {
+            await chain.receiveCommand(session, 'clear_memory', {
+                type: options.type
+            })
+        })
 }

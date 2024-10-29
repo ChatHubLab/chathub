@@ -452,6 +452,14 @@ commands:
                     delete_success: 'Memory deleted successfully.'
                     delete_failed: 'Failed to delete memory.'
 
+            clear:
+                description: 'Clear memory.'
+                options:
+                    type: 'Memory preset.'
+                messages:
+                    clear_success: 'Memory cleared successfully.'
+                    clear_failed: 'Failed to clear memory.'
+
         preset:
             description: 'ChatLuna preset management.'
             list:

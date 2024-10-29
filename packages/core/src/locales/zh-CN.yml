@@ -450,6 +450,14 @@ commands:
                     delete_success: '已删除记忆。'
                     delete_failed: '删除记忆失败。'
 
+            clear:
+                description: '清空记忆。'
+                options:
+                    type: '记忆所属的预设。'
+                messages:
+                    clear_success: '已清空记忆。'
+                    clear_failed: '清空记忆失败。'
+
         preset:
             description: 'ChatLuna 预设相关指令。'
             list:
