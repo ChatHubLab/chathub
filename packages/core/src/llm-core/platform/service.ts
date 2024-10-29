@@ -20,8 +20,8 @@ import {
     PlatformClientNames
 } from 'koishi-plugin-chatluna/llm-core/platform/types'
 import { ChatHubLLMChainWrapper } from '../chain/base'
-import { VectorStore } from '@langchain/core/vectorstores'
 import { LRUCache } from 'lru-cache'
+import { ChatLunaSaveableVectorStore } from 'koishi-plugin-chatluna/llm-core/model/base'
 
 export class PlatformService {
     private static _platformClients: Record<string, BasePlatformClient> = {}
@@ -36,7 +36,10 @@ export class PlatformService {
     private static _chatChains: Record<string, ChatHubChainInfo> = {}
     private static _vectorStore: Record<string, CreateVectorStoreFunction> = {}
 
-    private static _tmpVectorStores = new LRUCache<string, VectorStore>({
+    private static _tmpVectorStores = new LRUCache<
+        string,
+        ChatLunaSaveableVectorStore
+    >({
         max: 10
     })
 

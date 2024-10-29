@@ -1,12 +1,19 @@
 import { VectorStore } from '@langchain/core/vectorstores'
 import { Document } from '@langchain/core/documents'
 
-export class ChatLunaSaveableVectorStore<T extends VectorStore>
+export class ChatLunaSaveableVectorStore<T extends VectorStore = VectorStore>
     extends VectorStore
     implements ChatLunaSaveableVectorStoreInput<T>
 {
     saveableFunction: (store: T) => Promise<void>
-    deletableFunction: (store: T) => Promise<void>
+    deletableFunction?: (
+        store: T,
+        input: ChatLunaSaveableVectorDelete
+    ) => Promise<void>
+
+    addDocumentsFunction: (
+        ...args: Parameters<typeof this._store.addDocuments>
+    ) => Promise<void>
 
     constructor(
         private _store: T,
@@ -14,21 +21,25 @@ export class ChatLunaSaveableVectorStore<T extends VectorStore>
     ) {
         super(_store.embeddings, {})
         this.saveableFunction = input.saveableFunction ?? (async () => {})
-        this.deletableFunction = input.deletableFunction ?? (async () => {})
+        this.deletableFunction = input.deletableFunction
+        this.addDocumentsFunction = input.addDocumentsFunction
     }
 
-    addVectors(vectors: number[][], documents: Document[]) {
-        return this._store.addVectors(vectors, documents)
+    addVectors(...args: Parameters<typeof this._store.addVectors>) {
+        return this._store.addVectors(...args)
     }
 
-    addDocuments(documents: Document[]) {
-        return this._store.addDocuments(documents)
+    addDocuments(...args: Parameters<typeof this._store.addDocuments>) {
+        if (this.addDocumentsFunction) {
+            return this.addDocumentsFunction(...args)
+        }
+        return this._store.addDocuments(...args)
     }
 
     similaritySearchVectorWithScore(
         query: number[],
         k: number,
-        filter?: this['FilterType']
+        filter?: T['FilterType']
     ) {
         return this._store.similaritySearchVectorWithScore(query, k, filter)
     }
@@ -38,8 +49,8 @@ export class ChatLunaSaveableVectorStore<T extends VectorStore>
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    delete(_params?: Record<string, any>): Promise<void> {
-        return this.deletableFunction(this._store)
+    delete(input: ChatLunaSaveableVectorDelete) {
+        return this.deletableFunction(this._store, input)
     }
 
     _vectorstoreType(): string {
@@ -47,7 +58,21 @@ export class ChatLunaSaveableVectorStore<T extends VectorStore>
     }
 }
 
-export interface ChatLunaSaveableVectorStoreInput<T> {
+export interface ChatLunaSaveableVectorStoreInput<T extends VectorStore> {
     saveableFunction?: (store: T) => Promise<void>
-    deletableFunction?: (store: T) => Promise<void>
+    deletableFunction?: (
+        store: T,
+        input: ChatLunaSaveableVectorDelete
+    ) => Promise<void>
+    addDocumentsFunction?: (
+        ...args: Parameters<typeof this._store.addDocuments>
+    ) => Promise<void>
+}
+
+export interface ChatLunaSaveableVectorDelete
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    extends Record<string, any> {
+    deleteAll?: boolean
+    documents?: Document[]
+    ids?: string[]
 }

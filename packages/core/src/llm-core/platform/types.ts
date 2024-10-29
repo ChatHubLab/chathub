@@ -1,11 +1,11 @@
 import { BufferMemory } from 'koishi-plugin-chatluna/llm-core/memory/langchain'
 import { ChatHubBaseEmbeddings, ChatLunaChatModel } from './model'
 import { ChatHubLLMChainWrapper } from '../chain/base'
-import { VectorStore } from '@langchain/core/vectorstores'
 import { StructuredTool } from '@langchain/core/tools'
 import { BaseMessage } from '@langchain/core/messages'
 import { Dict, Session } from 'koishi'
 import { PresetTemplate } from 'koishi-plugin-chatluna/llm-core/prompt'
+import { ChatLunaSaveableVectorStore } from 'koishi-plugin-chatluna/llm-core/model/base'
 export interface ChatHubChainInfo {
     name: string
     description?: Dict<string>
@@ -13,6 +13,8 @@ export interface ChatHubChainInfo {
         params: CreateChatHubLLMChainParams
     ) => Promise<ChatHubLLMChainWrapper>
 }
+
+export type ChatLunaChainInfo = ChatHubChainInfo
 
 export interface CreateToolParams {
     model: ChatLunaChatModel
@@ -47,9 +49,11 @@ export interface ChatHubTool {
     alwaysRecreate?: boolean
 }
 
+export type ChatLunaTool = ChatHubTool
+
 export type CreateVectorStoreFunction = (
     params: CreateVectorStoreParams
-) => Promise<VectorStore>
+) => Promise<ChatLunaSaveableVectorStore>
 
 export interface PlatformClientName {
     default: never
