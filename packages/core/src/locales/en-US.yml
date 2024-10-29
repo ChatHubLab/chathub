@@ -460,6 +460,16 @@ commands:
                     clear_success: 'Memory cleared successfully.'
                     clear_failed: 'Failed to clear memory.'
 
+            add:
+                description: 'Add memory.'
+                arguments:
+                    content: 'Memory content.'
+                options:
+                    type: 'Memory preset.'
+                messages:
+                    add_success: 'Memory added successfully.'
+                    add_failed: 'Failed to add memory.'
+
         preset:
             description: 'ChatLuna preset management.'
             list:

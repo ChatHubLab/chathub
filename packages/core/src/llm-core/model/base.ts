@@ -77,7 +77,10 @@ export class ChatLunaSaveableVectorStore<T extends VectorStore = VectorStore>
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delete(input: ChatLunaSaveableVectorDelete) {
-        return this.deletableFunction(this._store, input)
+        return (
+            this?.deletableFunction?.(this._store, input) ??
+            this._store.delete(input)
+        )
     }
 
     _vectorstoreType(): string {

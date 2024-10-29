@@ -34,4 +34,13 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                 type: options.type
             })
         })
+
+    ctx.command('chatluna.memory.add <content:text>')
+        .option('type', '-t <type:string>')
+        .action(async ({ session, options }, content) => {
+            await chain.receiveCommand(session, 'add_memory', {
+                type: options.type,
+                content
+            })
+        })
 }

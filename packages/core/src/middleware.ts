@@ -3,6 +3,7 @@ import { ChatChain } from './chains/chain'
 import { Config } from './config'
 
 // import start
+import { apply as add_memory } from './middlewares/add_memory'
 import { apply as add_preset } from './middlewares/add_preset'
 import { apply as add_user_to_auth_group } from './middlewares/add_user_to_auth_group'
 import { apply as allow_reply } from './middlewares/allow_reply'
@@ -68,6 +69,7 @@ export async function middleware(ctx: Context, config: Config) {
     const middlewares: Middleware[] =
         // middleware start
         [
+            add_memory,
             add_preset,
             add_user_to_auth_group,
             allow_reply,

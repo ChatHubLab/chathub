@@ -458,6 +458,16 @@ commands:
                     clear_success: '已清空记忆。'
                     clear_failed: '清空记忆失败。'
 
+            add:
+                description: '添加记忆。'
+                arguments:
+                    content: '记忆内容。'
+                options:
+                    type: '记忆所属的预设。'
+                messages:
+                    add_success: '已添加记忆。'
+                    add_failed: '添加记忆失败。'
+
         preset:
             description: 'ChatLuna 预设相关指令。'
             list:
