@@ -40,6 +40,7 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
 
             try {
                 await vectorStore.delete({ deleteAll: true })
+                await ctx.chatluna.clearCache(room)
                 context.message = session.text('.clear_success')
             } catch (error) {
                 logger?.error(error)

@@ -50,6 +50,7 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                     }
                 })
                 await vectorStore.save()
+                await ctx.chatluna.clearCache(room)
                 context.message = session.text('.edit_success')
             } catch (error) {
                 logger?.error(error)

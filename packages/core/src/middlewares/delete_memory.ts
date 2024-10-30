@@ -42,6 +42,7 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                 await vectorStore.delete({ ids })
 
                 await vectorStore.save()
+                await ctx.chatluna.clearCache(room)
                 context.message = session.text('.delete_success')
             } catch (error) {
                 logger?.error(error)
