@@ -40,10 +40,14 @@ export class PlatformService {
         string,
         ChatLunaSaveableVectorStore
     >({
-        max: 10
+        max: 20
     })
 
-    constructor(private ctx: Context) {}
+    constructor(private ctx: Context) {
+        this.ctx.on('chatluna/clear-chat-history', async (conversationId) => {
+            PlatformService._tmpVectorStores.clear()
+        })
+    }
 
     registerClient(
         name: PlatformClientNames,

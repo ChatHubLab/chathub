@@ -206,7 +206,7 @@ export class ChatLunaService extends Service {
         const chatBridger =
             this._chatInterfaceWrapper ?? this._createChatInterfaceWrapper()
 
-        return chatBridger.clear(room)
+        return chatBridger.clearCache(room)
     }
 
     async createChatModel(platformName: string, model: string) {
@@ -827,7 +827,7 @@ class ChatInterfaceWrapper {
         }
     }
 
-    async clear(room: ConversationRoom) {
+    async clearCache(room: ConversationRoom) {
         const { conversationId } = room
         const requestId = uuidv4()
 
@@ -835,20 +835,15 @@ class ChatInterfaceWrapper {
             await this._conversationQueue.add(conversationId, requestId)
             await this._conversationQueue.wait(conversationId, requestId, 0)
 
-            if (!this._conversations.has(conversationId)) {
-                return false
-            }
+            const chatInterface = await this.query(room)
 
-            const chatInterface = await this.query(room, false)
+            await this._service.ctx.root.parallel(
+                'chatluna/clear-chat-history',
+                conversationId,
+                chatInterface
+            )
+
             this._conversations.delete(conversationId)
-
-            if (chatInterface != null) {
-                await this._service.ctx.parallel(
-                    'chatluna/clear-chat-history',
-                    conversationId,
-                    chatInterface
-                )
-            }
 
             return true
         } finally {
@@ -872,7 +867,7 @@ class ChatInterfaceWrapper {
             if (!chatInterface) return
 
             await chatInterface.delete(this._service.ctx, room)
-            await this.clear(room)
+            await this.clearCache(room)
         } finally {
             await this._conversationQueue.remove(conversationId, requestId)
         }

@@ -56,7 +56,7 @@ export async function defaultFactory(ctx: Context, service: PlatformService) {
                     conversation?.chatInterface?.chatMode === 'browsing'
             )
             .forEach(async ([id, info]) => {
-                const result = await wrapper.clear(info.room)
+                const result = await wrapper.clearCache(info.room)
 
                 if (result) {
                     logger?.debug(`Cleared cache for room ${id}`)
