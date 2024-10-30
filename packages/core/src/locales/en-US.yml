@@ -441,7 +441,8 @@ commands:
                     document_content: 'Memory content: {0}'
                     document_id: 'Memory ID: {0}'
                     pages: 'Page: [page] / [total]'
-
+                    search_failed: 'Failed to search memories.'
+                    
             delete:
                 description: 'Delete memory.'
                 arguments:

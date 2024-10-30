@@ -6,6 +6,7 @@ import { Pagination } from 'koishi-plugin-chatluna/utils/pagination'
 import { Document } from '@langchain/core/documents'
 import crypto from 'crypto'
 import { parseRawModelName } from 'koishi-plugin-chatluna/llm-core/utils/count_tokens'
+import { logger } from '..'
 
 export function apply(ctx: Context, config: Config, chain: ChatChain) {
     const services = ctx.chatluna.platform
@@ -53,25 +54,30 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
 
             const key = resolveLongMemoryId(type, session.userId)
 
-            const vectorStore = await services.createVectorStore(
-                config.defaultVectorStore,
-                { embeddings, key }
-            )
-
-            const documents = await vectorStore
-                .similaritySearch(query, 10000)
-                .then((value) =>
-                    value.sort((a, b) => {
-                        const aRawId = (a.metadata?.raw_id as string) ?? ''
-                        const bRawId = (b.metadata?.raw_id as string) ?? ''
-
-                        return aRawId.localeCompare(bRawId)
-                    })
+            try {
+                const vectorStore = await services.createVectorStore(
+                    config.defaultVectorStore,
+                    { embeddings, key }
                 )
 
-            await pagination.push(documents)
+                const documents = await vectorStore
+                    .similaritySearch(query, 10000)
+                    .then((value) =>
+                        value.sort((a, b) => {
+                            const aRawId = (a.metadata?.raw_id as string) ?? ''
+                            const bRawId = (b.metadata?.raw_id as string) ?? ''
 
-            context.message = await pagination.getFormattedPage(page, limit)
+                            return aRawId.localeCompare(bRawId)
+                        })
+                    )
+
+                await pagination.push(documents)
+
+                context.message = await pagination.getFormattedPage(page, limit)
+            } catch (error) {
+                logger?.error(error)
+                context.message = session.text('.search_failed')
+            }
 
             return ChainMiddlewareRunStatus.STOP
         })

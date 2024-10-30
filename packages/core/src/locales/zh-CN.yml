@@ -440,6 +440,8 @@ commands:
                     document_content: '记忆内容： {0}'
                     document_id: '记忆 ID： {0}'
                     pages: '当前为第 [page] / [total] 页'
+                    search_failed: '搜索记忆失败。'
+                    
             delete:
                 description: '删除记忆。'
                 arguments:

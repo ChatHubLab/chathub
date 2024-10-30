@@ -33,16 +33,16 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
 
             const key = resolveLongMemoryId(type, session.userId)
 
-            const vectorStore = await services.createVectorStore(
-                config.defaultVectorStore,
-                { embeddings, key }
-            )
-
-            await session.send(session.text('.edit_memory_start'))
-
-            const content = await session.prompt()
-
             try {
+                const vectorStore = await services.createVectorStore(
+                    config.defaultVectorStore,
+                    { embeddings, key }
+                )
+
+                await session.send(session.text('.edit_memory_start'))
+
+                const content = await session.prompt()
+
                 await vectorStore.editDocument(memoryId, {
                     pageContent: content,
                     metadata: {

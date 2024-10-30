@@ -33,12 +33,12 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
 
             const key = resolveLongMemoryId(type, session.userId)
 
-            const vectorStore = await services.createVectorStore(
-                config.defaultVectorStore,
-                { embeddings, key }
-            )
-
             try {
+                const vectorStore = await services.createVectorStore(
+                    config.defaultVectorStore,
+                    { embeddings, key }
+                )
+
                 await vectorStore.addDocuments([
                     {
                         pageContent: content,
