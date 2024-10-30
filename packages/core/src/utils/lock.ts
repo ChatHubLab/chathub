@@ -10,39 +10,61 @@ export class ObjectLock {
 
     private _currentId = 0
     private _currentLockId?: number
+    private _lockCount: number = 0
     private readonly _timeout: number
+    private readonly _maxQueueLength: number
 
-    constructor(timeout = Time.minute * 3) {
+    constructor(timeout = Time.minute * 3, maxQueueLength = 100) {
         this._timeout = timeout
+        this._maxQueueLength = maxQueueLength
     }
 
     async lock() {
         const id = this._currentId++
 
+        if (this._currentLockId === id || this._currentLockId === id - 1) {
+            this._lockCount++
+            return this._currentLockId!
+        }
+
         if (this._lock) {
+            if (this._queue.length >= this._maxQueueLength) {
+                throw new Error('Lock queue is full')
+            }
+
             const { promise, resolve } = withResolver()
             this._queue.push({ id, resolve })
 
             try {
+                let timeoutId: NodeJS.Timeout
                 await Promise.race([
                     promise,
                     // eslint-disable-next-line promise/param-names
-                    new Promise((_, reject) =>
-                        setTimeout(
-                            () => reject(new Error('Lock timeout')),
+                    new Promise((_, reject) => {
+                        timeoutId = setTimeout(
+                            () =>
+                                reject(
+                                    new Error(
+                                        `Lock timeout after ${this._timeout}ms`
+                                    )
+                                ),
                             this._timeout
                         )
-                    )
-                ])
+                    })
+                ]).finally(() => {
+                    clearTimeout(timeoutId)
+                })
             } catch (error) {
-                // Remove from queue on timeout
                 this._queue = this._queue.filter((item) => item.id !== id)
-                throw error
+                throw error instanceof Error
+                    ? error
+                    : new Error('Unknown lock error')
             }
         }
 
         this._lock = true
         this._currentLockId = id
+        this._lockCount = 1
         return id
     }
 
@@ -62,14 +84,19 @@ export class ObjectLock {
             throw new Error('Invalid unlock attempt: lock not owned by caller')
         }
 
-        this._lock = false
-        this._currentLockId = undefined
+        this._lockCount--
 
-        if (this._queue.length > 0) {
-            const nextRequest = this._queue.shift()!
-            this._lock = true
-            this._currentLockId = nextRequest.id
-            nextRequest.resolve()
+        if (this._lockCount === 0) {
+            this._lock = false
+            this._currentLockId = undefined
+
+            if (this._queue.length > 0) {
+                const nextRequest = this._queue.shift()!
+                this._lock = true
+                this._currentLockId = nextRequest.id
+                this._lockCount = 1
+                nextRequest.resolve()
+            }
         }
     }
 

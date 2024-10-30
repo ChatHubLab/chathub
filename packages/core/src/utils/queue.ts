@@ -84,7 +84,6 @@ export class RequestIdQueue {
             await this.add(key, requestId)
         }
 
-        const startTime = Date.now()
         let item: QueueItem | undefined
 
         // First, get the project information within the lock
@@ -106,24 +105,21 @@ export class RequestIdQueue {
         // If you need to wait, wait outside the lock
         if (item) {
             try {
-                await Promise.race([
-                    item.notifyPromise.promise,
-                    // eslint-disable-next-line promise/param-names
-                    new Promise((_, reject) =>
-                        setTimeout(
-                            () =>
-                                reject(
-                                    new Error(
-                                        `Queue wait timeout after ${this._queueTimeout}ms`
-                                    )
-                                ),
-                            Math.max(
-                                0,
-                                this._queueTimeout - (Date.now() - startTime)
+                const timeoutId = setTimeout(
+                    () =>
+                        item.notifyPromise.reject(
+                            new Error(
+                                `Queue wait timeout after ${this._queueTimeout}ms`
                             )
-                        )
-                    )
-                ])
+                        ),
+                    this._queueTimeout
+                )
+
+                try {
+                    await item.notifyPromise.promise
+                } finally {
+                    clearTimeout(timeoutId)
+                }
             } catch (error) {
                 await this.remove(key, requestId)
                 throw error
