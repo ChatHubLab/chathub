@@ -50,7 +50,7 @@ export const Config: Schema<Config> = Schema.intersect([
             .role('url')
             .default('http://127.0.0.1:19530'),
         milvusUsername: Schema.string().default(''),
-        milvusPassword: Schema.string().default('')
+        milvusPassword: Schema.string().role('secret').default('')
     })
 ]).i18n({
     'zh-CN': require('./locales/zh-CN.schema.yml'),

@@ -39,7 +39,7 @@ export async function apply(
         } catch (e) {
             try {
                 await vectorStore.dropIndex(true)
-                await vectorStore.createIndex()
+                await vectorStore.createIndex(testVector[0].length)
             } catch (e) {
                 logger.error(e)
             }
