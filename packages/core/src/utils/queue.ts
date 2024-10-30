@@ -47,7 +47,7 @@ export class RequestIdQueue {
 
             this._queue[key].push(queueItem)
 
-            // 如果是第一个请求，立即解决
+            // If it is the first request, resolve immediately
             if (this._queue[key].length === 1) {
                 resolve()
             }
@@ -65,10 +65,16 @@ export class RequestIdQueue {
             if (index !== -1) {
                 this._queue[key].splice(index, 1)
 
-                // 通知下一个请求（如果存在）
-                if (index === 0 && this._queue[key].length > 0) {
-                    this._queue[key][0].notifyPromise.resolve()
-                }
+                // If an item is removed from any position in the queue, the subsequent requests need to be notified to move forward
+                this._queue[key].slice(index).forEach((item, newIndex) => {
+                    // If the new position is less than maxConcurrent (determined in wait), resolve the promise
+                    // Note: The specific logic here may need to be determined based on maxConcurrent in wait
+                    // However, since maxConcurrent is passed in wait, it cannot be accessed here,
+                    // so we only handle the most explicit case: the head of the queue
+                    if (index + newIndex === 0) {
+                        item.notifyPromise.resolve()
+                    }
+                })
             }
         })
     }
@@ -79,20 +85,27 @@ export class RequestIdQueue {
         }
 
         const startTime = Date.now()
+        let item: QueueItem | undefined
 
-        try {
-            await this._lock.runLocked(async () => {
-                const index = this._queue[key].findIndex(
-                    (item) => item.requestId === requestId
-                )
+        // First, get the project information within the lock
+        await this._lock.runLocked(async () => {
+            const index = this._queue[key].findIndex(
+                (item) => item.requestId === requestId
+            )
 
-                if (index === -1 || index < maxConcurrent) {
-                    return // 已经可以执行
-                }
+            if (index === -1) return // Request not in queue
+            if (index < maxConcurrent) {
+                // If within the concurrency limit, resolve immediately
+                this._queue[key][index].notifyPromise.resolve()
+                return
+            }
 
-                const item = this._queue[key][index]
+            item = this._queue[key][index]
+        })
 
-                // 使用 add 时创建的 promise
+        // If you need to wait, wait outside the lock
+        if (item) {
+            try {
                 await Promise.race([
                     item.notifyPromise.promise,
                     // eslint-disable-next-line promise/param-names
@@ -111,10 +124,10 @@ export class RequestIdQueue {
                         )
                     )
                 ])
-            })
-        } catch (error) {
-            await this.remove(key, requestId)
-            throw error
+            } catch (error) {
+                await this.remove(key, requestId)
+                throw error
+            }
         }
     }
 
@@ -126,7 +139,7 @@ export class RequestIdQueue {
                     (item) => now - item.timestamp >= this._queueTimeout
                 )
 
-                // 通知所有过期项
+                // Notify all expired items
                 expiredItems.forEach((item) => {
                     item.notifyPromise.reject(
                         new Error(
@@ -135,12 +148,12 @@ export class RequestIdQueue {
                     )
                 })
 
-                // 移除过期项
+                // Remove expired items
                 this._queue[key] = this._queue[key].filter(
                     (item) => now - item.timestamp < this._queueTimeout
                 )
 
-                // 如果队列头部被清理，通知新的头部
+                // If the head of the queue is cleaned up, notify the new head
                 if (this._queue[key].length > 0) {
                     this._queue[key][0].notifyPromise.resolve()
                 }

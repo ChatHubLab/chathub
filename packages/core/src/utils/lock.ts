@@ -35,7 +35,7 @@ export class ObjectLock {
                     )
                 ])
             } catch (error) {
-                // 超时时从队列中移除
+                // Remove from queue on timeout
                 this._queue = this._queue.filter((item) => item.id !== id)
                 throw error
             }

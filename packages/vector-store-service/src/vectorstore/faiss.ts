@@ -81,7 +81,6 @@ export async function apply(
                 async deletableFunction(store, options) {
                     if (options.deleteAll) {
                         await fs.rm(directory, { recursive: true })
-                        console.log('deleted all', directory)
                         return
                     }
 

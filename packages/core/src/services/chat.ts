@@ -711,33 +711,39 @@ class ChatInterfaceWrapper {
         postHandler?: PostHandler
     ): Promise<Message> {
         const { conversationId, model: fullModelName } = room
-
         const [platform] = parseRawModelName(fullModelName)
-
         const config = this._platformService.getConfigs(platform)[0]
-
-        const maxQueueLength = config.value.concurrentMaxSize
-        const currentQueueLength =
-            await this._modelQueue.getQueueLength(platform)
-
-        await this._conversationQueue.add(conversationId, requestId)
-        await this._modelQueue.add(platform, requestId)
-
-        await event['llm-queue-waiting'](currentQueueLength)
-
-        await this._conversationQueue.wait(conversationId, requestId, 0)
-
-        await this._modelQueue.wait(platform, requestId, maxQueueLength)
 
         const abortController = new AbortController()
         this._requestIdMap.set(requestId, abortController)
 
-        const conversationIds =
-            this._platformToConversations.get(platform) ?? []
-        conversationIds.push(conversationId)
-        this._platformToConversations.set(platform, conversationIds)
-
         try {
+            // Add to queues
+            await Promise.all([
+                this._conversationQueue.add(conversationId, requestId),
+                this._modelQueue.add(platform, requestId)
+            ])
+
+            const currentQueueLength =
+                await this._conversationQueue.getQueueLength(platform)
+            await event['llm-queue-waiting'](currentQueueLength)
+
+            // Wait for our turn
+            await Promise.all([
+                this._conversationQueue.wait(conversationId, requestId, 0),
+                this._modelQueue.wait(
+                    platform,
+                    requestId,
+                    config.value.concurrentMaxSize
+                )
+            ])
+
+            // Track conversation
+            const conversationIds =
+                this._platformToConversations.get(platform) ?? []
+            conversationIds.push(conversationId)
+            this._platformToConversations.set(platform, conversationIds)
+
             const { chatInterface } =
                 this._conversations.get(conversationId) ??
                 (await this._createChatInterface(room))
@@ -767,13 +773,14 @@ class ChatInterfaceWrapper {
                 content: (chainValues.message as AIMessage).content as string,
                 additionalReplyMessages: (
                     chainValues.additionalReplyMessages as string[]
-                )?.map((content) => ({
-                    content
-                }))
+                )?.map((content) => ({ content }))
             }
         } finally {
-            await this._modelQueue.remove(platform, requestId)
-            await this._conversationQueue.remove(conversationId, requestId)
+            // Clean up resources
+            await Promise.all([
+                this._modelQueue.remove(platform, requestId),
+                this._conversationQueue.remove(conversationId, requestId)
+            ])
             this._requestIdMap.delete(requestId)
         }
     }
@@ -806,86 +813,97 @@ class ChatInterfaceWrapper {
 
     async clearChatHistory(room: ConversationRoom) {
         const { conversationId } = room
-
-        const chatInterface = await this.query(room, true)
-
         const requestId = uuidv4()
-        await this._conversationQueue.wait(conversationId, requestId, 0)
-        await chatInterface.clearChatHistory()
-        this._conversations.delete(conversationId)
-        await this._conversationQueue.remove(conversationId, requestId)
+
+        try {
+            await this._conversationQueue.add(conversationId, requestId)
+            await this._conversationQueue.wait(conversationId, requestId, 0)
+
+            const chatInterface = await this.query(room, true)
+            await chatInterface.clearChatHistory()
+            this._conversations.delete(conversationId)
+        } finally {
+            await this._conversationQueue.remove(conversationId, requestId)
+        }
     }
 
     async clear(room: ConversationRoom) {
         const { conversationId } = room
-
         const requestId = uuidv4()
-        console.log('clear 1', conversationId, requestId)
-        await this._conversationQueue.wait(conversationId, requestId, 0)
-        console.log('clear 2', conversationId, requestId)
 
-        if (!this._conversations.has(conversationId)) {
+        try {
+            await this._conversationQueue.add(conversationId, requestId)
+            await this._conversationQueue.wait(conversationId, requestId, 0)
+
+            if (!this._conversations.has(conversationId)) {
+                return false
+            }
+
+            const chatInterface = await this.query(room, false)
+            this._conversations.delete(conversationId)
+
+            if (chatInterface != null) {
+                await this._service.ctx.parallel(
+                    'chatluna/clear-chat-history',
+                    conversationId,
+                    chatInterface
+                )
+            }
+
+            return true
+        } finally {
             await this._conversationQueue.remove(conversationId, requestId)
-            return false
         }
-
-        this._conversations.delete(conversationId)
-
-        const chatInterface = await this.query(room, false)
-
-        if (chatInterface != null) {
-            await this._service.ctx.parallel(
-                'chatluna/clear-chat-history',
-                conversationId,
-                chatInterface
-            )
-        }
-
-        await this._conversationQueue.remove(conversationId, requestId)
-
-        return true
     }
 
-    getCachedConversations() {
-        return Array.from(this._conversations.keys()).map(
-            (conversationId) =>
-                [conversationId, this._conversations.get(conversationId)] as [
-                    string,
-                    ChatHubChatBridgerInfo
-                ]
-        )
+    getCachedConversations(): [string, ChatHubChatBridgerInfo][] {
+        return Array.from(this._conversations.entries())
     }
 
     async delete(room: ConversationRoom) {
         const { conversationId } = room
-
-        const chatInterface = await this.query(room)
-
-        if (chatInterface == null) {
-            return
-        }
-
         const requestId = uuidv4()
-        await this._conversationQueue.wait(conversationId, requestId, 1)
-        await chatInterface.delete(this._service.ctx, room)
-        await this._conversationQueue.remove(conversationId, requestId)
-        await this.clear(room)
+
+        try {
+            await this._conversationQueue.add(conversationId, requestId)
+            await this._conversationQueue.wait(conversationId, requestId, 1)
+
+            const chatInterface = await this.query(room)
+            if (!chatInterface) return
+
+            await chatInterface.delete(this._service.ctx, room)
+            await this.clear(room)
+        } finally {
+            await this._conversationQueue.remove(conversationId, requestId)
+        }
     }
 
     dispose(platform?: string) {
+        // 终止所有相关请求
+        for (const controller of this._requestIdMap.values()) {
+            controller.abort()
+        }
+
         if (!platform) {
+            // 清理所有资源
             this._conversations.clear()
             this._requestIdMap.clear()
+            this._platformToConversations.clear()
             return
         }
 
+        // 清理特定平台的资源
         const conversationIds = this._platformToConversations.get(platform)
-        if (!conversationIds) {
-            return
-        }
+        if (!conversationIds?.length) return
 
         for (const conversationId of conversationIds) {
             this._conversations.delete(conversationId)
+            // 终止该平台相关的请求
+            const controller = this._requestIdMap.get(conversationId)
+            if (controller) {
+                controller.abort()
+                this._requestIdMap.delete(conversationId)
+            }
         }
 
         this._platformToConversations.delete(platform)
