@@ -3,3 +3,7 @@ $inner:
     vectorStore: 向量数据库类型
   - $desc: Redis 数据库设置
     redisUrl: Redis url 地址
+  - $desc: Milvus 数据库设置
+    milvusUrl: Milvus url 地址
+    milvusUsername: Milvus 用户名
+    milvusPassword: Milvus 密码

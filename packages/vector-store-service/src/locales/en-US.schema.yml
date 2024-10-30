@@ -3,3 +3,7 @@ $inner:
     vectorStore: Vector Database Type
   - $desc: Redis Database Settings
     redisUrl: Redis URL Address
+  - $desc: Milvus Database Settings
+    milvusUrl: Milvus URL Address
+    milvusUsername: Milvus Username
+    milvusPassword: Milvus Password

@@ -22,6 +22,10 @@ export function apply(ctx: Context, config: Config) {
 export interface Config extends ChatLunaPlugin.Config {
     vectorStore: string[]
     redisUrl: string
+
+    milvusUrl: string
+    milvusUsername: string
+    milvusPassword: string
 }
 
 export const Config: Schema<Config> = Schema.intersect([
@@ -29,7 +33,8 @@ export const Config: Schema<Config> = Schema.intersect([
         vectorStore: Schema.array(
             Schema.union([
                 Schema.const('faiss').description('Faiss'),
-                Schema.const('redis').description('Redis')
+                Schema.const('redis').description('Redis'),
+                Schema.const('milvus').description('Milvus')
             ])
         )
             .default([])
@@ -38,6 +43,14 @@ export const Config: Schema<Config> = Schema.intersect([
 
     Schema.object({
         redisUrl: Schema.string().role('url').default('redis://127.0.0.1:6379')
+    }),
+
+    Schema.object({
+        milvusUrl: Schema.string()
+            .role('url')
+            .default('http://127.0.0.1:19530'),
+        milvusUsername: Schema.string().default(''),
+        milvusPassword: Schema.string().default('')
     })
 ]).i18n({
     'zh-CN': require('./locales/zh-CN.schema.yml'),
@@ -52,6 +65,8 @@ export const usage = `
 要查看如何配置 Faiss 数据库，看[这里](https://js.langchain.com/docs/integrations/vectorstores/faiss/)
 
 要查看如何配置 Redis 数据库，看[这里](https://js.langchain.com/docs/integrations/vectorstores/redis/)
+
+要查看如何配置 Milvus 数据库，看[这里](https://js.langchain.com/docs/integrations/vectorstores/milvus/)
 
 
 目前配置 Faiss 数据库安装后可能会导致 koishi 环境不安全，如果安装完成后进行某些操作完成后出现了问题（如，升级 node 版本），开发者不对此负直接责任。

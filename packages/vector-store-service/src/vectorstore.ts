@@ -3,6 +3,7 @@ import { ChatLunaPlugin } from 'koishi-plugin-chatluna/services/chat'
 import { Config } from '.'
 // import start
 import { apply as faiss } from './vectorstore/faiss'
+import { apply as milvus } from './vectorstore/milvus'
 import { apply as redis } from './vectorstore/redis' // import end
 
 export async function vectorStore(
@@ -18,7 +19,7 @@ export async function vectorStore(
 
     const middlewares: VectorStore[] =
         // middleware start
-        [faiss, redis] // middleware end
+        [faiss, milvus, redis] // middleware end
 
     for (const middleware of middlewares) {
         try {
