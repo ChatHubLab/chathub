@@ -103,10 +103,6 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                 return ChainMiddlewareRunStatus.STOP
             }
 
-            logger.debug(
-                context.options.message,
-                JSON.stringify(context.options)
-            )
             if ((context.options.message?.length ?? 0) < 1) {
                 context.options.inputMessage =
                     await ctx.chatluna.messageTransformer.transform(session, [

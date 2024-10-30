@@ -714,9 +714,6 @@ class ChatInterfaceWrapper {
         const [platform] = parseRawModelName(fullModelName)
         const config = this._platformService.getConfigs(platform)[0]
 
-        const abortController = new AbortController()
-        this._requestIdMap.set(requestId, abortController)
-
         try {
             // Add to queues
             await Promise.all([
@@ -747,6 +744,9 @@ class ChatInterfaceWrapper {
             const { chatInterface } =
                 this._conversations.get(conversationId) ??
                 (await this._createChatInterface(room))
+
+            const abortController = new AbortController()
+            this._requestIdMap.set(requestId, abortController)
 
             const humanMessage = new HumanMessage({
                 content: message.content,
