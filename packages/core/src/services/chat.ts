@@ -793,7 +793,7 @@ class ChatInterfaceWrapper {
     ): Promise<ChatInterface> {
         const { conversationId } = room
 
-        const { chatInterface } = this._conversations.get(conversationId)
+        const { chatInterface } = this._conversations.get(conversationId) ?? {}
 
         if (chatInterface == null && create) {
             return this._createChatInterface(room).then(
@@ -820,9 +820,12 @@ class ChatInterfaceWrapper {
         const { conversationId } = room
 
         const requestId = uuidv4()
+        console.log('clear 1', conversationId, requestId)
         await this._conversationQueue.wait(conversationId, requestId, 0)
+        console.log('clear 2', conversationId, requestId)
 
         if (!this._conversations.has(conversationId)) {
+            await this._conversationQueue.remove(conversationId, requestId)
             return false
         }
 

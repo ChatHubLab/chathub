@@ -9,8 +9,6 @@ import { chatLunaFetch } from 'koishi-plugin-chatluna/utils/request'
 
 const cache: Record<string, TiktokenBPE> = {}
 
-export let errorCount = 0
-
 export async function getEncoding(
     encoding: TiktokenEncoding,
     options?: {
@@ -18,9 +16,6 @@ export async function getEncoding(
         extendedSpecialTokens?: Record<string, number>
     }
 ) {
-    if (errorCount > 3) {
-        throw new Error('Too many errors')
-    }
     if (!(encoding in cache)) {
         cache[encoding] = await chatLunaFetch(
             `https://tiktoken.pages.dev/js/${encoding}.json`,
@@ -30,8 +25,6 @@ export async function getEncoding(
         )
             .then((res) => res.json() as unknown as TiktokenBPE)
             .catch((e) => {
-                errorCount++
-
                 delete cache[encoding]
                 throw e
             })
@@ -56,8 +49,9 @@ export async function encodingForModel(
 
         options.signal = abortController.signal
 
-        timeout = setTimeout(() => abortController.abort(), 1000 * 25)
+        timeout = setTimeout(() => abortController.abort(), 1000 * 5)
     }
+
     const result = await getEncoding(getEncodingNameForModel(model), options)
 
     if (timeout != null) {
