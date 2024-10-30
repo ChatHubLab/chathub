@@ -282,6 +282,12 @@ export class ChatInterface {
             await this._createChatHistory()
         }
 
+        await this.ctx.parallel(
+            'chatluna/clear-chat-history',
+            this._input.conversationId,
+            this
+        )
+
         await this._chatHistory.clear()
 
         for (const chain of Object.values(this._chains)) {

@@ -787,12 +787,19 @@ class ChatInterfaceWrapper {
         return true
     }
 
-    async query(room: ConversationRoom): Promise<ChatInterface> {
+    async query(
+        room: ConversationRoom,
+        create: boolean = false
+    ): Promise<ChatInterface> {
         const { conversationId } = room
 
-        const { chatInterface } =
-            this._conversations.get(conversationId) ??
-            (await this._createChatInterface(room))
+        const { chatInterface } = this._conversations.get(conversationId)
+
+        if (chatInterface == null && create) {
+            return this._createChatInterface(room).then(
+                (result) => result.chatInterface
+            )
+        }
 
         return chatInterface
     }
@@ -800,11 +807,7 @@ class ChatInterfaceWrapper {
     async clearChatHistory(room: ConversationRoom) {
         const { conversationId } = room
 
-        const chatInterface = await this.query(room)
-
-        if (chatInterface == null) {
-            return
-        }
+        const chatInterface = await this.query(room, true)
 
         const requestId = uuidv4()
         await this._conversationQueue.wait(conversationId, requestId, 0)
@@ -813,14 +816,8 @@ class ChatInterfaceWrapper {
         await this._conversationQueue.remove(conversationId, requestId)
     }
 
-    async clear(room: ConversationRoom | string) {
-        let conversationId: string
-
-        if (typeof room === 'string') {
-            conversationId = room
-        } else {
-            conversationId = room.conversationId
-        }
+    async clear(room: ConversationRoom) {
+        const { conversationId } = room
 
         const requestId = uuidv4()
         await this._conversationQueue.wait(conversationId, requestId, 0)
@@ -830,6 +827,16 @@ class ChatInterfaceWrapper {
         }
 
         this._conversations.delete(conversationId)
+
+        const chatInterface = await this.query(room, false)
+
+        if (chatInterface != null) {
+            await this._service.ctx.parallel(
+                'chatluna/clear-chat-history',
+                conversationId,
+                chatInterface
+            )
+        }
 
         await this._conversationQueue.remove(conversationId, requestId)
 
