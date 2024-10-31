@@ -16,12 +16,12 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                 options: { type, room }
             } = context
 
+            if (command !== 'clear_memory')
+                return ChainMiddlewareRunStatus.SKIPPED
+
             if (!type) {
                 type = room.preset
             }
-
-            if (command !== 'clear_memory')
-                return ChainMiddlewareRunStatus.SKIPPED
 
             const [platform, modelName] = parseRawModelName(
                 config.defaultEmbeddings

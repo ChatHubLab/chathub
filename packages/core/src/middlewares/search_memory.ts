@@ -27,12 +27,12 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                 options: { page, limit, query, type, room }
             } = context
 
+            if (command !== 'search_memory')
+                return ChainMiddlewareRunStatus.SKIPPED
+
             if (!type) {
                 type = room.preset
             }
-
-            if (command !== 'search_memory')
-                return ChainMiddlewareRunStatus.SKIPPED
 
             pagination.updateFormatString({
                 top: session.text('.header', [query, type]) + '\n',
