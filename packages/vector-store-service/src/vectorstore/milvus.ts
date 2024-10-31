@@ -1,9 +1,9 @@
-import { Milvus } from '@langchain/community/vectorstores/milvus'
 import { Context, Logger } from 'koishi'
 import { ChatLunaPlugin } from 'koishi-plugin-chatluna/services/chat'
 import { createLogger } from 'koishi-plugin-chatluna/utils/logger'
 import { Config } from '..'
 import { ChatLunaSaveableVectorStore } from 'koishi-plugin-chatluna/llm-core/model/base'
+import type { Milvus } from '@langchain/community/vectorstores/milvus'
 
 let logger: Logger
 
@@ -18,12 +18,12 @@ export async function apply(
         return
     }
 
-    await importMilvus()
+    const MilvusClass = await importMilvus()
 
     plugin.registerVectorStore('milvus', async (params) => {
         const embeddings = params.embeddings
 
-        const vectorStore = new Milvus(embeddings, {
+        const vectorStore = new MilvusClass(embeddings, {
             collectionName: 'chatluna_collection',
             partitionName: params.key ?? 'chatluna',
             url: config.milvusUrl,
@@ -156,9 +156,11 @@ export async function apply(
 
 async function importMilvus() {
     try {
-        const any = await import('@zilliz/milvus2-sdk-node')
+        await import('@zilliz/milvus2-sdk-node')
 
-        return any
+        const store = await import('@langchain/community/vectorstores/milvus')
+
+        return store.Milvus
     } catch (err) {
         logger.error(err)
         throw new Error(
