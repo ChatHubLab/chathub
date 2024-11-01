@@ -13,6 +13,7 @@ $inner:
       codeSandbox: 启用 Python 代码执行功能。
       memory: 启用记忆插件调用功能。
       knowledge: 启用知识库插件调用功能。(需要安装知识库插件)
+      actions: 启用 OpenAPI 工具调用功能。(需要启用 request 工具才能请求)
       music: 启用简易音频生成功能。（需要安装并启用 [@dgck81lnn/music](https://github.com/DGCK81LNN/koishi-plugin-music))
 
     - - $desc: request 插件配置
@@ -42,3 +43,12 @@ $inner:
 
     - - $desc: 知识库插件配置
         knowledgeId: 知识库 ID 列表。
+
+    - - $desc: OpenAPI 工具调用插件配置
+        actionsList:
+            $desc: 可用 OpenAPI 工具列表。
+            $inner:
+                name: 工具名称。请使用纯英文的名称。
+                description: 工具描述。
+                openAPISpec: OpenAPI 规范文件内容。
+                selector: 触发工具的关键词。

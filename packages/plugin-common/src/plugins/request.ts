@@ -36,6 +36,10 @@ export async function apply(
 
     plugin.registerTool(requestGetTool.name, {
         selector(history) {
+            if (config.actions === true) {
+                return true
+            }
+
             return history.some((item) => {
                 const content = getMessageContent(item.content)
                 return (
@@ -53,6 +57,9 @@ export async function apply(
 
     plugin.registerTool(requestPostTool.name, {
         selector(history) {
+            if (config.actions === true) {
+                return true
+            }
             return history.some((item) => {
                 const content = getMessageContent(item.content)
                 return (

@@ -12,6 +12,7 @@ $inner:
       send: 'Enable pre-message sending'
       codeSandbox: 'Enable Python code execution'
       memory: 'Enable memory plugin calls'
+      actions: 'Enable OpenAPI tool calls (requires request tool to be enabled)'
       music: 'Enable simple audio generation. (Requires installation and activation of [@dgck81lnn/music](https://github.com/DGCK81LNN/koishi-plugin-music))'
 
     - - $desc: 'Request Plugin Configuration'
@@ -38,3 +39,12 @@ $inner:
     - - $desc: 'Drawing Plugin Configuration'
         drawPrompt: 'Prompt for drawing plugin'
         drawCommand: 'Drawing execution command. {prompt} is the prompt used'
+
+    - - $desc: 'OpenAPI Tool Call Plugin Configuration'
+        actionsList:
+            $desc: 'List of available OpenAPI tools'
+            $inner:
+                name: 'Tool name. Please use English names only.'
+                description: 'Tool description'
+                openAPISpec: 'OpenAPI specification content'
+                selector: 'Keywords to trigger the tool'

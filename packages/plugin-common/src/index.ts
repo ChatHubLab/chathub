@@ -34,12 +34,19 @@ export interface Config extends ChatLunaPlugin.Config {
     send: boolean
     draw: boolean
     music: boolean
+    actions: boolean
     drawPrompt: string
     drawCommand: string
     codeSandbox: boolean
     codeSandboxAPIKey: string
     knowledge: boolean
     knowledgeId: string[]
+    actionsList: {
+        name: string
+        description: string
+        openAPISpec: string
+        selector: string[]
+    }[]
 }
 
 export const Config: Schema<Config> = Schema.intersect([
@@ -56,6 +63,7 @@ export const Config: Schema<Config> = Schema.intersect([
         draw: Schema.boolean().default(false),
         codeSandbox: Schema.boolean().default(false),
         memory: Schema.boolean().default(false),
+        actions: Schema.boolean().default(false),
         knowledge: Schema.boolean().default(false),
         music: Schema.boolean().default(false)
     }),
@@ -83,7 +91,7 @@ export const Config: Schema<Config> = Schema.intersect([
                 Schema.object({
                     command: Schema.string(),
                     description: Schema.string(),
-                    selector: Schema.array(Schema.string())
+                    selector: Schema.array(Schema.string()).role('table')
                 })
             )
         }),
@@ -119,6 +127,20 @@ export const Config: Schema<Config> = Schema.intersect([
         Schema.object({
             knowledge: Schema.const(true).required(),
             knowledgeId: Schema.array(Schema.string())
+        }),
+        Schema.object({})
+    ]),
+    Schema.union([
+        Schema.object({
+            actions: Schema.const(true).required(),
+            actionsList: Schema.array(
+                Schema.object({
+                    name: Schema.string(),
+                    description: Schema.string(),
+                    openAPISpec: Schema.string().role('textarea'),
+                    selector: Schema.array(Schema.string()).role('table')
+                })
+            )
         }),
         Schema.object({})
     ])

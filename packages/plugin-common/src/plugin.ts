@@ -11,6 +11,7 @@ import { apply as group } from './plugins/group'
 import { apply as knowledge } from './plugins/knowledge'
 import { apply as memory } from './plugins/memory'
 import { apply as music } from './plugins/music'
+import { apply as openapi } from './plugins/openapi'
 import { apply as request } from './plugins/request'
 import { apply as think } from './plugins/think' // import end
 
@@ -37,6 +38,7 @@ export async function plugin(
             knowledge,
             memory,
             music,
+            openapi,
             request,
             think
         ] // middleware end
