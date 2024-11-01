@@ -23,6 +23,35 @@ export function loadPreset(rawText: string): PresetTemplate {
     }
 }
 
+function createMessage(
+    role: string,
+    content: string,
+    type?: string
+): BaseMessage {
+    if (content == null) {
+        throw new Error('Content is required')
+    }
+
+    const fields: BaseMessageFields = {
+        content: content.trim(),
+        additional_kwargs: { type }
+    }
+
+    switch (role) {
+        case 'assistant':
+        case 'ai':
+        case 'model':
+            return new AIMessage(fields)
+        case 'user':
+        case 'human':
+            return new HumanMessage(fields)
+        case 'system':
+            return new SystemMessage(fields)
+        default:
+            throw new Error(`Unknown role: ${role}`)
+    }
+}
+
 function loadYamlPreset(rawText: string): PresetTemplate {
     const rawJson = load(rawText) as RawPreset
 
@@ -63,28 +92,9 @@ function loadYamlPreset(rawText: string): PresetTemplate {
     return {
         triggerKeyword: rawJson.keywords,
         rawText,
-        messages: rawJson.prompts.map((message) => {
-            const fields = {
-                additional_kwargs: {
-                    type: message.type
-                },
-                content: message.content
-            } satisfies BaseMessageFields
-
-            if (fields.content == null) {
-                throw new Error('Content is required')
-            }
-
-            if (message.role === 'assistant') {
-                return new AIMessage(fields)
-            } else if (message.role === 'user') {
-                return new HumanMessage(fields)
-            } else if (message.role === 'system') {
-                return new SystemMessage(fields)
-            } else {
-                throw new Error(`Unknown role: ${message.role}`)
-            }
-        }),
+        messages: rawJson.prompts.map((message) =>
+            createMessage(message.role, message.content, message.type)
+        ),
         formatUserPromptString: rawJson.format_user_prompt,
         loreBooks,
         authorsNote,
@@ -97,6 +107,7 @@ function loadYamlPreset(rawText: string): PresetTemplate {
 function loadTxtPreset(rawText: string): PresetTemplate {
     const triggerKeyword: string[] = []
     const messages: BaseMessage[] = []
+    let formatUserPromptString = '{prompt}'
 
     logger?.warn(
         'TXT Preset is deprecated and will be removed in 1.0. ' +
@@ -104,54 +115,28 @@ function loadTxtPreset(rawText: string): PresetTemplate {
             'For more migrate information, visit: https://chatluna.chat/guide/preset-system/introduction.html'
     )
 
-    // split like markdown paragraph
-    // 傻逼CRLF
     const chunks = rawText
-        // remove comment line (#)
         .replace(/#.*\r?\n/g, '')
         .replace(/\r\n/g, '\n')
         .split(/\n\n/)
 
-    let formatUserPromptString = '{prompt}'
-
     for (const chunk of chunks) {
-        // regex match [key]: [value]
-        // the : can in value, but not in key
         const match = chunk.match(/^\s*([a-zA-Z_]+)\s*:\s*(.*)$/s)
+        if (!match) continue
 
-        if (!match) {
-            continue
-        }
-
-        const role = match[1].trim()
-        const content = match[2]
-
-        //   logger.debug(`role: ${role}, content: ${content}`)
+        const [, role, content] = match
 
         if (role === 'keyword') {
-            triggerKeyword.push(
-                ...content.split(',').map((keyword) => keyword.trim())
-            )
+            triggerKeyword.push(...content.split(',').map((k) => k.trim()))
         } else if (role === 'format_user_prompt') {
             formatUserPromptString = content.trim()
-        } else if (role === 'assistant' || role === 'ai' || role === 'model') {
-            messages.push(new AIMessage(content.trim()))
-        } else if (role === 'user' || role === 'human') {
-            messages.push(new HumanMessage(content.trim()))
-        } else if (role === 'system') {
-            messages.push(new SystemMessage(content.trim()))
         } else {
-            throw new Error(`Unknown role: ${role}`)
+            messages.push(createMessage(role, content))
         }
     }
 
-    if (triggerKeyword.length === 0) {
-        throw new Error('No trigger keyword found')
-    }
-
-    if (messages.length === 0) {
-        throw new Error('No preset messages found')
-    }
+    if (triggerKeyword.length === 0) throw new Error('No trigger keyword found')
+    if (messages.length === 0) throw new Error('No preset messages found')
 
     return {
         rawText,
