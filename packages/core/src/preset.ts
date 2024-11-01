@@ -35,6 +35,18 @@ export class PresetService {
         })
     }
 
+    async loadPreset(file: string) {
+        const rawText = await fs.readFile(file, 'utf-8')
+        try {
+            const preset = loadPreset(rawText)
+
+            preset.path = file
+            this._presets.push(preset)
+        } catch (e) {
+            logger.error(`error when load preset ${file}`, e)
+        }
+    }
+
     async loadAllPreset() {
         await this._checkPresetDir()
 
@@ -49,18 +61,7 @@ export class PresetService {
             if (extension !== '.txt' && extension !== '.yml') {
                 continue
             }
-            const rawText = await fs.readFile(
-                path.join(presetDir, file),
-                'utf-8'
-            )
-            try {
-                const preset = loadPreset(rawText)
-
-                preset.path = path.join(presetDir, file)
-                this._presets.push(preset)
-            } catch (e) {
-                logger.error(`error when load preset ${file}`, e)
-            }
+            await this.loadPreset(path.join(presetDir, file))
         }
 
         this.ctx.schema.set(
@@ -74,8 +75,8 @@ export class PresetService {
     }
 
     watchPreset() {
-        let md5Previous: string = null
         let fsWait: NodeJS.Timeout | boolean = false
+        const md5Cache = new Map<string, string>()
 
         if (this._aborter != null) {
             this._aborter.abort()
@@ -89,47 +90,78 @@ export class PresetService {
                 signal: this._aborter.signal
             },
             async (event, filename) => {
-                if (filename) {
-                    if (fsWait) return
-                    fsWait = setTimeout(() => {
-                        fsWait = false
-                    }, 100)
-
-                    this.resolvePresetDir()
-
-                    const fileName = path.join(
-                        this.resolvePresetDir(),
-                        filename
-                    )
-
-                    try {
-                        // check the file or directory
-                        const fileStat = await fs.stat(fileName)
-
-                        if (fileStat.isDirectory()) {
-                            return
-                        }
-
-                        const md5Current = md5(await fs.readFile(fileName))
-                        if (md5Current === md5Previous) {
-                            return
-                        }
-                        md5Previous = md5Current
-                    } catch (e) {
-                        logger.error(
-                            `error when stat preset file ${fileName}`,
-                            e
-                        )
-                    }
-
+                if (!filename) {
                     await this.loadAllPreset()
-                    logger.debug(`trigger full reload preset by ${filename}`)
-
+                    logger.debug(`trigger full reload preset`)
                     return
                 }
 
-                await this.loadAllPreset()
-                logger.debug(`trigger full reload preset`)
+                if (fsWait) return
+                fsWait = setTimeout(() => {
+                    fsWait = false
+                }, 100)
+
+                const filePath = path.join(this.resolvePresetDir(), filename)
+
+                try {
+                    const fileStat = await fs.stat(filePath)
+                    if (fileStat.isDirectory()) return
+
+                    // Handle file deletion
+                    if (event === 'rename' && !fileStat) {
+                        const index = this._presets.findIndex(
+                            (p) => p.path === filePath
+                        )
+                        if (index !== -1) {
+                            this._presets.splice(index, 1)
+                            md5Cache.delete(filePath)
+                            logger.debug(`removed preset: ${filename}`)
+                            return
+                        }
+                    }
+
+                    // Check if file content changed
+                    const md5Current = md5(await fs.readFile(filePath))
+                    if (md5Current === md5Cache.get(filePath)) return
+
+                    md5Cache.set(filePath, md5Current)
+
+                    // Update or add the preset
+                    const index = this._presets.findIndex(
+                        (p) => p.path === filePath
+                    )
+                    if (index !== -1) {
+                        // Update existing preset
+                        const preset = loadPreset(
+                            await fs.readFile(filePath, 'utf-8')
+                        )
+                        preset.path = filePath
+                        this._presets[index] = preset
+                        logger.debug(`updated preset: ${filename}`)
+                    } else {
+                        // Add new preset
+                        await this.loadPreset(filePath)
+                        logger.debug(`added new preset: ${filename}`)
+                    }
+
+                    // Update schema after changes
+                    this.ctx.schema.set(
+                        'preset',
+                        Schema.union(
+                            this._presets.map((preset) =>
+                                Schema.const(preset.triggerKeyword[0])
+                            )
+                        )
+                    )
+                } catch (e) {
+                    logger.error(
+                        `error when watching preset file ${filePath}`,
+                        e
+                    )
+
+                    // trigger full reload
+                    await this.loadAllPreset()
+                }
             }
         )
     }
