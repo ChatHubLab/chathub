@@ -49,9 +49,57 @@ export class ChatInterface {
         this._input = input
     }
 
+    private async handleChatError(
+        error: unknown,
+        config: ClientConfigWrapper
+    ): Promise<never> {
+        const configMD5 = config.md5()
+
+        if (
+            error instanceof ChatLunaError &&
+            error.errorCode === ChatLunaErrorCode.API_UNSAFE_CONTENT
+        ) {
+            throw error
+        }
+
+        this._errorCountsMap[configMD5] = this._errorCountsMap[configMD5] ?? []
+        const errorTimes = this._errorCountsMap[configMD5]
+
+        // Add current error timestamp
+        errorTimes.push(Date.now())
+
+        // Keep only recent errors
+        if (errorTimes.length > config.value.maxRetries * 3) {
+            this._errorCountsMap[configMD5] = errorTimes.slice(
+                -config.value.maxRetries * 3
+            )
+        }
+
+        // Check if we need to disable the config
+        const recentErrors = errorTimes.slice(-config.value.maxRetries)
+        if (
+            recentErrors.length >= config.value.maxRetries &&
+            checkRange(recentErrors, 1000 * 60 * 20)
+        ) {
+            await this.disableConfig(config)
+        }
+
+        throw error instanceof ChatLunaError
+            ? error
+            : new ChatLunaError(ChatLunaErrorCode.UNKNOWN_ERROR, error as Error)
+    }
+
+    private async disableConfig(config: ClientConfigWrapper): Promise<void> {
+        const configMD5 = config.md5()
+        delete this._chains[configMD5]
+        delete this._errorCountsMap[configMD5]
+
+        const service = this.ctx.chatluna.platform
+        await service.makeConfigStatus(config.value, false)
+    }
+
     async chat(arg: ChatHubLLMCallArg): Promise<ChainValues> {
         const [wrapper, config] = await this.createChatHubLLMChainWrapper()
-        const configMD5 = config.md5()
 
         try {
             await this.ctx.parallel(
@@ -63,100 +111,64 @@ export class ChatInterface {
                 wrapper
             )
 
-            const args = await this._chatHistory.getAdditionalArgs()
+            const additionalArgs = await this._chatHistory.getAdditionalArgs()
+            arg.variables = { ...additionalArgs, ...arg.variables }
 
-            arg.variables = Object.assign(arg.variables, args, arg.variables)
+            const response = await this.processChat(arg, wrapper)
 
-            const response = (await wrapper.call(arg)) as {
-                message: AIMessage
-            } & ChainValues
-
-            this._chatCount++
-
-            // Do not wait for completion
-            this.ctx.parallel(
-                'chatluna/after-chat',
-                arg.conversationId,
-                arg.message,
-                response.message as AIMessage,
-                { ...arg.variables, chatCount: this._chatCount },
-                this,
-                wrapper
-            )
-
-            let handlerResult: HandlerResult
-            if (arg.postHandler) {
-                logger.debug(`original content: %c`, response.message.content)
-
-                handlerResult = await arg.postHandler.handler(
-                    arg.session,
-                    getMessageContent(response.message.content)
-                )
-
-                response.message.content = handlerResult.content
-            }
-
-            await this.chatHistory.addMessage(arg.message)
-            await this.chatHistory.addMessage(response.message)
-
-            if (handlerResult) {
-                // display
-                response.message.content = handlerResult.displayContent
-
-                await this._chatHistory.overrideAdditionalArgs(
-                    handlerResult.variables
-                )
-            }
-
-            delete this._errorCountsMap[configMD5]
-
+            delete this._errorCountsMap[config.md5()]
             return response
-        } catch (e) {
-            if (
-                e instanceof ChatLunaError &&
-                e.errorCode === ChatLunaErrorCode.API_UNSAFE_CONTENT
-            ) {
-                // unsafe content not to real error
-                throw e
-            }
-
-            this._errorCountsMap[configMD5] =
-                this._errorCountsMap[configMD5] ?? []
-
-            let errorCountsArray = this._errorCountsMap[configMD5]
-
-            errorCountsArray.push(Date.now())
-
-            if (errorCountsArray.length > 100) {
-                errorCountsArray = errorCountsArray.splice(
-                    -config.value.maxRetries * 3
-                )
-            }
-
-            this._errorCountsMap[configMD5] = errorCountsArray
-
-            if (
-                errorCountsArray.length > config.value.maxRetries &&
-                // 20 mins
-                checkRange(
-                    errorCountsArray.splice(-config.value.maxRetries),
-                    1000 * 60 * 20
-                )
-            ) {
-                delete this._chains[configMD5]
-                delete this._errorCountsMap[configMD5]
-
-                const service = this.ctx.chatluna.platform
-
-                await service.makeConfigStatus(config.value, false)
-            }
-
-            if (e instanceof ChatLunaError) {
-                throw e
-            } else {
-                throw new ChatLunaError(ChatLunaErrorCode.UNKNOWN_ERROR, e)
-            }
+        } catch (error) {
+            await this.handleChatError(error, config)
         }
+    }
+
+    private async processChat(
+        arg: ChatHubLLMCallArg,
+        wrapper: ChatHubLLMChainWrapper
+    ): Promise<ChainValues> {
+        const response = (await wrapper.call(arg)) as {
+            message: AIMessage
+        } & ChainValues
+        this._chatCount++
+
+        // Process response
+        this.ctx.parallel(
+            'chatluna/after-chat',
+            arg.conversationId,
+            arg.message,
+            response.message as AIMessage,
+            { ...arg.variables, chatCount: this._chatCount },
+            this,
+            wrapper
+        )
+
+        // Handle post-processing if needed
+        if (arg.postHandler) {
+            const handlerResult = await this.handlePostProcessing(arg, response)
+            response.message.content = handlerResult.displayContent
+            await this._chatHistory.overrideAdditionalArgs(
+                handlerResult.variables
+            )
+        }
+
+        // Update chat history
+        await this.chatHistory.addMessage(arg.message)
+        await this.chatHistory.addMessage(response.message)
+
+        return response
+    }
+
+    private async handlePostProcessing(
+        arg: ChatHubLLMCallArg,
+        response: { message: AIMessage } & ChainValues
+    ): Promise<HandlerResult> {
+        logger.debug(`original content: %c`, response.message.content)
+
+        return await arg.postHandler.handler(
+            arg.session,
+            getMessageContent(response.message.content)
+        )
     }
 
     async createChatHubLLMChainWrapper(): Promise<
@@ -216,7 +228,7 @@ export class ChatInterface {
         }
 
         try {
-            historyMemory = await this._createHistoryMemory(llm)
+            historyMemory = this._createHistoryMemory()
         } catch (error) {
             if (error instanceof ChatLunaError) {
                 throw error
@@ -399,10 +411,8 @@ export class ChatInterface {
         return this._chatHistory
     }
 
-    private async _createHistoryMemory(
-        model: ChatLunaChatModel
-    ): Promise<BufferMemory> {
-        const historyMemory = new BufferMemory({
+    private _createHistoryMemory() {
+        return new BufferMemory({
             returnMessages: true,
             inputKey: 'input',
             outputKey: 'output',
@@ -410,8 +420,6 @@ export class ChatInterface {
             humanPrefix: 'user',
             aiPrefix: this._input.botName
         })
-
-        return historyMemory
     }
 }
 
