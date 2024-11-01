@@ -77,12 +77,15 @@ export class AIPluginTool extends Tool implements AIPluginToolParams {
         this.name = params.name
         this.description = params.description
         this.apiSpec = params.apiSpec
-        console.log(params)
     }
 
     /** @ignore */
-    async _call(_input: string) {
-        return this.apiSpec
+    async _call(input: string) {
+        // First return the API spec
+        const spec = this.apiSpec
+
+        // Suggest the model to use request_get or request_post tools
+        return `${spec}\n\nTo execute this API, please use the request_get or request_post tools with the appropriate endpoint and parameters from the OpenAPI specification above.`
     }
 
     static fromAction(action: Config['actionsList'][number]) {
