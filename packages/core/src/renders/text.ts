@@ -28,18 +28,18 @@ export class TextRenderer extends Renderer {
     })
 }
 
-function escape(element: h): h {
+function unescape(element: h): h {
     if (element.type === 'text') {
         element.attrs['content'] = he.decode(element.attrs['content'])
     }
     if (element.children && element.children.length > 0) {
-        element.children = element.children.map(escape)
+        element.children = element.children.map(unescape)
     }
     return element
 }
 
 export function transformAndEscape(source: string) {
-    const transformed = transform(source).map(escape)
+    const transformed = transform(source).map(unescape)
 
     return transformed
 }
