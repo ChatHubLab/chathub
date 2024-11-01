@@ -17,9 +17,16 @@ export class Pagination<T> {
     ) {
         const items = this._cacheMap[key]
 
+        if (!items) {
+            return []
+        }
+
+        const normalizedPage = Math.max(1, page)
+        const normalizedLimit = Math.max(1, limit)
+
         return items.slice(
-            (page - 1) * limit,
-            Math.min(items.length, page * limit)
+            (normalizedPage - 1) * normalizedLimit,
+            Math.min(items.length, normalizedPage * normalizedLimit)
         )
     }
 
@@ -27,25 +34,23 @@ export class Pagination<T> {
         items: T[],
         page: number = this.input.page,
         limit: number = this.input.limit,
-        total: number = Math.ceil(items.length / limit)
+        total?: number
     ) {
         const buffer = [this.input.formatString.top]
+        const actualTotal = total ?? Math.ceil(items.length / limit)
 
-        for (const item of items) {
-            const itemLikePromise = this.input.formatItem(item)
-
-            if (typeof itemLikePromise === 'string') {
-                buffer.push(itemLikePromise)
-            } else {
-                buffer.push(await itemLikePromise)
-            }
-        }
+        const formatPromises = items.map((item) => {
+            const result = this.input.formatItem(item)
+            return result instanceof Promise ? result : Promise.resolve(result)
+        })
+        const formattedItems = await Promise.all(formatPromises)
+        buffer.push(...formattedItems)
 
         buffer.push(this.input.formatString.bottom)
 
         const formattedPageString = this.input.formatString.pages
-            .replaceAll('[page]', Math.min(total, page).toString())
-            .replaceAll('[total]', total.toString())
+            .replaceAll('[page]', Math.min(actualTotal, page).toString())
+            .replaceAll('[total]', actualTotal.toString())
 
         buffer.push(formattedPageString)
 
@@ -84,6 +89,16 @@ export class Pagination<T> {
 
     updateFormatItem(formatItem: PaginationInput<T>['formatItem']) {
         this.input.formatItem = formatItem
+    }
+
+    getTotalPages(key: string = 'default'): number {
+        const items = this._cacheMap[key]
+        if (!items) return 0
+        return Math.ceil(items.length / (this.input.limit ?? 5))
+    }
+
+    hasPage(page: number, key: string = 'default'): boolean {
+        return page > 0 && page <= this.getTotalPages(key)
     }
 }
 

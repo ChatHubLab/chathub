@@ -30,25 +30,23 @@ export function runAsyncTimeout<T>(
     timeout: number,
     defaultValue: T | null = null
 ): Promise<T> {
-    const { promise, resolve, reject } = withResolver<T>()
-
-    setTimeout(() => {
-        if (defaultValue != null) {
-            resolve(defaultValue)
-        } else {
-            reject(new Error('timeout'))
-        }
-    }, timeout)
-    ;(async () => {
-        await func.then(resolve, (reason) => {
-            console.error(reason)
+    const timeoutPromise = new Promise<T>((resolve, reject) => {
+        setTimeout(() => {
             if (defaultValue != null) {
                 resolve(defaultValue)
             } else {
                 reject(new Error('timeout'))
             }
-        })
-    })()
+        }, timeout)
+    })
 
-    return promise
+    const wrappedPromise = func.catch((error) => {
+        console.error(error)
+        if (defaultValue != null) {
+            return defaultValue
+        }
+        throw new Error('timeout')
+    })
+
+    return Promise.race([wrappedPromise, timeoutPromise])
 }
