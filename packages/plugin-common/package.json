@@ -1,7 +1,7 @@
 {
     "name": "koishi-plugin-chatluna-plugin-common",
     "description": "plugin service for plugin chat mode chatluna",
-    "version": "1.0.0-beta.47",
+    "version": "1.0.0-beta.48",
     "main": "lib/index.cjs",
     "module": "lib/index.mjs",
     "typings": "lib/index.d.ts",
