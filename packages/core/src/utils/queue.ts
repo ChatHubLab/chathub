@@ -18,7 +18,7 @@ interface QueueItem {
 
 export class RequestIdQueue {
     private _queue: Record<string, QueueItem[]> = {}
-    private _lock = new ObjectLock(Time.minute * 3)
+    private _queueLocks: Record<string, ObjectLock> = {}
     private readonly _maxQueueSize = 50
     private readonly _queueTimeout: number
 
@@ -28,109 +28,195 @@ export class RequestIdQueue {
     }
 
     public async add(key: string, requestId: string) {
-        await this._lock.runLocked(async () => {
-            if (!this._queue[key]) {
-                this._queue[key] = []
-            }
+        // Fast path: check queue size without lock first
+        const currentLength = this._queue[key]?.length ?? 0
+        if (currentLength >= this._maxQueueSize) {
+            throw new ChatLunaError(ChatLunaErrorCode.QUEUE_OVERFLOW)
+        }
 
-            if (this._queue[key].length >= this._maxQueueSize) {
-                throw new ChatLunaError(ChatLunaErrorCode.QUEUE_OVERFLOW)
-            }
+        // Get or create lock for this specific queue
+        if (!this._queueLocks[key]) {
+            this._queueLocks[key] = new ObjectLock(this._queueTimeout)
+        }
 
-            const { promise, resolve, reject } = withResolver<void>()
+        // Prepare the queue item outside the lock
+        const { promise, resolve, reject } = withResolver<void>()
+        const queueItem: QueueItem = {
+            requestId,
+            timestamp: Date.now(),
+            notifyPromise: { promise, resolve, reject }
+        }
 
-            const queueItem: QueueItem = {
-                requestId,
-                timestamp: Date.now(),
-                notifyPromise: { promise, resolve, reject }
-            }
+        let isFirst = false
 
-            this._queue[key].push(queueItem)
+        try {
+            await this._queueLocks[key].runLocked(async () => {
+                // Initialize queue if needed
+                if (!this._queue[key]) {
+                    this._queue[key] = []
+                }
 
-            // If it is the first request, resolve immediately
-            if (this._queue[key].length === 1) {
+                // Check if requestId already exists
+                const existingIndex = this._queue[key].findIndex(
+                    (item) => item.requestId === requestId
+                )
+                if (existingIndex !== -1) {
+                    return // Skip if already exists
+                }
+
+                // Double check size under lock
+                if (this._queue[key].length >= this._maxQueueSize) {
+                    throw new ChatLunaError(ChatLunaErrorCode.QUEUE_OVERFLOW)
+                }
+
+                this._queue[key].push(queueItem)
+                isFirst = this._queue[key].length === 1
+            })
+
+            // Resolve immediately if it's the first item (outside lock)
+            if (isFirst) {
                 resolve()
             }
-        })
+        } catch (error) {
+            reject(error)
+            throw error
+        }
     }
 
     public async remove(key: string, requestId: string) {
-        await this._lock.runLocked(async () => {
+        // Skip if queue doesn't exist
+        if (!this._queue[key]) return
+
+        // Get or create lock for this specific queue
+        if (!this._queueLocks[key]) {
+            this._queueLocks[key] = new ObjectLock(this._queueTimeout)
+        }
+
+        let nextItem: QueueItem | undefined
+        let shouldCleanup = false
+
+        try {
+            await this._queueLocks[key].runLocked(async () => {
+                if (!this._queue[key]) return
+
+                const index = this._queue[key].findIndex(
+                    (item) => item.requestId === requestId
+                )
+
+                if (index === -1) return
+
+                // Remove the item
+                this._queue[key].splice(index, 1)
+
+                // Check if we need to cleanup
+                if (this._queue[key].length === 0) {
+                    shouldCleanup = true
+                    return
+                }
+
+                // Get next item if we removed the first item
+                if (index === 0 && this._queue[key].length > 0) {
+                    nextItem = this._queue[key][0]
+                }
+            })
+
+            // Perform cleanup outside the lock if needed
+            if (shouldCleanup) {
+                delete this._queue[key]
+                delete this._queueLocks[key]
+                return
+            }
+
+            // Notify next item outside the lock
+            if (nextItem) {
+                nextItem.notifyPromise.resolve()
+            }
+        } catch (error) {
+            console.error('Error in remove operation:', error)
+            // Don't throw here to prevent queue from getting stuck
+        }
+    }
+
+    public async wait(key: string, requestId: string, maxConcurrent: number) {
+        // Fast path: if queue doesn't exist, add directly
+        if (!this._queue[key]) {
+            await this.add(key, requestId)
+            return
+        }
+
+        // Get or create lock for this specific queue
+        if (!this._queueLocks[key]) {
+            this._queueLocks[key] = new ObjectLock(this._queueTimeout)
+        }
+
+        let item: QueueItem | undefined
+        let shouldExecute = false
+
+        // Get queue item information within the lock
+        await this._queueLocks[key].runLocked(async () => {
             if (!this._queue[key]) return
 
             const index = this._queue[key].findIndex(
                 (item) => item.requestId === requestId
             )
 
-            if (index !== -1) {
-                this._queue[key].splice(index, 1)
+            if (index === -1) return
 
-                // If an item is removed from any position in the queue, the subsequent requests need to be notified to move forward
-                this._queue[key].slice(index).forEach((item, newIndex) => {
-                    // If the new position is less than maxConcurrent (determined in wait), resolve the promise
-                    // Note: The specific logic here may need to be determined based on maxConcurrent in wait
-                    // However, since maxConcurrent is passed in wait, it cannot be accessed here,
-                    // so we only handle the most explicit case: the head of the queue
-                    if (index + newIndex === 0) {
-                        item.notifyPromise.resolve()
-                    }
-                })
-            }
-        })
-    }
-
-    public async wait(key: string, requestId: string, maxConcurrent: number) {
-        if (!this._queue[key]) {
-            await this.add(key, requestId)
-        }
-
-        let item: QueueItem | undefined
-
-        // First, get the project information within the lock
-        await this._lock.runLocked(async () => {
-            const index = this._queue[key].findIndex(
-                (item) => item.requestId === requestId
-            )
-
-            if (index === -1) return // Request not in queue
-            if (index < maxConcurrent) {
-                // If within the concurrency limit, resolve immediately
-                this._queue[key][index].notifyPromise.resolve()
+            // Execute immediately if it's the first item or within concurrent limit
+            if (index === 0 || index < maxConcurrent) {
+                shouldExecute = true
                 return
             }
 
             item = this._queue[key][index]
         })
 
-        // If you need to wait, wait outside the lock
+        // If should execute immediately, return
+        if (shouldExecute) {
+            item?.notifyPromise.resolve()
+            return
+        }
+
+        // Wait for turn
         if (item) {
+            let timeoutId: NodeJS.Timeout
             try {
-                const timeoutId = setTimeout(
-                    () =>
-                        item.notifyPromise.reject(
+                // eslint-disable-next-line promise/param-names
+                const timeoutPromise = new Promise<never>((_, reject) => {
+                    timeoutId = setTimeout(() => {
+                        reject(
                             new Error(
                                 `Queue wait timeout after ${this._queueTimeout}ms`
                             )
-                        ),
-                    this._queueTimeout
-                )
+                        )
+                    }, this._queueTimeout)
+                })
 
-                try {
-                    await item.notifyPromise.promise
-                } finally {
-                    clearTimeout(timeoutId)
-                }
+                await Promise.race([item.notifyPromise.promise, timeoutPromise])
             } catch (error) {
-                await this.remove(key, requestId)
+                await this.remove(key, requestId).catch(() => {
+                    /* ignore */
+                })
                 throw error
+            } finally {
+                clearTimeout(timeoutId)
             }
         }
     }
 
     private async cleanup() {
         const now = Date.now()
-        await this._lock.runLocked(async () => {
-            for (const key in this._queue) {
+        const keys = Object.keys(this._queue)
+
+        // Process each queue separately with its own lock
+        for (const key of keys) {
+            if (!this._queueLocks[key]) {
+                this._queueLocks[key] = new ObjectLock(this._queueTimeout)
+            }
+
+            await this._queueLocks[key].runLocked(async () => {
+                if (!this._queue[key]) return
+
                 const expiredItems = this._queue[key].filter(
                     (item) => now - item.timestamp >= this._queueTimeout
                 )
@@ -149,22 +235,39 @@ export class RequestIdQueue {
                     (item) => now - item.timestamp < this._queueTimeout
                 )
 
-                // If the head of the queue is cleaned up, notify the new head
+                // If queue becomes empty after cleanup, remove the lock
+                if (this._queue[key].length === 0) {
+                    delete this._queue[key]
+                    delete this._queueLocks[key]
+                    return
+                }
+
+                // If the head of the queue was cleaned up, notify the new head
                 if (this._queue[key].length > 0) {
                     this._queue[key][0].notifyPromise.resolve()
                 }
-            }
-        })
+            })
+        }
     }
 
     public async getQueueLength(key: string) {
-        return await this._lock.runLocked(
+        // Get or create lock for this specific queue
+        if (!this._queueLocks[key]) {
+            this._queueLocks[key] = new ObjectLock(this._queueTimeout)
+        }
+
+        return await this._queueLocks[key].runLocked(
             async () => this._queue[key]?.length ?? 0
         )
     }
 
     public async getQueueStatus(key: string) {
-        return await this._lock.runLocked(async () => ({
+        // Get or create lock for this specific queue
+        if (!this._queueLocks[key]) {
+            this._queueLocks[key] = new ObjectLock(this._queueTimeout)
+        }
+
+        return await this._queueLocks[key].runLocked(async () => ({
             length: this._queue[key]?.length ?? 0,
             items:
                 this._queue[key]?.map((item) => ({

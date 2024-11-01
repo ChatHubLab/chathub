@@ -23,7 +23,7 @@ export class ObjectLock {
         const id = this._currentId++
 
         if (this._currentLockId === id || this._currentLockId === id - 1) {
-            this._lockCount++
+            this._lockCount = Math.max(0, this._lockCount + 1)
             return this._currentLockId!
         }
 
@@ -32,33 +32,31 @@ export class ObjectLock {
                 throw new Error('Lock queue is full')
             }
 
-            const { promise, resolve } = withResolver()
+            const { promise, resolve } = withResolver<void>()
             this._queue.push({ id, resolve })
 
+            let timeoutId: NodeJS.Timeout | undefined
             try {
-                let timeoutId: NodeJS.Timeout
                 await Promise.race([
                     promise,
                     // eslint-disable-next-line promise/param-names
-                    new Promise((_, reject) => {
-                        timeoutId = setTimeout(
-                            () =>
-                                reject(
-                                    new Error(
-                                        `Lock timeout after ${this._timeout}ms`
-                                    )
-                                ),
-                            this._timeout
-                        )
+                    new Promise<never>((_, reject) => {
+                        timeoutId = setTimeout(() => {
+                            reject(
+                                new Error(
+                                    `Lock timeout after ${this._timeout}ms`
+                                )
+                            )
+                        }, this._timeout)
                     })
-                ]).finally(() => {
-                    clearTimeout(timeoutId)
-                })
+                ])
             } catch (error) {
                 this._queue = this._queue.filter((item) => item.id !== id)
                 throw error instanceof Error
                     ? error
                     : new Error('Unknown lock error')
+            } finally {
+                if (timeoutId) clearTimeout(timeoutId)
             }
         }
 
@@ -84,7 +82,7 @@ export class ObjectLock {
             throw new Error('Invalid unlock attempt: lock not owned by caller')
         }
 
-        this._lockCount--
+        this._lockCount = Math.max(0, this._lockCount - 1)
 
         if (this._lockCount === 0) {
             this._lock = false
