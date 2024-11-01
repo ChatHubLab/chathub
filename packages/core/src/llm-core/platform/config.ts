@@ -51,42 +51,38 @@ export class ClientConfigPool<T extends ClientConfig = ClientConfig> {
         }
     }
 
+    private findAvailableConfig(): ClientConfigWrapper<T> | undefined {
+        return this._configs.find((config) => config.isAvailable)
+    }
+
     getConfig(lockSelectConfig: boolean = false): ClientConfigWrapper<T> {
         if (this._mode !== ClientConfigPoolMode.LoadBalancing) {
-            for (let i = 0; i < this._configs.length; i++) {
-                const config = this._configs[i]
-
-                if (config.isAvailable) {
-                    return config
-                }
+            const config = this.findAvailableConfig()
+            if (!config) {
+                throw new ChatLunaError(ChatLunaErrorCode.NOT_AVAILABLE_CONFIG)
             }
-
-            throw new ChatLunaError(ChatLunaErrorCode.NOT_AVAILABLE_CONFIG)
+            return config
         }
 
-        let loadConfigCount = 0
-        while (true) {
+        // Load balancing mode
+        const startIndex = this._currentLoadConfigIndex
+        do {
             const config = this._configs[this._currentLoadConfigIndex]
 
-            if (config.isAvailable) {
+            if (config?.isAvailable) {
                 if (!lockSelectConfig) {
                     this._currentLoadConfigIndex =
                         (this._currentLoadConfigIndex + 1) %
                         this._configs.length
                 }
-
                 return config
             }
 
             this._currentLoadConfigIndex =
                 (this._currentLoadConfigIndex + 1) % this._configs.length
+        } while (this._currentLoadConfigIndex !== startIndex)
 
-            loadConfigCount++
-
-            if (loadConfigCount >= this._configs.length) {
-                throw new ChatLunaError(ChatLunaErrorCode.NOT_AVAILABLE_CONFIG)
-            }
-        }
+        throw new ChatLunaError(ChatLunaErrorCode.NOT_AVAILABLE_CONFIG)
     }
 
     getConfigs(): readonly ClientConfigWrapper<T>[] {
