@@ -256,62 +256,53 @@ export class ChatChain {
     }
 }
 
-// 定义一个有向无环图类，包含节点集合和邻接表
 class ChatChainDependencyGraph {
-    private _tasks: ChainDependencyGraphNode[] = []
-
-    private _dependencies: Map<string, Set<string>> = new Map()
-
-    private _eventEmitter: EventEmitter = new EventEmitter()
-
+    private _tasks = new Map<string, ChainDependencyGraphNode>()
+    private _dependencies = new Map<string, Set<string>>()
+    private _eventEmitter = new EventEmitter()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private _listeners: Map<string, ((...args: any[]) => void)[]> = new Map()
+    private _listeners = new Map<string, Set<(...args: any[]) => void>>()
+    private _cachedOrder: ChainMiddleware[] | null = null
 
     constructor() {
         this._eventEmitter.on('build_node', () => {
-            for (const [name, listeners] of this._listeners.entries()) {
+            for (const [name, listeners] of this._listeners) {
                 for (const listener of listeners) {
                     listener(name)
                 }
-                listeners.length = 0
+                listeners.clear()
             }
+            // Invalidate cache when nodes change
+            this._cachedOrder = null
         })
     }
 
     // Add a task to the DAG.
     public addNode(middleware: ChainMiddleware): void {
-        this._tasks.push({
+        this._tasks.set(middleware.name, {
             name: middleware.name,
             middleware
         })
+        this._cachedOrder = null // Invalidate cache
     }
 
     removeNode(name: string): void {
-        const index = this._tasks.findIndex((task) => task.name === name)
-        if (index !== -1) {
-            this._tasks.splice(index, 1)
+        this._tasks.delete(name)
+
+        // Efficiently remove dependencies
+        this._dependencies.delete(name)
+        for (const deps of this._dependencies.values()) {
+            deps.delete(name)
         }
 
-        // remove dependencies
-
-        for (const [, dependencies] of this._dependencies.entries()) {
-            if (dependencies.has(name)) {
-                dependencies.delete(name)
-            }
-        }
-
-        if (this._dependencies[name]) {
-            delete this._dependencies[name]
-        }
+        this._cachedOrder = null // Invalidate cache
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     once(name: string, listener: (...args: any[]) => void) {
-        if (this._listeners.has(name)) {
-            this._listeners.get(name)!.push(listener)
-        } else {
-            this._listeners.set(name, [listener])
-        }
+        const listeners = this._listeners.get(name) ?? new Set()
+        listeners.add(listener)
+        this._listeners.set(name, listeners)
     }
 
     // Set a dependency between two tasks
@@ -374,53 +365,86 @@ class ChatChainDependencyGraph {
 
     // Build a two-dimensional array of tasks based on their dependencies
     build(): ChainMiddleware[] {
+        // Return cached order if available
+        if (this._cachedOrder) {
+            return this._cachedOrder
+        }
+
         this._eventEmitter.emit('build_node')
+        // Create in-degree table and temporary graph
+        const indegree = new Map<string, number>()
+        const tempGraph = new Map<string, Set<string>>()
 
-        // Create an array to store the result
-        const result: ChainMiddleware[] = []
-        // Create a map to store the indegree of each task
-        const indegree: Map<string, number> = new Map()
-        // Initialize the indegree map with zero for each task
-        for (const task of this._tasks) {
-            indegree.set(task.name, 0)
+        // Initialize in-degree and temporary graph
+        for (const taskName of this._tasks.keys()) {
+            indegree.set(taskName, 0)
+            tempGraph.set(taskName, new Set())
         }
-        // Iterate over the tasks and increment the indegree of their dependencies
-        for (const [, dependencies] of this._dependencies.entries()) {
-            for (const dependency of dependencies) {
-                indegree.set(dependency, indegree.get(dependency) + 1)
+
+        // Build temporary graph and calculate in-degree
+        for (const [from, deps] of this._dependencies.entries()) {
+            const depsSet = tempGraph.get(from) || new Set()
+            for (const to of deps) {
+                depsSet.add(to)
+                indegree.set(to, (indegree.get(to) || 0) + 1)
             }
+            tempGraph.set(from, depsSet)
         }
 
-        // Create a queue to store the tasks with zero indegree
         const queue: string[] = []
-        // Enqueue the tasks with zero indegree
+        const result: ChainMiddleware[] = []
+        const visited = new Set<string>()
+
+        // Find nodes with in-degree of 0
         for (const [task, degree] of indegree.entries()) {
             if (degree === 0) {
                 queue.push(task)
             }
         }
-        // While the queue is not empty
-        while (queue.length > 0) {
-            // Create an array to store the current level of tasks
 
-            // Dequeue all the tasks in the queue and add them to the level
-            while (queue.length > 0) {
-                const task = queue.shift()
-                result.push(
-                    this._tasks.find((t) => t.name === task)!.middleware!
-                )
-                // For each dependency of the dequeued task
-                for (const dep of this._dependencies.get(task) ?? []) {
-                    // Decrement its indegree by one
-                    indegree.set(dep, indegree.get(dep) - 1)
-                    // If its indegree becomes zero, enqueue it to the queue
-                    if (indegree.get(dep) === 0) {
-                        queue.push(dep)
-                    }
+        // Topological sorting
+        while (queue.length > 0) {
+            const current = queue.shift()!
+
+            if (visited.has(current)) {
+                continue
+            }
+            visited.add(current)
+
+            const node = this._tasks.get(current)
+            if (node?.middleware) {
+                result.push(node.middleware)
+            }
+
+            // Process all successors of the current node
+            const successors = tempGraph.get(current) || new Set()
+            for (const next of successors) {
+                const newDegree = indegree.get(next)! - 1
+                indegree.set(next, newDegree)
+
+                if (newDegree === 0) {
+                    queue.push(next)
                 }
             }
         }
-        // Return the result
+
+        // Check for circular dependencies
+        for (const [node, degree] of indegree.entries()) {
+            if (degree > 0) {
+                throw new Error(
+                    `Circular dependency detected involving node: ${node}`
+                )
+            }
+        }
+
+        // Check if all nodes have been visited
+        if (visited.size !== this._tasks.size) {
+            throw new Error(
+                'Some nodes are unreachable in the dependency graph'
+            )
+        }
+
+        this._cachedOrder = result
         return result
     }
 }
@@ -536,91 +560,122 @@ export class ChainMiddleware {
 class DefaultChatChainSender {
     constructor(private readonly config: Config) {}
 
-    processElements(elements: h[]): h[] {
-        return elements.filter((message) => {
-            if (message.type === 'img') {
-                const src = message.attrs['src']
-                if (typeof src === 'string' && src.startsWith('attachment')) {
-                    return false
+    private processElements(elements: h[]): h[] {
+        return elements
+            .filter((element): element is h => {
+                if (!element) return false
+
+                if (element.type === 'img') {
+                    const src = element.attrs?.['src']
+                    return !(
+                        typeof src === 'string' && src.startsWith('attachment')
+                    )
                 }
-            } else if (message.children) {
-                message.children = this.processElements(message.children)
-            }
-            return true
-        })
+                return true
+            })
+            .map((element) => {
+                if (element.children?.length) {
+                    element.children = this.processElements(element.children)
+                }
+                return element
+            })
     }
 
-    async send(session: Session, messages: (h[] | h | string)[]) {
+    async send(
+        session: Session,
+        messages: (h[] | h | string)[]
+    ): Promise<void> {
+        if (!messages?.length) return
+
         if (this.config.isForwardMsg) {
-            const sendMessages: h[] = []
-
-            if (messages[0] instanceof Array) {
-                // h[][]
-                for (const message of messages) {
-                    sendMessages.push(h('message', ...(message as h[])))
-                }
-            } else if (messages[0] instanceof Object) {
-                // h | h[]
-                sendMessages.push(h('message', ...(messages as h[])))
-            } else if (typeof messages[0] === 'string') {
-                // string
-                sendMessages.push(h.text(messages[0] as string))
-            } else {
-                throw new Error(`unknown message type: ${typeof messages[0]}`)
-            }
-
-            await session.sendQueued(
-                h(
-                    'message',
-                    {
-                        forward: true
-                    },
-                    ...sendMessages
-                )
-            )
-
+            await this.sendAsForward(session, messages)
             return
         }
 
-        for (const message of messages) {
-            let messageFragment: h[]
+        await this.sendAsNormal(session, messages)
+    }
 
-            if (this.config.isReplyWithAt && session.isDirect === false) {
-                messageFragment = [h('quote', { id: session.messageId })]
+    private async sendAsForward(
+        session: Session,
+        messages: (h[] | h | string)[]
+    ): Promise<void> {
+        const sendMessages = this.convertToForwardMessages(messages)
 
-                if (message instanceof Array) {
-                    messageFragment = messageFragment.concat(message)
-                } else if (typeof message === 'string') {
-                    messageFragment.push(h.text(message))
-                } else {
-                    messageFragment.push(message)
-                }
+        await session.sendQueued(
+            h('message', { forward: true }, ...sendMessages)
+        )
+    }
 
-                for (const element of messageFragment) {
-                    // 语音,消息 不能引用
-                    if (
-                        element.type === 'audio' ||
-                        element.type === 'message'
-                    ) {
-                        messageFragment.shift()
-                        break
-                    }
-                }
-            } else {
-                if (message instanceof Array) {
-                    messageFragment = message
-                } else if (typeof message === 'string') {
-                    messageFragment = [h.text(message)]
-                } else {
-                    // 你就说是不是 element 吧
-                    messageFragment = [message]
-                }
-            }
+    private convertToForwardMessages(messages: (h[] | h | string)[]): h[] {
+        const firstMsg = messages[0]
 
-            messageFragment = this.processElements(messageFragment)
-
-            await session.sendQueued(messageFragment)
+        if (Array.isArray(firstMsg)) {
+            // h[][]
+            return messages.map((msg) => h('message', ...(msg as h[])))
         }
+
+        if (typeof firstMsg === 'object') {
+            // h | h[]
+            return [h('message', ...(messages as h[]))]
+        }
+
+        if (typeof firstMsg === 'string') {
+            // string
+            return [h.text(firstMsg)]
+        }
+
+        throw new Error(`Unsupported message type: ${typeof firstMsg}`)
+    }
+
+    private async sendAsNormal(
+        session: Session,
+        messages: (h[] | h | string)[]
+    ): Promise<void> {
+        for (const message of messages) {
+            const messageFragment = await this.buildMessageFragment(
+                session,
+                message
+            )
+
+            if (!messageFragment?.length) continue
+
+            const processedFragment = this.processElements(messageFragment)
+            await session.sendQueued(processedFragment)
+        }
+    }
+
+    private async buildMessageFragment(
+        session: Session,
+        message: h[] | h | string
+    ): Promise<h[]> {
+        const shouldAddQuote =
+            this.config.isReplyWithAt &&
+            session.isDirect === false &&
+            session.messageId
+
+        const messageContent = this.convertMessageToArray(message)
+
+        if (!shouldAddQuote) {
+            return messageContent
+        }
+
+        // Check if quote should be removed (for audio or message types)
+        const quote = h('quote', { id: session.messageId })
+        const hasIncompatibleType = messageContent.some(
+            (element) => element.type === 'audio' || element.type === 'message'
+        )
+
+        return hasIncompatibleType ? messageContent : [quote, ...messageContent]
+    }
+
+    private convertMessageToArray(message: h[] | h | string): h[] {
+        if (Array.isArray(message)) {
+            return message
+        }
+        if (typeof message === 'string') {
+            return [h.text(message)]
+        }
+        return [message]
     }
 }
 
