@@ -108,6 +108,8 @@ export class ChatInterface {
                 )
             }
 
+            delete this._errorCountsMap[configMD5]
+
             return response
         } catch (e) {
             if (
