@@ -83,7 +83,14 @@ export const Config: Schema<Config> = Schema.intersect([
                 modelVersion: Schema.string().default('2023-03-15-preview'),
                 contextSize: Schema.number().default(4096)
             }).role('table')
-        ).default([]),
+        ).default([
+            {
+                model: 'gpt-4o',
+                modelType: 'LLM 大语言模型',
+                modelVersion: '2023-03-15-preview',
+                contextSize: 128000
+            }
+        ]),
         maxTokens: Schema.number().min(16).max(128000).step(16).default(1024),
         temperature: Schema.percent().min(0).max(1).step(0.1).default(0.8),
         presencePenalty: Schema.number().min(-2).max(2).step(0.1).default(0.2),
