@@ -55,12 +55,12 @@ export function formatFunctionDefinitions(functions: StructuredTool[]) {
             lines.push(`// ${f.description}`)
         }
 
-        const schema =
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            zodToJsonSchema(f.schema) as any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const schema = zodToJsonSchema(f.schema as any)
         if (Object.keys(schema ?? {}).length > 0) {
             lines.push(`type ${f.name} = (_: {`)
-            lines.push(formatObjectProperties(schema, 0))
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            lines.push(formatObjectProperties(schema as any, 0))
             lines.push('}) => any;')
         } else {
             lines.push(`type ${f.name} = () => any;`)

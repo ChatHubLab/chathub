@@ -224,6 +224,23 @@ export class ChatLunaService extends Service {
         return client.createModel(model)
     }
 
+    randomChatModel(platformName: string, model: string) {
+        return async () => {
+            const service = this._platformService
+
+            const client = await service.randomClient(platformName)
+
+            if (client == null) {
+                throw new ChatLunaError(
+                    ChatLunaErrorCode.MODEL_ADAPTER_NOT_FOUND,
+                    new Error(`The platform ${platformName} no available`)
+                )
+            }
+
+            return client.createModel(model)
+        }
+    }
+
     async createEmbeddings(platformName: string, modelName: string) {
         const service = this._platformService
 
