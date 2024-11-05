@@ -32,6 +32,7 @@ import {
 import { runAsync, withResolver } from 'koishi-plugin-chatluna/utils/promise'
 import { chunkArray } from '../utils/chunk'
 import { encodingForModel } from '../utils/tiktoken'
+import { formatFunctionDefinitions } from '../utils/function_def'
 
 export interface ChatLunaModelCallOptions extends BaseChatModelCallOptions {
     model?: string
@@ -382,13 +383,12 @@ export class ChatLunaChatModel extends BaseChatModel<ChatLunaModelCallOptions> {
 
         let totalTokens = 0
 
-        /* ??
         // If there are functions, add the function definitions as they count towards token usage
-        if (tools && tool_call !== 'auto') {
-            const promptDefinitions = formatFunctionDefinitions(formattedTools)
+        if (tools) {
+            const promptDefinitions = formatFunctionDefinitions(tools)
             totalTokens += await this.getNumTokens(promptDefinitions)
             totalTokens += 9 // Add nine per completion
-        } */
+        }
 
         // If there's a system message _and_ functions are present, subtract four tokens. I assume this is because
         // functions typically add a system message, but reuse the first one if it's already there. This offsets
