@@ -84,17 +84,13 @@ export class ObjectLock {
 
         this._lockCount = Math.max(0, this._lockCount - 1)
 
-        if (this._lockCount === 0) {
-            this._lock = false
-            this._currentLockId = undefined
+        this._lock = false
+        this._currentLockId = undefined
 
-            if (this._queue.length > 0) {
-                const nextRequest = this._queue.shift()!
-                this._lock = true
-                this._currentLockId = nextRequest.id
-                this._lockCount = 1
-                nextRequest.resolve()
-            }
+        if (this._queue.length > 0) {
+            const nextRequest = this._queue.shift()!
+
+            nextRequest.resolve()
         }
     }
 

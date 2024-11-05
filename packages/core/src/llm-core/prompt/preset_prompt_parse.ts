@@ -115,6 +115,7 @@ function loadTxtPreset(rawText: string): PresetTemplate {
             'For more migrate information, visit: https://chatluna.chat/guide/preset-system/introduction.html'
     )
 
+    // crlf support
     const chunks = rawText
         .replace(/#.*\r?\n/g, '')
         .replace(/\r\n/g, '\n')
