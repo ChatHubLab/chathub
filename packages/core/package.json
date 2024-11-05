@@ -201,7 +201,9 @@
         "koishi",
         "chatgpt",
         "gpt",
-        "chatluna"
+        "chatluna",
+        "ai",
+        "langchain"
     ],
     "dependencies": {
         "@langchain/core": "^0.3.11",
