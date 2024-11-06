@@ -221,24 +221,11 @@ export class ChatLunaService extends Service {
             )
         }
 
-        return client.createModel(model)
+        return client.createModel(model) as ChatLunaChatModel
     }
 
     randomChatModel(platformName: string, model: string) {
-        return async () => {
-            const service = this._platformService
-
-            const client = await service.randomClient(platformName)
-
-            if (client == null) {
-                throw new ChatLunaError(
-                    ChatLunaErrorCode.MODEL_ADAPTER_NOT_FOUND,
-                    new Error(`The platform ${platformName} no available`)
-                )
-            }
-
-            return client.createModel(model)
-        }
+        return async () => await this.createChatModel(platformName, model)
     }
 
     async createEmbeddings(platformName: string, modelName: string) {
@@ -263,6 +250,10 @@ export class ChatLunaService extends Service {
             ChatLunaErrorCode.MODEL_NOT_FOUND,
             new Error(`The model ${modelName} is not embeddings`)
         )
+    }
+
+    randomEmbeddings(platformName: string, modelName: string) {
+        return async () => await this.createEmbeddings(platformName, modelName)
     }
 
     get platform() {
