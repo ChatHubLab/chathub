@@ -578,7 +578,7 @@ export class ChatLunaPlugin<
         this._platformService.registerConfigPool(platformName, pool)
 
         try {
-            await this._platformService.createClients(this.platformName)
+            await this._platformService.createClients(platformName)
         } catch (e) {
             this.ctx.chatluna.unregisterPlugin(this)
 

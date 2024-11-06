@@ -44,7 +44,7 @@ export async function apply(
             : ClientConfigPoolMode.LoadBalancing
     )
 
-    await plugin.registerClient(
+    plugin.registerClient(
         (_, clientConfig) =>
             new HuggingfaceClient(ctx, config, clientConfig, plugin),
         'huggingface'
