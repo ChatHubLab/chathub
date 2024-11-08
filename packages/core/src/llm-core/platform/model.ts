@@ -393,7 +393,7 @@ export class ChatLunaChatModel extends BaseChatModel<ChatLunaModelCallOptions> {
         // If there's a system message _and_ functions are present, subtract four tokens. I assume this is because
         // functions typically add a system message, but reuse the first one if it's already there. This offsets
         // the extra 9 tokens added by the function definitions.
-        if (tools && messages.find((m) => m._getType() === 'system')) {
+        if (tools && messages.find((m) => m.getType() === 'system')) {
             totalTokens -= 4
         }
 

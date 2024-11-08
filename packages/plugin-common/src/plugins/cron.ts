@@ -53,10 +53,14 @@ export class CronTool extends StructuredTool {
     name = 'cron'
 
     schema = z.object({
-        type: z.string(),
-        time: z.string(),
-        content: z.string(),
-        recipient: z.string().optional()
+        type: z.string().describe('The type of the cron task'),
+        time: z.string().describe('The time interval of the cron task'),
+        content: z.string().describe('The content of the cron task'),
+        recipient: z
+            .string()
+            .optional()
+            .describe('The recipient of the cron task')
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }) as any
 
