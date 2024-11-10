@@ -107,6 +107,10 @@ function getTools(service: PlatformService, filter: (name: string) => boolean) {
 }
 
 export async function createModel(ctx: Context, model: string) {
+    if (model == null) {
+        return null
+    }
+
     const [platform, modelName] = parseRawModelName(model)
     await ctx.chatluna.awaitLoadPlatform(platform)
     return ctx.chatluna.createChatModel(
