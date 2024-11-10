@@ -344,8 +344,6 @@ export class GeminiRequester
 
         const body = JSON.stringify(data)
 
-        console.log(body)
-
         return this._plugin.fetch(requestUrl, {
             body,
             headers: this._buildHeaders(),

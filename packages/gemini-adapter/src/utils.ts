@@ -158,14 +158,27 @@ export async function langchainMessageToGeminiMessage(
             parts: message.parts
         })
 
-        if (mappedMessage?.[i + 1]?.role === 'model') {
+        const nextMessage = mappedMessage?.[i + 1]
+
+        if (nextMessage?.role === 'model') {
             continue
         }
 
-        if (mappedMessage?.[i + 1]?.role === 'user') {
+        if (nextMessage?.role === 'user' || nextMessage?.role === 'system') {
             result.push({
                 role: 'model',
                 parts: [{ text: 'Okay, what do I need to do?' }]
+            })
+        }
+
+        if (nextMessage?.role === 'system') {
+            result.push({
+                role: 'user',
+                parts: [
+                    {
+                        text: 'Continue what I said to you last message. Follow these instructions.'
+                    }
+                ]
             })
         }
     }
