@@ -905,26 +905,26 @@ class ChatInterfaceWrapper {
     }
 
     dispose(platform?: string) {
-        // 终止所有相关请求
+        // Terminate all related requests
         for (const controller of this._requestIdMap.values()) {
             controller.abort()
         }
 
         if (!platform) {
-            // 清理所有资源
+            // Clean up all resources
             this._conversations.clear()
             this._requestIdMap.clear()
             this._platformToConversations.clear()
             return
         }
 
-        // 清理特定平台的资源
+        // Clean up resources for specific platform
         const conversationIds = this._platformToConversations.get(platform)
         if (!conversationIds?.length) return
 
         for (const conversationId of conversationIds) {
             this._conversations.delete(conversationId)
-            // 终止该平台相关的请求
+            // Terminate platform-related requests
             const controller = this._requestIdMap.get(conversationId)
             if (controller) {
                 controller.abort()

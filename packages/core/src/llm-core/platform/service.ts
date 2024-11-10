@@ -24,19 +24,19 @@ import { LRUCache } from 'lru-cache'
 import { ChatLunaSaveableVectorStore } from 'koishi-plugin-chatluna/llm-core/model/base'
 
 export class PlatformService {
-    private static _platformClients: Record<string, BasePlatformClient> = {}
-    private static _createClientFunctions: Record<
+    private _platformClients: Record<string, BasePlatformClient> = {}
+    private _createClientFunctions: Record<
         string,
         (ctx: Context, config: ClientConfig) => BasePlatformClient
     > = {}
 
-    private static _configPools: Record<string, ClientConfigPool> = {}
-    private static _tools: Record<string, ChatHubTool> = {}
-    private static _models: Record<string, ModelInfo[]> = {}
-    private static _chatChains: Record<string, ChatHubChainInfo> = {}
-    private static _vectorStore: Record<string, CreateVectorStoreFunction> = {}
+    private _configPools: Record<string, ClientConfigPool> = {}
+    private _tools: Record<string, ChatHubTool> = {}
+    private _models: Record<string, ModelInfo[]> = {}
+    private _chatChains: Record<string, ChatHubChainInfo> = {}
+    private _vectorStore: Record<string, CreateVectorStoreFunction> = {}
 
-    private static _tmpVectorStores = new LRUCache<
+    private _tmpVectorStores = new LRUCache<
         string,
         ChatLunaSaveableVectorStore
     >({
@@ -45,7 +45,7 @@ export class PlatformService {
 
     constructor(private ctx: Context) {
         this.ctx.on('chatluna/clear-chat-history', async (conversationId) => {
-            PlatformService._tmpVectorStores.clear()
+            this._tmpVectorStores.clear()
         })
     }
 
@@ -56,33 +56,33 @@ export class PlatformService {
             config: ClientConfig
         ) => BasePlatformClient
     ) {
-        if (PlatformService._createClientFunctions[name]) {
+        if (this._createClientFunctions[name]) {
             throw new Error(`Client ${name} already exists`)
         }
-        PlatformService._createClientFunctions[name] = createClientFunction
+        this._createClientFunctions[name] = createClientFunction
         return () => this.unregisterClient(name)
     }
 
     registerConfigPool(name: string, configPool: ClientConfigPool) {
-        if (PlatformService._configPools[name]) {
+        if (this._configPools[name]) {
             throw new Error(`Config pool ${name} already exists`)
         }
-        PlatformService._configPools[name] = configPool
+        this._configPools[name] = configPool
     }
 
     registerTool(name: string, toolCreator: ChatHubTool) {
-        PlatformService._tools[name] = toolCreator
+        this._tools[name] = toolCreator
         this.ctx.emit('chatluna/tool-updated', this)
         return () => this.unregisterTool(name)
     }
 
     unregisterTool(name: string) {
-        delete PlatformService._tools[name]
+        delete this._tools[name]
         this.ctx.emit('chatluna/tool-updated', this)
     }
 
     unregisterClient(platform: PlatformClientNames) {
-        const configPool = PlatformService._configPools[platform]
+        const configPool = this._configPools[platform]
 
         if (!configPool) {
             throw new Error(`Config pool ${platform} not found`)
@@ -90,7 +90,7 @@ export class PlatformService {
 
         const configs = configPool.getConfigs()
 
-        delete PlatformService._models[platform]
+        delete this._models[platform]
 
         for (const config of configs) {
             const client = this.getClientForCache(config.value)
@@ -99,7 +99,7 @@ export class PlatformService {
                 continue
             }
 
-            delete PlatformService._platformClients[
+            delete this._platformClients[
                 this._getClientConfigAsKey(config.value)
             ]
 
@@ -123,12 +123,12 @@ export class PlatformService {
             }
         }
 
-        delete PlatformService._configPools[platform]
-        delete PlatformService._createClientFunctions[platform]
+        delete this._configPools[platform]
+        delete this._createClientFunctions[platform]
     }
 
     unregisterVectorStore(name: string) {
-        delete PlatformService._vectorStore[name]
+        delete this._vectorStore[name]
         this.ctx.emit('chatluna/vector-store-removed', this, name)
     }
 
@@ -136,7 +136,7 @@ export class PlatformService {
         name: string,
         vectorStoreRetrieverCreator: CreateVectorStoreFunction
     ) {
-        PlatformService._vectorStore[name] = vectorStoreRetrieverCreator
+        this._vectorStore[name] = vectorStoreRetrieverCreator
         this.ctx.emit('chatluna/vector-store-added', this, name)
         return () => this.unregisterVectorStore(name)
     }
@@ -148,27 +148,23 @@ export class PlatformService {
             params: CreateChatHubLLMChainParams
         ) => Promise<ChatHubLLMChainWrapper>
     ) {
-        PlatformService._chatChains[name] = {
+        this._chatChains[name] = {
             name,
             description,
             createFunction: createChatChainFunction
         }
-        this.ctx.emit(
-            'chatluna/chat-chain-added',
-            this,
-            PlatformService._chatChains[name]
-        )
+        this.ctx.emit('chatluna/chat-chain-added', this, this._chatChains[name])
         return () => this.unregisterChatChain(name)
     }
 
     unregisterChatChain(name: string) {
-        const chain = PlatformService._chatChains[name]
-        delete PlatformService._chatChains[name]
+        const chain = this._chatChains[name]
+        delete this._chatChains[name]
         this.ctx.emit('chatluna/chat-chain-removed', this, chain)
     }
 
     getModels(platform: PlatformClientNames, type: ModelType) {
-        const models = PlatformService._models[platform] ?? []
+        const models = this._models[platform] ?? []
 
         return models
             .filter((m) => type === ModelType.all || m.type === type)
@@ -182,22 +178,22 @@ export class PlatformService {
     }
 
     getTools() {
-        return Object.keys(PlatformService._tools)
+        return Object.keys(this._tools)
     }
 
     getConfigs(platform: string) {
-        return PlatformService._configPools[platform]?.getConfigs() ?? []
+        return this._configPools[platform]?.getConfigs() ?? []
     }
 
     resolveModel(platform: PlatformClientNames, name: string) {
-        return PlatformService._models[platform]?.find((m) => m.name === name)
+        return this._models[platform]?.find((m) => m.name === name)
     }
 
     getAllModels(type: ModelType) {
         const allModel: string[] = []
 
-        for (const platform in PlatformService._models) {
-            const models = PlatformService._models[platform]
+        for (const platform in this._models) {
+            const models = this._models[platform]
 
             for (const model of models) {
                 if (type === ModelType.all || model.type === type) {
@@ -210,16 +206,16 @@ export class PlatformService {
     }
 
     getVectorStoreRetrievers() {
-        return Object.keys(PlatformService._vectorStore)
+        return Object.keys(this._vectorStore)
     }
 
     getChatChains() {
-        return Object.values(PlatformService._chatChains)
+        return Object.values(this._chatChains)
     }
 
     makeConfigStatus(config: ClientConfig, isAvailable: boolean) {
         const platform = config.platform
-        const pool = PlatformService._configPools[platform]
+        const pool = this._configPools[platform]
 
         if (!pool) {
             throw new Error(`Config pool ${platform} not found`)
@@ -229,7 +225,7 @@ export class PlatformService {
     }
 
     async createVectorStore(name: string, params: CreateVectorStoreParams) {
-        const vectorStoreRetriever = PlatformService._vectorStore[name]
+        const vectorStoreRetriever = this._vectorStore[name]
 
         if (!vectorStoreRetriever) {
             throw new Error(`Vector store retriever ${name} not found`)
@@ -241,7 +237,7 @@ export class PlatformService {
             return await vectorStoreRetriever(params)
         }
 
-        const cacheVectorStore = PlatformService._tmpVectorStores.get(key)
+        const cacheVectorStore = this._tmpVectorStores.get(key)
 
         if (cacheVectorStore) {
             return cacheVectorStore
@@ -249,12 +245,12 @@ export class PlatformService {
 
         const vectorStore = await vectorStoreRetriever(params)
 
-        PlatformService._tmpVectorStores.set(key, vectorStore)
+        this._tmpVectorStores.set(key, vectorStore)
         return vectorStore
     }
 
     async randomConfig(platform: string, lockConfig: boolean = false) {
-        return PlatformService._configPools[platform]?.getConfig(lockConfig)
+        return this._configPools[platform]?.getConfig(lockConfig)
     }
 
     async randomClient(platform: string, lockConfig: boolean = false) {
@@ -270,9 +266,7 @@ export class PlatformService {
     }
 
     getClientForCache(config: ClientConfig) {
-        return PlatformService._platformClients[
-            this._getClientConfigAsKey(config)
-        ]
+        return this._platformClients[this._getClientConfigAsKey(config)]
     }
 
     async getClient(config: ClientConfig) {
@@ -289,7 +283,7 @@ export class PlatformService {
     ) {
         const isAvailable = await client.isAvailable()
 
-        const pool = PlatformService._configPools[platform]
+        const pool = this._configPools[platform]
 
         await pool.markConfigStatus(config, isAvailable)
 
@@ -305,11 +299,11 @@ export class PlatformService {
             return undefined
         }
 
-        const availableModels = PlatformService._models[platform] ?? []
+        const availableModels = this._models[platform] ?? []
 
         await sleep(1)
         // filter existing models
-        PlatformService._models[platform] = availableModels.concat(
+        this._models[platform] = availableModels.concat(
             models.filter(
                 (m) => !availableModels.some((am) => am.name === m.name)
             )
@@ -326,8 +320,7 @@ export class PlatformService {
     }
 
     async createClient(platform: string, config: ClientConfig) {
-        const createClientFunction =
-            PlatformService._createClientFunctions[platform]
+        const createClientFunction = this._createClientFunctions[platform]
 
         if (!createClientFunction) {
             throw new Error(`Create client function ${platform} not found`)
@@ -341,7 +334,7 @@ export class PlatformService {
     }
 
     async createClients(platform: string) {
-        const configPool = PlatformService._configPools[platform]
+        const configPool = this._configPools[platform]
 
         if (!configPool) {
             throw new Error(`Config pool ${platform} not found`)
@@ -359,20 +352,19 @@ export class PlatformService {
             }
 
             clients.push(client)
-            PlatformService._platformClients[
-                this._getClientConfigAsKey(config.value)
-            ] = client
+            this._platformClients[this._getClientConfigAsKey(config.value)] =
+                client
         }
 
         return clients
     }
 
     getTool(name: string) {
-        return PlatformService._tools[name]
+        return this._tools[name]
     }
 
     createChatChain(name: string, params: CreateChatHubLLMChainParams) {
-        const chatChain = PlatformService._chatChains[name]
+        const chatChain = this._chatChains[name]
 
         if (!chatChain) {
             throw new Error(`Chat chain ${name} not found`)
