@@ -205,8 +205,15 @@ export class PlatformService {
         return allModel.sort()
     }
 
-    getVectorStoreRetrievers() {
+    getVectorStores() {
         return Object.keys(this._vectorStore)
+    }
+
+    /**
+     * @deprecated Use {@link getVectorStores} instead. Will be removed in the next version.
+     */
+    getVectorStoreRetrievers() {
+        return Object.values(this._vectorStore)
     }
 
     getChatChains() {

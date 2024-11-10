@@ -115,7 +115,7 @@ function updateEmbeddings(ctx: Context, service: PlatformService) {
 }
 
 function getVectorStoreRetrieverNames(service: PlatformService) {
-    return service.getVectorStoreRetrievers()
+    return service.getVectorStores()
 }
 
 function updateVectorStores(ctx: Context, service: PlatformService) {

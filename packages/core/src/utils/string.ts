@@ -23,10 +23,10 @@ export function getMessageContent(message: BaseMessage['content']) {
         return ''
     }
 
-    const buffer = []
+    const buffer: string[] = []
     for (const part of message) {
         if (part.type === 'text') {
-            buffer.push(part.text)
+            buffer.push(part.text as string)
         }
     }
     return buffer.join('')

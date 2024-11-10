@@ -20,7 +20,7 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
             }
 
             const targetVectorStoreProviders = service
-                .getVectorStoreRetrievers()
+                .getVectorStores()
                 .filter((vectorStoreProviderName) =>
                     vectorStoreProviderName.includes(setVectorStore)
                 )
