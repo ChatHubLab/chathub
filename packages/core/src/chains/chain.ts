@@ -132,11 +132,6 @@ export class ChatChain {
         session: Session,
         context: ChainMiddlewareContext
     ) {
-        // 手动 polyfill，呃呃呃呃呃
-        if (session.isDirect == null) {
-            session.isDirect = session.subtype === 'private'
-        }
-
         if (!this.isSetErrorMessage) {
             setErrorFormatTemplate(session.text('chatluna.error_message'))
             this.isSetErrorMessage = true
@@ -163,15 +158,12 @@ export class ChatChain {
                 executedTime = Date.now() - executedTime
             } catch (error) {
                 if (error instanceof ChatLunaError) {
+                    let message = error.message
                     if (error.errorCode === ChatLunaErrorCode.ABORTED) {
-                        await this.sendMessage(
-                            session,
-                            session.text('chatluna.aborted')
-                        )
-                        return false
+                        message = session.text('chatluna.aborted')
                     }
 
-                    await this.sendMessage(session, error.message)
+                    await this.sendMessage(session, message)
                     return false
                 }
 
@@ -182,7 +174,7 @@ export class ChatChain {
                 if (error.cause) {
                     logger.error(error.cause)
                 }
-                logger.debug('-'.repeat(20) + '\n')
+                logger.debug('-'.repeat(30) + '\n')
 
                 await this.sendMessage(
                     session,
@@ -220,7 +212,7 @@ export class ChatChain {
                 }
 
                 if (isOutputLog) {
-                    logger.debug('-'.repeat(20) + '\n')
+                    logger.debug('-'.repeat(30) + '\n')
                 }
 
                 return false
@@ -230,7 +222,7 @@ export class ChatChain {
         }
 
         if (isOutputLog) {
-            logger.debug('-'.repeat(20) + '\n')
+            logger.debug('-'.repeat(30) + '\n')
         }
 
         if (context.message != null && context.message !== originMessage) {
