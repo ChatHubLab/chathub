@@ -307,7 +307,7 @@ export class PlatformService {
 
         const availableModels = PlatformService._models[platform] ?? []
 
-        await sleep(2)
+        await sleep(1)
         // filter existing models
         PlatformService._models[platform] = availableModels.concat(
             models.filter(

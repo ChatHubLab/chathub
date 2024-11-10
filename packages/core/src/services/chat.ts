@@ -51,6 +51,7 @@ import { ClientRequestArgs } from 'http'
 import { Config } from '../config'
 import { DefaultRenderer } from '../render'
 import type { PostHandler } from '../utils/types'
+import { withResolver } from 'koishi-plugin-chatluna/utils/promise'
 
 export class ChatLunaService extends Service {
     private _plugins: Record<string, ChatLunaPlugin> = {}
@@ -93,26 +94,34 @@ export class ChatLunaService extends Service {
         this.logger.success(`register plugin %c`, plugin.platformName)
     }
 
-    awaitLoadPlatform(plugin: ChatLunaPlugin | string) {
+    async awaitLoadPlatform(
+        plugin: ChatLunaPlugin | string,
+        timeout: number = 30000
+    ) {
         const pluginName =
             typeof plugin === 'string' ? plugin : plugin.platformName
+        const { promise, resolve, reject } = withResolver<void>()
 
-        return new Promise((resolve) => {
-            const timer = setInterval(() => {
-                const targetModels = this._platformService.getModels(
-                    pluginName,
-                    ModelType.all
-                )
+        // 添加超时处理
+        const timeoutId = setTimeout(() => {
+            dispose()
+            reject(
+                new Error(`Timeout waiting for platform ${pluginName} to load`)
+            )
+        }, timeout)
 
-                if (
-                    targetModels.length > 0 ||
-                    this._platformService.getConfigs(pluginName)?.length > 0
-                ) {
-                    clearInterval(timer)
-                    resolve(undefined)
+        const dispose = this.ctx.on(
+            'chatluna/model-added',
+            (service, platform) => {
+                if (platform === pluginName) {
+                    clearTimeout(timeoutId)
+                    resolve()
+                    dispose()
                 }
-            }, 10)
-        })
+            }
+        )
+
+        return promise
     }
 
     unregisterPlugin(
@@ -672,16 +681,30 @@ export class ChatLunaPlugin<
     ws(url: string, options?: ClientOptions | ClientRequestArgs): WebSocket {
         const proxyMode = this.config.proxyMode
 
+        let webSocket: WebSocket
+
         switch (proxyMode) {
             case 'system':
-                return ws(url, options)
+                webSocket = ws(url, options)
+                break
             case 'off':
-                return ws(url, options, 'null')
+                webSocket = ws(url, options, 'null')
+                break
             case 'on':
-                return ws(url, options, this.config.proxyAddress)
+                webSocket = ws(url, options, this.config.proxyAddress)
+                break
             default:
-                return ws(url, options)
+                webSocket = ws(url, options)
+                break
         }
+
+        this.ctx.effect(() => webSocket.close)
+
+        webSocket.on('error', (err) => {
+            this.ctx.logger.error(err)
+        })
+
+        return webSocket
     }
 }
 
