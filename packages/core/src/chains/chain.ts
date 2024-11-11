@@ -174,7 +174,7 @@ export class ChatChain {
                 if (error.cause) {
                     logger.error(error.cause)
                 }
-                logger.debug('-'.repeat(30) + '\n')
+                logger.debug('-'.repeat(40) + '\n')
 
                 await this.sendMessage(
                     session,
@@ -212,7 +212,7 @@ export class ChatChain {
                 }
 
                 if (isOutputLog) {
-                    logger.debug('-'.repeat(30) + '\n')
+                    logger.debug('-'.repeat(40) + '\n')
                 }
 
                 return false
@@ -222,7 +222,7 @@ export class ChatChain {
         }
 
         if (isOutputLog) {
-            logger.debug('-'.repeat(30) + '\n')
+            logger.debug('-'.repeat(40) + '\n')
         }
 
         if (context.message != null && context.message !== originMessage) {
