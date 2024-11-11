@@ -50,7 +50,7 @@
     "dependencies": {
         "highlight.js": "^11.10.0",
         "katex": "^0.16.11",
-        "marked": "^14.1.2",
+        "marked": "^15.0.0",
         "marked-highlight": "^2.1.4",
         "marked-katex-extension": "^5.1.2",
         "qrcode": "^1.5.4"

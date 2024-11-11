@@ -215,7 +215,7 @@
         "js-yaml": "^4.1.0",
         "koishi-plugin-markdown": "^1.1.1",
         "lru-cache": "^11.0.1",
-        "marked": "^14.1.2",
+        "marked": "^15.0.0",
         "md5": "^2.3.0",
         "socks-proxy-agent": "^8.0.4",
         "undici": "^6.20.0",
