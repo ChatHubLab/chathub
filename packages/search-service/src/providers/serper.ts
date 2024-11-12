@@ -9,20 +9,26 @@ class SerperSearchProvider extends SearchProvider {
         query: string,
         limit = this.config.topK
     ): Promise<SearchResult[]> {
-        const res = await this.ctx.http.post(
+        const response = await this._plugin.fetch(
             'https://google.serper.dev/search',
             {
+                method: 'POST',
                 headers: {
                     'X-API-KEY': this.config.serperApiKey,
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'User-Agent':
+                        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
                 },
-                data: {
+                body: JSON.stringify({
                     q: query,
                     gl: this.config.serperCountry ?? 'cn',
                     hl: this.config.serperLocation ?? 'zh-cn'
-                }
+                })
             }
         )
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const res = (await response.json()) as any
 
         if (!res || !res.organic || res.organic.length === 0) {
             return [
