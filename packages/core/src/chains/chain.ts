@@ -154,75 +154,48 @@ export class ChatChain {
 
         for (const middleware of runList) {
             let result: ChainMiddlewareRunStatus | h[] | h | h[][] | string
-
-            let executedTime = Date.now()
+            const startTime = Date.now()
 
             try {
                 result = await middleware.run(session, context)
 
-                executedTime = Date.now() - executedTime
-            } catch (error) {
-                if (error instanceof ChatLunaError) {
-                    let message = error.message
-                    if (error.errorCode === ChatLunaErrorCode.ABORTED) {
-                        message = session.text('chatluna.aborted')
-                    }
+                // Log execution time if needed
+                const shouldLogTime =
+                    !middleware.name.startsWith('lifecycle-') &&
+                    result !== ChainMiddlewareRunStatus.SKIPPED &&
+                    middleware.name !== 'allow_reply' &&
+                    Date.now() - startTime > 10
 
-                    await this.sendMessage(session, message)
+                if (shouldLogTime) {
+                    logger.debug(
+                        `middleware %c executed in %d ms`,
+                        middleware.name,
+                        Date.now() - startTime
+                    )
+                    isOutputLog = true
+                }
+
+                // Handle middleware result
+                if (result === ChainMiddlewareRunStatus.STOP) {
+                    await this.handleStopStatus(
+                        session,
+                        context,
+                        originMessage,
+                        isOutputLog
+                    )
                     return false
                 }
 
-                logger.error(`chat-chain: ${middleware.name} error ${error}`)
-
-                logger.error(error)
-
-                if (error.cause) {
-                    logger.error(error.cause)
+                if (result instanceof Array || typeof result === 'string') {
+                    context.message = result
                 }
-                logger.debug('-'.repeat(40) + '\n')
-
-                await this.sendMessage(
+            } catch (error) {
+                await this.handleMiddlewareError(
                     session,
-                    session.text('chatluna.middleware_error', [
-                        middleware.name,
-                        error.message
-                    ])
-                )
-
-                return false
-            }
-
-            if (
-                !middleware.name.startsWith('lifecycle-') &&
-                ChainMiddlewareRunStatus.SKIPPED !== result &&
-                middleware.name !== 'allow_reply' &&
-                executedTime > 10
-            ) {
-                logger.debug(
-                    `middleware %c executed in %d ms`,
                     middleware.name,
-                    executedTime
+                    error
                 )
-                isOutputLog = true
-            }
-
-            if (result === ChainMiddlewareRunStatus.STOP) {
-                // 中间件说这里不要继续执行了
-                if (
-                    context.message != null &&
-                    context.message !== originMessage
-                ) {
-                    // 消息被修改了
-                    await this.sendMessage(session, context.message)
-                }
-
-                if (isOutputLog) {
-                    logger.debug('-'.repeat(40) + '\n')
-                }
-
                 return false
-            } else if (result instanceof Array || typeof result === 'string') {
-                context.message = result
             }
         }
 
@@ -250,6 +223,50 @@ export class ChatChain {
         for (const sender of this._senders) {
             await sender(session, messages)
         }
+    }
+
+    private async handleStopStatus(
+        session: Session,
+        context: ChainMiddlewareContext,
+        originMessage: string | h[] | h[][],
+        isOutputLog: boolean
+    ) {
+        if (context.message != null && context.message !== originMessage) {
+            await this.sendMessage(session, context.message)
+        }
+
+        if (isOutputLog) {
+            logger.debug('-'.repeat(40) + '\n')
+        }
+    }
+
+    private async handleMiddlewareError(
+        session: Session,
+        middlewareName: string,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        error: any
+    ) {
+        if (error instanceof ChatLunaError) {
+            const message =
+                error.errorCode === ChatLunaErrorCode.ABORTED
+                    ? session.text('chatluna.aborted')
+                    : error.message
+            await this.sendMessage(session, message)
+            return
+        }
+
+        logger.error(`chat-chain: ${middlewareName} error ${error}`)
+        logger.error(error)
+        error.cause && logger.error(error.cause)
+        logger.debug('-'.repeat(40) + '\n')
+
+        await this.sendMessage(
+            session,
+            session.text('chatluna.middleware_error', [
+                middlewareName,
+                error.message
+            ])
+        )
     }
 }
 
