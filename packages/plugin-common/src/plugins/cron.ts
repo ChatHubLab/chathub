@@ -80,6 +80,7 @@ export class CronTool extends StructuredTool {
 
         const args = [content, recipient].filter(Boolean)
         const command = this._generateCommand(type, interval, args)
+        const rawInput = JSON.stringify(input)
 
         // command.session = this.session
 
@@ -92,15 +93,15 @@ export class CronTool extends StructuredTool {
 
         if (canRun !== validationString) {
             await this.session.send('指令执行失败')
-            return `The cron ${input} execution failed, because the user didn't confirm`
+            return `The cron ${rawInput} execution failed, because the user didn't confirm`
         }
 
         try {
             const result = await session.execute(command, true)
             await session.send(result)
-            return `The cron ${input} execution success with result ${elementToString(result)}`
+            return `The cron ${rawInput} execution success with result ${elementToString(result)}`
         } catch (e) {
-            return `The cron ${input} execution failed, because ${e.message}`
+            return `The cron ${rawInput} execution failed, because ${e.message}`
         }
     }
 
