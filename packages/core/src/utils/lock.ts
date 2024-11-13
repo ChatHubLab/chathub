@@ -22,7 +22,7 @@ export class ObjectLock {
     async lock() {
         const id = this._currentId++
 
-        if (this._currentLockId === id || this._currentLockId === id - 1) {
+        if (this._currentLockId === id) {
             this._lockCount = Math.max(0, this._lockCount + 1)
             return this._currentLockId!
         }
@@ -84,14 +84,14 @@ export class ObjectLock {
 
         this._lockCount = Math.max(0, this._lockCount - 1)
 
-        this._lock = false
-        this._currentLockId = undefined
-
         if (this._queue.length > 0) {
             const nextRequest = this._queue.shift()!
-
             nextRequest.resolve()
+            return
         }
+
+        this._lock = false
+        this._currentLockId = undefined
     }
 
     get isLocked() {
