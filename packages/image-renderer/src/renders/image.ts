@@ -47,6 +47,13 @@ export class ImageRenderer extends Renderer {
                 langPrefix: 'hljs language-',
                 //  langPrefix: 'hljs language-',
                 highlight(code, lang) {
+                    if (
+                        code.match(/^sequenceDiagram/) ||
+                        code.match(/^graph/) ||
+                        lang === 'mermaid'
+                    ) {
+                        return '<pre class="mermaid">' + code + '</pre>'
+                    }
                     return `<pre><code class="hljs">${
                         hljs.highlightAuto(code, [lang]).value
                     }</code></pre>`
