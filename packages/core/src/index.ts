@@ -111,12 +111,19 @@ async function initializeComponents(ctx: Context, config: Config) {
 }
 
 function setupMiddleware(ctx: Context) {
-    ctx.middleware(async (session, next) => {
+    ctx.middleware((session, next) => {
         if (ctx.chatluna == null || ctx.chatluna.chatChain == null) {
             return next()
         }
-        return next(async (_) => {
-            await ctx.chatluna.chatChain.receiveMessage(session, ctx)
+        return next(async (nextMiddleware) => {
+            const messageHandled = await ctx.chatluna.chatChain.receiveMessage(
+                session,
+                ctx
+            )
+
+            if (!messageHandled) {
+                return await nextMiddleware()
+            }
         })
     })
 }
