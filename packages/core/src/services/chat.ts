@@ -102,6 +102,15 @@ export class ChatLunaService extends Service {
             typeof plugin === 'string' ? plugin : plugin.platformName
         const { promise, resolve, reject } = withResolver<void>()
 
+        // 提前检测，如果已经加载，则直接返回
+        if (
+            this._platformService.getModels(pluginName, ModelType.all).length >
+            0
+        ) {
+            resolve()
+            return promise
+        }
+
         // 添加超时处理
         const timeoutId = setTimeout(() => {
             dispose()

@@ -166,6 +166,10 @@ export class PlatformService {
     getModels(platform: PlatformClientNames, type: ModelType) {
         const models = this._models[platform] ?? []
 
+        if (models.length === 0) {
+            return []
+        }
+
         return models
             .filter((m) => type === ModelType.all || m.type === type)
             .sort((a, b) => {
