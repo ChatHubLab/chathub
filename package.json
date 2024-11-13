@@ -57,7 +57,7 @@
         "koishi-plugin-markdown": "^1.1.1",
         "koishi-plugin-puppeteer": "^3.9.0",
         "langchain": "^0.3.2",
-        "marked": "^14.1.2",
+        "marked": "^15.0.0",
         "marked-highlight": "^2.1.4",
         "marked-katex-extension": "^5.1.2",
         "md5": "^2.3.0",
