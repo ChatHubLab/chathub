@@ -46,23 +46,22 @@ export class ChatChain {
         }
 
         context.recallThinkingMessage = async () => {
-            if (context.options?.thinkingTimeoutObject) {
-                clearTimeout(context.options.thinkingTimeoutObject.timeout!)
+            if (!context.options?.thinkingTimeoutObject) return
 
-                if (context.options.thinkingTimeoutObject.autoRecallTimeout) {
-                    clearTimeout(
-                        context.options.thinkingTimeoutObject.autoRecallTimeout!
-                    )
-                }
+            const timeoutObj = context.options.thinkingTimeoutObject
 
-                if (context.options.thinkingTimeoutObject.recallFunc) {
-                    await context.options.thinkingTimeoutObject.recallFunc()
-                }
-                if (context.options?.thinkingTimeoutObject?.timeout) {
-                    context.options.thinkingTimeoutObject.timeout = null
-                }
-                context.options.thinkingTimeoutObject = undefined
-            }
+            // Clear all timeouts
+            clearTimeout(timeoutObj.timeout!)
+
+            timeoutObj.autoRecallTimeout &&
+                clearTimeout(timeoutObj.autoRecallTimeout)
+
+            // Execute recall function if exists
+            timeoutObj.recallFunc && (await timeoutObj.recallFunc())
+
+            // Cleanup
+            timeoutObj.timeout = null
+            context.options.thinkingTimeoutObject = undefined
         }
 
         const result = await this._runMiddleware(session, context)
@@ -89,16 +88,22 @@ export class ChatChain {
         }
 
         context.recallThinkingMessage = async () => {
-            if (context.options.thinkingTimeoutObject) {
-                clearTimeout(context.options.thinkingTimeoutObject.timeout!)
-                if (context.options.thinkingTimeoutObject.recallFunc) {
-                    await context.options.thinkingTimeoutObject.recallFunc()
-                }
-                if (context.options?.thinkingTimeoutObject?.timeout) {
-                    context.options.thinkingTimeoutObject.timeout = null
-                }
-                context.options.thinkingTimeoutObject = undefined
-            }
+            if (!context.options?.thinkingTimeoutObject) return
+
+            const timeoutObj = context.options.thinkingTimeoutObject
+
+            // Clear all timeouts
+            clearTimeout(timeoutObj.timeout!)
+
+            timeoutObj.autoRecallTimeout &&
+                clearTimeout(timeoutObj.autoRecallTimeout)
+
+            // Execute recall function if exists
+            timeoutObj.recallFunc && (await timeoutObj.recallFunc())
+
+            // Cleanup
+            timeoutObj.timeout = null
+            context.options.thinkingTimeoutObject = undefined
         }
 
         const result = await this._runMiddleware(session, context)
