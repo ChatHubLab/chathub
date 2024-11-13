@@ -3,6 +3,8 @@ import { ChatChain } from '../chains/chain'
 import { Config } from '../config'
 
 export function apply(ctx: Context, config: Config, chain: ChatChain) {
+    if (config.authSystem !== true) return
+
     ctx.command('chatluna.auth', { authority: 1 })
 
     ctx.command('chatluna.auth.list')
