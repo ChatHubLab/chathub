@@ -152,9 +152,13 @@ export class ChatInterface {
             )
         }
 
+        const messageContent = getMessageContent(response.message.content)
+
         // Update chat history
-        await this.chatHistory.addMessage(arg.message)
-        await this.chatHistory.addMessage(response.message)
+        if (messageContent.trim().length > 0) {
+            await this.chatHistory.addMessage(arg.message)
+            await this.chatHistory.addMessage(response.message)
+        }
 
         return response
     }
