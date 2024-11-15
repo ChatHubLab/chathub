@@ -36,7 +36,7 @@ export class PuppeteerBrowserTool extends Tool {
     private page: Page | null = null
     private lastActionTime: number = Date.now()
     private readonly timeout: number = 30000 // 30 seconds timeout
-    private readonly idleTimeout: number = 300000 // 5 minutes idle timeout
+    private readonly idleTimeout: number = 180000 // 5 minutes idle timeout
     private model: BaseLanguageModel
     private embeddings: Embeddings
     private ctx: Context

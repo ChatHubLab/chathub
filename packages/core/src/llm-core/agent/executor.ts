@@ -704,7 +704,7 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
             if (agentAction.tool in nameToolMap) {
                 const tool = nameToolMap[agentAction.tool]
                 try {
-                    observation = await tool.call(
+                    observation = await tool.invoke(
                         agentAction.toolInput,
                         runManager?.getChild()
                     )
@@ -729,7 +729,7 @@ export class AgentExecutor extends BaseChain<ChainValues, AgentExecutorOutput> {
                         } else {
                             throw e
                         }
-                        observation = await new ExceptionTool().call(
+                        observation = await new ExceptionTool().invoke(
                             observation,
                             runManager?.getChild()
                         )
