@@ -293,6 +293,14 @@ export class ChatInterface {
         await ctx.database.remove('chathub_room_group_member', {
             roomId: room.roomId
         })
+
+        await ctx.database.remove('chathub_user', {
+            defaultRoomId: room.roomId
+        })
+
+        await ctx.database.remove('chathub_message', {
+            conversation: room.conversationId
+        })
     }
 
     async clearChatHistory(): Promise<void> {
