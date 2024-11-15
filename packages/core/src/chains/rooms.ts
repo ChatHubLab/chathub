@@ -87,6 +87,7 @@ export async function queryPublicConversationRoom(
     const room = await resolveConversationRoom(ctx, roomId)
 
     if (room == null && roomId !== 0) {
+        // why?
         await deleteConversationRoomByRoomId(ctx, roomId)
         return undefined
     }
