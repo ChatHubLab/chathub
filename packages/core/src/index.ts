@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { Context, Logger, User } from 'koishi'
+import { Context, Logger, Time, User } from 'koishi'
 import { ChatLunaService } from 'koishi-plugin-chatluna/services/chat'
 import { forkScopeToDisposable } from 'koishi-plugin-chatluna/utils/koishi'
 import {
@@ -225,9 +225,9 @@ async function setupAutoDelete(ctx: Context, config: Config) {
             rooms.length,
             success.map((room) => room.roomName).join(',')
         )
-
-        return ctx.setTimeout(execute, 30 * 60 * 1000)
     }
 
     await execute()
+
+    ctx.setTimeout(execute, Time.minute * 30)
 }
