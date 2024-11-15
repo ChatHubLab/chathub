@@ -229,5 +229,5 @@ async function setupAutoDelete(ctx: Context, config: Config) {
 
     await execute()
 
-    ctx.setTimeout(execute, Time.minute * 30)
+    ctx.setInterval(execute, Time.minute * 30)
 }
