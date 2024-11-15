@@ -86,6 +86,11 @@ export async function queryPublicConversationRoom(
 
     const room = await resolveConversationRoom(ctx, roomId)
 
+    if (room == null && roomId !== 0) {
+        await deleteConversationRoomByRoomId(ctx, roomId)
+        return undefined
+    }
+
     await joinConversationRoom(ctx, session, room)
     return room
 }
@@ -469,21 +474,7 @@ export async function deleteConversationRoom(
 
     await chatBridger?.clearChatHistory(room)
 
-    await ctx.database.remove('chathub_room', {
-        roomId: room.roomId
-    })
-
-    await ctx.database.remove('chathub_room_member', {
-        roomId: room.roomId
-    })
-
-    await ctx.database.remove('chathub_room_group_member', {
-        roomId: room.roomId
-    })
-
-    await ctx.database.remove('chathub_user', {
-        defaultRoomId: room.roomId
-    })
+    await deleteConversationRoomByRoomId(ctx, room.roomId)
 
     await ctx.database.remove('chathub_message', {
         conversation: room.conversationId
@@ -491,6 +482,27 @@ export async function deleteConversationRoom(
 
     await ctx.database.remove('chathub_conversation', {
         id: room.conversationId
+    })
+}
+
+export async function deleteConversationRoomByRoomId(
+    ctx: Context,
+    roomId: number
+) {
+    await ctx.database.remove('chathub_room', {
+        roomId
+    })
+
+    await ctx.database.remove('chathub_room_member', {
+        roomId
+    })
+
+    await ctx.database.remove('chathub_room_group_member', {
+        roomId
+    })
+
+    await ctx.database.remove('chathub_user', {
+        defaultRoomId: roomId
     })
 }
 
