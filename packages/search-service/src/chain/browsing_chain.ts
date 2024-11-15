@@ -11,10 +11,10 @@ import { PromptTemplate } from '@langchain/core/prompts'
 import { StructuredTool } from '@langchain/core/tools'
 import { ChainValues } from '@langchain/core/utils/types'
 import {
-    callChatHubChain,
-    ChatHubLLMCallArg,
-    ChatHubLLMChain,
-    ChatHubLLMChainWrapper
+    callChatLunaChain,
+    ChatLunaLLMCallArg,
+    ChatLunaLLMChain,
+    ChatLunaLLMChainWrapper
 } from 'koishi-plugin-chatluna/llm-core/chain/base'
 import { ChatLunaChatModel } from 'koishi-plugin-chatluna/llm-core/platform/model'
 import {
@@ -25,8 +25,8 @@ import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters'
 import { MemoryVectorStore } from 'koishi-plugin-chatluna/llm-core/vectorstores'
 import { logger } from '..'
 import { PresetTemplate } from 'koishi-plugin-chatluna/llm-core/prompt'
-import { ChatHubChatPrompt } from 'koishi-plugin-chatluna/llm-core/chain/prompt'
-import { ChatHubTool } from 'koishi-plugin-chatluna/llm-core/platform/types'
+import { ChatLunaChatPrompt } from 'koishi-plugin-chatluna/llm-core/chain/prompt'
+import { ChatLunaTool } from 'koishi-plugin-chatluna/llm-core/platform/types'
 import { PuppeteerBrowserTool } from '../tools/puppeteerBrowserTool'
 import { Session } from 'koishi'
 
@@ -49,7 +49,7 @@ export interface ChatLunaBrowsingChainInput {
 }
 
 export class ChatLunaBrowsingChain
-    extends ChatHubLLMChainWrapper
+    extends ChatLunaLLMChainWrapper
     implements ChatLunaBrowsingChainInput
 {
     botName: string
@@ -58,17 +58,17 @@ export class ChatLunaBrowsingChain
 
     searchMemory: VectorStoreRetrieverMemory
 
-    chain: ChatHubLLMChain
+    chain: ChatLunaLLMChain
 
     historyMemory: BufferMemory
 
     preset: () => Promise<PresetTemplate>
 
-    formatQuestionChain: ChatHubLLMChain
+    formatQuestionChain: ChatLunaLLMChain
 
     textSplitter: RecursiveCharacterTextSplitter
 
-    tools: ChatLunaTool[]
+    tools: ChatLunaToolWrapper[]
 
     cacheUrls: string[]
 
@@ -95,9 +95,9 @@ export class ChatLunaBrowsingChain
         thoughtMessage,
         searchPrompt
     }: ChatLunaBrowsingChainInput & {
-        chain: ChatHubLLMChain
-        formatQuestionChain: ChatHubLLMChain
-        tools: ChatLunaTool[]
+        chain: ChatLunaLLMChain
+        formatQuestionChain: ChatLunaLLMChain
+        tools: ChatLunaToolWrapper[]
         searchPrompt: string
     }) {
         super()
@@ -135,8 +135,7 @@ export class ChatLunaBrowsingChain
 
     static fromLLMAndTools(
         llm: ChatLunaChatModel,
-
-        tools: ChatLunaTool[],
+        tools: ChatLunaToolWrapper[],
         {
             botName,
             embeddings,
@@ -149,7 +148,7 @@ export class ChatLunaBrowsingChain
             enhancedSummary
         }: ChatLunaBrowsingChainInput
     ): ChatLunaBrowsingChain {
-        const prompt = new ChatHubChatPrompt({
+        const prompt = new ChatLunaChatPrompt({
             preset,
             tokenCounter: (text) => llm.getNumTokens(text),
             sendTokenLimit:
@@ -157,8 +156,8 @@ export class ChatLunaBrowsingChain
                 llm.getModelMaxContextSize()
         })
 
-        const chain = new ChatHubLLMChain({ llm, prompt })
-        const formatQuestionChain = new ChatHubLLMChain({
+        const chain = new ChatLunaLLMChain({ llm, prompt })
+        const formatQuestionChain = new ChatLunaLLMChain({
             llm,
             prompt: PromptTemplate.fromTemplate(newQuestionPrompt)
         })
@@ -233,7 +232,7 @@ export class ChatLunaBrowsingChain
         conversationId,
         session,
         variables
-    }: ChatHubLLMCallArg): Promise<ChainValues> {
+    }: ChatLunaLLMCallArg): Promise<ChainValues> {
         const requests: ChainValues = {
             input: message
         }
@@ -250,7 +249,7 @@ export class ChatLunaBrowsingChain
 
         let needSearch = true
         const newQuestion = (
-            await callChatHubChain(
+            await callChatLunaChain(
                 this.formatQuestionChain,
                 {
                     chat_history: formatChatHistoryAsString(
@@ -280,7 +279,7 @@ export class ChatLunaBrowsingChain
 
         // format and call
 
-        const { text: finalResponse } = await callChatHubChain(
+        const { text: finalResponse } = await callChatLunaChain(
             this.chain,
             {
                 ...requests,
@@ -423,11 +422,11 @@ export class ChatLunaBrowsingChain
 
 const formatChatHistoryAsString = (history: BaseMessage[]) => {
     return history
-        .map((message) => `${message._getType()}: ${message.content}`)
+        .map((message) => `${message.getType()}: ${message.content}`)
         .join('\n')
 }
 
-interface ChatLunaTool {
+interface ChatLunaToolWrapper {
     name: string
-    tool: ChatHubTool
+    tool: ChatLunaTool
 }

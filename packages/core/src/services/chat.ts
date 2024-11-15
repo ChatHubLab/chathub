@@ -15,7 +15,7 @@ import { LRUCache } from 'lru-cache'
 import { v4 as uuidv4 } from 'uuid'
 import { Cache } from '../cache'
 import { ChatChain } from '../chains/chain'
-import { ChatHubLLMChainWrapper } from 'koishi-plugin-chatluna/llm-core/chain/base'
+import { ChatLunaLLMChainWrapper } from 'koishi-plugin-chatluna/llm-core/chain/base'
 import { BasePlatformClient } from 'koishi-plugin-chatluna/llm-core/platform/client'
 import {
     ClientConfig,
@@ -28,8 +28,8 @@ import {
 } from 'koishi-plugin-chatluna/llm-core/platform/model'
 import { PlatformService } from 'koishi-plugin-chatluna/llm-core/platform/service'
 import {
-    ChatHubTool,
-    CreateChatHubLLMChainParams,
+    ChatLunaTool,
+    CreateChatLunaLLMChainParams,
     CreateVectorStoreFunction,
     ModelType,
     PlatformClientNames
@@ -652,7 +652,7 @@ export class ChatLunaPlugin<
         this._disposables.push(disposable)
     }
 
-    registerTool(name: string, tool: ChatHubTool) {
+    registerTool(name: string, tool: ChatLunaTool) {
         const disposable = this._platformService.registerTool(name, tool)
         this._disposables.push(disposable)
     }
@@ -661,8 +661,8 @@ export class ChatLunaPlugin<
         name: string,
         description: Dict<string>,
         func: (
-            params: CreateChatHubLLMChainParams
-        ) => Promise<ChatHubLLMChainWrapper>
+            params: CreateChatLunaLLMChainParams
+        ) => Promise<ChatLunaLLMChainWrapper>
     ) {
         const disposable = this._platformService.registerChatChain(
             name,

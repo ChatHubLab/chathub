@@ -2,7 +2,7 @@ import { Context, Schema } from 'koishi'
 import { logger } from 'koishi-plugin-chatluna'
 import { PlatformService } from 'koishi-plugin-chatluna/llm-core/platform/service'
 import {
-    ChatHubTool,
+    ChatLunaTool,
     ModelType
 } from 'koishi-plugin-chatluna/llm-core/platform/types'
 import { ChatHubChatChain } from '../chain/chat_chain'
@@ -137,7 +137,7 @@ function updateVectorStores(ctx: Context, service: PlatformService) {
 function getTools(
     service: PlatformService,
     filter: (name: string) => boolean
-): ChatHubTool[] {
+): ChatLunaTool[] {
     const tools = service.getTools().filter(filter)
 
     return tools.map((name) => service.getTool(name))

@@ -10,7 +10,7 @@ import {
     ChatLunaError,
     ChatLunaErrorCode
 } from 'koishi-plugin-chatluna/utils/error'
-import { ChatHubLLMCallArg, ChatHubLLMChainWrapper } from '../chain/base'
+import { ChatLunaLLMCallArg, ChatLunaLLMChainWrapper } from '../chain/base'
 import { KoishiChatMessageHistory } from 'koishi-plugin-chatluna/llm-core/memory/message'
 import { emptyEmbeddings } from 'koishi-plugin-chatluna/llm-core/model/in_memory'
 import {
@@ -36,7 +36,7 @@ import type { HandlerResult } from '../../utils/types'
 export class ChatInterface {
     private _input: ChatInterfaceInput
     private _chatHistory: KoishiChatMessageHistory
-    private _chains: Record<string, ChatHubLLMChainWrapper> = {}
+    private _chains: Record<string, ChatLunaLLMChainWrapper> = {}
     private _embeddings: Embeddings
 
     private _errorCountsMap: Record<string, number[]> = {}
@@ -98,8 +98,8 @@ export class ChatInterface {
         await service.makeConfigStatus(config.value, false)
     }
 
-    async chat(arg: ChatHubLLMCallArg): Promise<ChainValues> {
-        const [wrapper, config] = await this.createChatHubLLMChainWrapper()
+    async chat(arg: ChatLunaLLMCallArg): Promise<ChainValues> {
+        const [wrapper, config] = await this.createChatLunaLLMChainWrapper()
 
         try {
             await this.ctx.parallel(
@@ -124,8 +124,8 @@ export class ChatInterface {
     }
 
     private async processChat(
-        arg: ChatHubLLMCallArg,
-        wrapper: ChatHubLLMChainWrapper
+        arg: ChatLunaLLMCallArg,
+        wrapper: ChatLunaLLMChainWrapper
     ): Promise<ChainValues> {
         const response = (await wrapper.call(arg)) as {
             message: AIMessage
@@ -164,7 +164,7 @@ export class ChatInterface {
     }
 
     private async handlePostProcessing(
-        arg: ChatHubLLMCallArg,
+        arg: ChatLunaLLMCallArg,
         response: { message: AIMessage } & ChainValues
     ): Promise<HandlerResult> {
         logger.debug(`original content: %c`, response.message.content)
@@ -175,8 +175,8 @@ export class ChatInterface {
         )
     }
 
-    async createChatHubLLMChainWrapper(): Promise<
-        [ChatHubLLMChainWrapper, ClientConfigWrapper]
+    async createChatLunaLLMChainWrapper(): Promise<
+        [ChatLunaLLMChainWrapper, ClientConfigWrapper]
     > {
         const service = this.ctx.chatluna.platform
         const [llmPlatform, llmModelName] = parseRawModelName(this._input.model)
@@ -453,7 +453,7 @@ declare module 'koishi' {
             message: HumanMessage,
             promptVariables: ChainValues,
             chatInterface: ChatInterface,
-            chain: ChatHubLLMChainWrapper
+            chain: ChatLunaLLMChainWrapper
         ) => Promise<void>
         'chatluna/after-chat': (
             conversationId: string,
@@ -461,7 +461,7 @@ declare module 'koishi' {
             responseMessage: AIMessage,
             promptVariables: ChainValues,
             chatInterface: ChatInterface,
-            chain: ChatHubLLMChainWrapper
+            chain: ChatLunaLLMChainWrapper
         ) => Promise<void>
         'chatluna/clear-chat-history': (
             conversationId: string,

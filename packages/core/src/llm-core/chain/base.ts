@@ -26,15 +26,15 @@ import type { PostHandler } from '../../utils/types'
 
 export type SystemPrompts = BaseMessage[]
 
-export abstract class ChatHubLLMChainWrapper {
-    abstract call(arg: ChatHubLLMCallArg): Promise<ChainValues>
+export abstract class ChatLunaLLMChainWrapper {
+    abstract call(arg: ChatLunaLLMCallArg): Promise<ChainValues>
 
     abstract historyMemory: BufferMemory
 
     abstract get model(): ChatLunaChatModel
 }
 
-export interface ChatHubLLMCallArg {
+export interface ChatLunaLLMCallArg {
     message: HumanMessage
     events: ChatEvents
     stream: boolean
@@ -46,7 +46,7 @@ export interface ChatHubLLMCallArg {
     postHandler?: PostHandler
 }
 
-export interface ChatHubLLMChainInput extends ChainInputs {
+export interface ChatLunaLLMChainInput extends ChainInputs {
     /** Prompt object to use */
     prompt?: BasePromptTemplate
     /** LLM Wrapper to use */
@@ -267,12 +267,12 @@ export abstract class BaseChain<
     }
 }
 
-export class ChatHubLLMChain<
+export class ChatLunaLLMChain<
         RunInput extends ChainValues = ChainValues,
         RunOutput extends ChainValues = ChainValues
     >
     extends BaseChain<RunInput, RunOutput>
-    implements ChatHubLLMChainInput
+    implements ChatLunaLLMChainInput
 {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     lc_serializable = false
@@ -293,7 +293,7 @@ export class ChatHubLLMChain<
         return [this.outputKey]
     }
 
-    constructor(fields: ChatHubLLMChainInput) {
+    constructor(fields: ChatLunaLLMChainInput) {
         super(fields)
         this.prompt = fields.prompt
         this.llm = fields.llm
@@ -347,7 +347,7 @@ export class ChatHubLLMChain<
     }
 
     _chainType() {
-        return 'chathub_chain' as const
+        return 'chatluna_chain' as const
     }
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -356,9 +356,9 @@ export class ChatHubLLMChain<
     }
 }
 
-export async function callChatHubChain(
-    chain: ChatHubLLMChain,
-    values: ChainValues & ChatHubLLMChain['llm']['ParsedCallOptions'],
+export async function callChatLunaChain(
+    chain: ChatLunaLLMChain,
+    values: ChainValues & ChatLunaLLMChain['llm']['ParsedCallOptions'],
     events: ChatEvents
 ): Promise<ChainValues> {
     let usedToken = 0

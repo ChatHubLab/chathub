@@ -1,20 +1,18 @@
 import { BufferMemory } from 'koishi-plugin-chatluna/llm-core/memory/langchain'
 import { ChatHubBaseEmbeddings, ChatLunaChatModel } from './model'
-import { ChatHubLLMChainWrapper } from '../chain/base'
+import { ChatLunaLLMChainWrapper } from '../chain/base'
 import { StructuredTool } from '@langchain/core/tools'
 import { BaseMessage } from '@langchain/core/messages'
 import { Dict, Session } from 'koishi'
 import { PresetTemplate } from 'koishi-plugin-chatluna/llm-core/prompt'
 import { ChatLunaSaveableVectorStore } from 'koishi-plugin-chatluna/llm-core/model/base'
-export interface ChatHubChainInfo {
+export interface ChatLunaChainInfo {
     name: string
     description?: Dict<string>
     createFunction: (
-        params: CreateChatHubLLMChainParams
-    ) => Promise<ChatHubLLMChainWrapper>
+        params: CreateChatLunaLLMChainParams
+    ) => Promise<ChatLunaLLMChainWrapper>
 }
-
-export type ChatLunaChainInfo = ChatHubChainInfo
 
 export interface CreateToolParams {
     model: ChatLunaChatModel
@@ -30,7 +28,7 @@ export interface CreateVectorStoreParams {
     //  topK?: number
 }
 
-export interface CreateChatHubLLMChainParams {
+export interface CreateChatLunaLLMChainParams {
     botName: string
     model: ChatLunaChatModel
     embeddings?: ChatHubBaseEmbeddings
@@ -39,7 +37,7 @@ export interface CreateChatHubLLMChainParams {
     vectorStoreName?: string
 }
 
-export interface ChatHubTool {
+export interface ChatLunaTool {
     createTool: (
         params: CreateToolParams,
         session?: Session
@@ -48,8 +46,6 @@ export interface ChatHubTool {
     authorization?: (session: Session) => boolean
     alwaysRecreate?: boolean
 }
-
-export type ChatLunaTool = ChatHubTool
 
 export type CreateVectorStoreFunction = (
     params: CreateVectorStoreParams

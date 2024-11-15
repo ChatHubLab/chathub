@@ -10,16 +10,16 @@ import {
     ClientConfigPool
 } from 'koishi-plugin-chatluna/llm-core/platform/config'
 import {
-    ChatHubChainInfo,
-    ChatHubTool,
-    CreateChatHubLLMChainParams,
+    ChatLunaChainInfo,
+    ChatLunaTool,
+    CreateChatLunaLLMChainParams,
     CreateVectorStoreFunction,
     CreateVectorStoreParams,
     ModelInfo,
     ModelType,
     PlatformClientNames
 } from 'koishi-plugin-chatluna/llm-core/platform/types'
-import { ChatHubLLMChainWrapper } from '../chain/base'
+import { ChatLunaLLMChainWrapper } from '../chain/base'
 import { LRUCache } from 'lru-cache'
 import { ChatLunaSaveableVectorStore } from 'koishi-plugin-chatluna/llm-core/model/base'
 
@@ -31,9 +31,9 @@ export class PlatformService {
     > = {}
 
     private _configPools: Record<string, ClientConfigPool> = {}
-    private _tools: Record<string, ChatHubTool> = {}
+    private _tools: Record<string, ChatLunaTool> = {}
     private _models: Record<string, ModelInfo[]> = {}
-    private _chatChains: Record<string, ChatHubChainInfo> = {}
+    private _chatChains: Record<string, ChatLunaChainInfo> = {}
     private _vectorStore: Record<string, CreateVectorStoreFunction> = {}
 
     private _tmpVectorStores = new LRUCache<
@@ -70,7 +70,7 @@ export class PlatformService {
         this._configPools[name] = configPool
     }
 
-    registerTool(name: string, toolCreator: ChatHubTool) {
+    registerTool(name: string, toolCreator: ChatLunaTool) {
         this._tools[name] = toolCreator
         this.ctx.emit('chatluna/tool-updated', this)
         return () => this.unregisterTool(name)
@@ -145,8 +145,8 @@ export class PlatformService {
         name: string,
         description: Dict<string>,
         createChatChainFunction: (
-            params: CreateChatHubLLMChainParams
-        ) => Promise<ChatHubLLMChainWrapper>
+            params: CreateChatLunaLLMChainParams
+        ) => Promise<ChatLunaLLMChainWrapper>
     ) {
         this._chatChains[name] = {
             name,
@@ -374,7 +374,7 @@ export class PlatformService {
         return this._tools[name]
     }
 
-    createChatChain(name: string, params: CreateChatHubLLMChainParams) {
+    createChatChain(name: string, params: CreateChatLunaLLMChainParams) {
         const chatChain = this._chatChains[name]
 
         if (!chatChain) {
@@ -393,7 +393,7 @@ declare module 'koishi' {
     interface Events {
         'chatluna/chat-chain-added': (
             service: PlatformService,
-            chain: ChatHubChainInfo
+            chain: ChatLunaChainInfo
         ) => void
         'chatluna/model-added': (
             service: PlatformService,
@@ -411,7 +411,7 @@ declare module 'koishi' {
         ) => void
         'chatluna/chat-chain-removed': (
             service: PlatformService,
-            chain: ChatHubChainInfo
+            chain: ChatLunaChainInfo
         ) => void
         'chatluna/model-removed': (
             service: PlatformService,

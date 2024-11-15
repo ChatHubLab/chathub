@@ -3,15 +3,15 @@ import { StructuredTool } from '@langchain/core/tools'
 import { ChainValues } from '@langchain/core/utils/types'
 import { Session } from 'koishi'
 import {
-    ChatHubLLMCallArg,
-    ChatHubLLMChainWrapper,
+    ChatLunaLLMCallArg,
+    ChatLunaLLMChainWrapper,
     SystemPrompts
 } from 'koishi-plugin-chatluna/llm-core/chain/base'
 import {
     ChatHubBaseEmbeddings,
     ChatLunaChatModel
 } from 'koishi-plugin-chatluna/llm-core/platform/model'
-import { ChatHubTool } from 'koishi-plugin-chatluna/llm-core/platform/types'
+import { ChatLunaTool } from 'koishi-plugin-chatluna/llm-core/platform/types'
 import { AgentExecutor } from '../agent/executor'
 import { BufferMemory } from 'koishi-plugin-chatluna/llm-core/memory/langchain'
 import { createOpenAIAgent } from '../agent/openai'
@@ -21,17 +21,17 @@ import {
     ChatLunaErrorCode
 } from 'koishi-plugin-chatluna/utils/error'
 import { PresetTemplate } from 'koishi-plugin-chatluna/llm-core/prompt'
-import { ChatHubChatPrompt } from 'koishi-plugin-chatluna/llm-core/chain/prompt'
+import { ChatLunaChatPrompt } from 'koishi-plugin-chatluna/llm-core/chain/prompt'
 
 export interface ChatLunaPluginChainInput {
-    prompt: ChatHubChatPrompt
+    prompt: ChatLunaChatPrompt
     historyMemory: BufferMemory
     embeddings: ChatHubBaseEmbeddings
     preset: () => Promise<PresetTemplate>
 }
 
 export class ChatLunaPluginChain
-    extends ChatHubLLMChainWrapper
+    extends ChatLunaLLMChainWrapper
     implements ChatLunaPluginChainInput
 {
     executor: AgentExecutor
@@ -44,13 +44,13 @@ export class ChatLunaPluginChain
 
     embeddings: ChatHubBaseEmbeddings
 
-    activeTools: ChatHubTool[] = []
+    activeTools: ChatLunaTool[] = []
 
-    tools: ChatHubTool[]
+    tools: ChatLunaTool[]
 
     baseMessages: BaseMessage[] = undefined
 
-    prompt: ChatHubChatPrompt
+    prompt: ChatLunaChatPrompt
 
     preset: () => Promise<PresetTemplate>
 
@@ -62,7 +62,7 @@ export class ChatLunaPluginChain
         preset,
         embeddings
     }: ChatLunaPluginChainInput & {
-        tools: ChatHubTool[]
+        tools: ChatLunaTool[]
         llm: ChatLunaChatModel
     }) {
         super()
@@ -77,14 +77,14 @@ export class ChatLunaPluginChain
 
     static async fromLLMAndTools(
         llm: ChatLunaChatModel,
-        tools: ChatHubTool[],
+        tools: ChatLunaTool[],
         {
             historyMemory,
             preset,
             embeddings
         }: Omit<ChatLunaPluginChainInput, 'prompt'>
     ): Promise<ChatLunaPluginChain> {
-        const prompt = new ChatHubChatPrompt({
+        const prompt = new ChatLunaChatPrompt({
             preset,
             tokenCounter: (text) => llm.getNumTokens(text),
             sendTokenLimit:
@@ -122,10 +122,10 @@ export class ChatLunaPluginChain
     private _getActiveTools(
         session: Session,
         messages: BaseMessage[]
-    ): [ChatHubTool[], boolean] {
-        const tools: ChatHubTool[] = this.activeTools
+    ): [ChatLunaTool[], boolean] {
+        const tools: ChatLunaTool[] = this.activeTools
 
-        const newActiveTools: [ChatHubTool, boolean][] = this.tools.map(
+        const newActiveTools: [ChatLunaTool, boolean][] = this.tools.map(
             (tool) => {
                 const base = tool.selector(messages)
 
@@ -172,7 +172,7 @@ export class ChatLunaPluginChain
         events,
         conversationId,
         variables
-    }: ChatHubLLMCallArg): Promise<ChainValues> {
+    }: ChatLunaLLMCallArg): Promise<ChainValues> {
         const requests: ChainValues & {
             chat_history?: BaseMessage[]
             id?: string

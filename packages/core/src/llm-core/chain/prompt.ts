@@ -22,16 +22,16 @@ import { logger } from 'koishi-plugin-chatluna'
 import { SystemPrompts } from 'koishi-plugin-chatluna/llm-core/chain/base'
 import { Logger } from 'koishi'
 
-export interface ChatHubChatPromptInput {
+export interface ChatLunaChatPromptInput {
     messagesPlaceholder?: MessagesPlaceholder
     tokenCounter: (text: string) => Promise<number>
     sendTokenLimit?: number
     preset?: () => Promise<PresetTemplate>
 }
 
-export class ChatHubChatPrompt
+export class ChatLunaChatPrompt
     extends BaseChatPromptTemplate
-    implements ChatHubChatPromptInput
+    implements ChatLunaChatPromptInput
 {
     getPreset?: () => Promise<PresetTemplate>
 
@@ -47,7 +47,7 @@ export class ChatHubChatPrompt
 
     private _systemPrompts: BaseMessage[]
 
-    constructor(fields: ChatHubChatPromptInput) {
+    constructor(fields: ChatLunaChatPromptInput) {
         super({ inputVariables: ['chat_history', 'variables', 'input'] })
 
         this.tokenCounter = fields.tokenCounter

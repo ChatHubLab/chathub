@@ -1,14 +1,14 @@
 import { AIMessage } from '@langchain/core/messages'
 import { ChainValues } from '@langchain/core/utils/types'
 import {
-    callChatHubChain,
-    ChatHubLLMCallArg,
-    ChatHubLLMChain,
-    ChatHubLLMChainWrapper
+    callChatLunaChain,
+    ChatLunaLLMCallArg,
+    ChatLunaLLMChain,
+    ChatLunaLLMChainWrapper
 } from 'koishi-plugin-chatluna/llm-core/chain/base'
 import { ChatLunaChatModel } from 'koishi-plugin-chatluna/llm-core/platform/model'
 import { BufferMemory } from 'koishi-plugin-chatluna/llm-core/memory/langchain'
-import { ChatHubChatPrompt } from 'koishi-plugin-chatluna/llm-core/chain/prompt'
+import { ChatLunaChatPrompt } from 'koishi-plugin-chatluna/llm-core/chain/prompt'
 import { PresetTemplate } from 'koishi-plugin-chatluna/llm-core/prompt'
 
 export interface ChatHubChatChainInput {
@@ -19,12 +19,12 @@ export interface ChatHubChatChainInput {
 }
 
 export class ChatHubChatChain
-    extends ChatHubLLMChainWrapper
+    extends ChatLunaLLMChainWrapper
     implements ChatHubChatChainInput
 {
     botName: string
 
-    chain: ChatHubLLMChain
+    chain: ChatLunaLLMChain
 
     historyMemory: BufferMemory
 
@@ -36,7 +36,7 @@ export class ChatHubChatChain
         preset,
         chain
     }: ChatHubChatChainInput & {
-        chain: ChatHubLLMChain
+        chain: ChatLunaLLMChain
     }) {
         super()
         this.botName = botName
@@ -49,8 +49,8 @@ export class ChatHubChatChain
     static fromLLM(
         llm: ChatLunaChatModel,
         { botName, historyMemory, preset }: ChatHubChatChainInput
-    ): ChatHubLLMChainWrapper {
-        const prompt = new ChatHubChatPrompt({
+    ): ChatLunaLLMChainWrapper {
+        const prompt = new ChatLunaChatPrompt({
             preset,
             tokenCounter: (text) => llm.getNumTokens(text),
             sendTokenLimit:
@@ -58,7 +58,7 @@ export class ChatHubChatChain
                 llm.getModelMaxContextSize()
         })
 
-        const chain = new ChatHubLLMChain({ llm, prompt })
+        const chain = new ChatLunaLLMChain({ llm, prompt })
 
         return new ChatHubChatChain({
             botName,
@@ -75,7 +75,7 @@ export class ChatHubChatChain
         conversationId,
         variables,
         signal
-    }: ChatHubLLMCallArg): Promise<ChainValues> {
+    }: ChatLunaLLMCallArg): Promise<ChainValues> {
         const requests: ChainValues = {
             input: message
         }
@@ -86,7 +86,7 @@ export class ChatHubChatChain
         requests['variables'] = variables ?? {}
         requests['id'] = conversationId
 
-        const response = await callChatHubChain(
+        const response = await callChatLunaChain(
             this.chain,
             {
                 ...requests,

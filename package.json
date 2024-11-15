@@ -10,7 +10,7 @@
     "scripts": {
         "process-dynamic-import": "node ./processDynamicImport.js",
         "fast-build": "yakumo build",
-        "build": "yarn process-dynamic-import --lint && yarn fast-build",
+        "build": "yarn process-dynamic-import --lint && yarn fast-build core &&yarn fast-build",
         "bump": "yakumo version",
         "dep": "yakumo upgrade",
         "pub": "yakumo publish --tag latest",
