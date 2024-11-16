@@ -207,14 +207,24 @@ function evaluateFunction(
 
 export function formatMessages(
     messages: BaseMessage[],
-    inputVariables: Record<string, string>
+    variables: Record<string, string>
 ): BaseMessage[] {
     return messages.map((message) => {
-        message.content = formatPresetTemplateString(
+        const content = formatPresetTemplateString(
             message.content as string,
-            inputVariables
+            variables
         )
-        return message
+
+        const messageInstance = new {
+            human: HumanMessage,
+            ai: AIMessage,
+            system: SystemMessage
+        }[message.getType()]({
+            content,
+            additional_kwargs: message.additional_kwargs
+        })
+
+        return messageInstance
     })
 }
 
