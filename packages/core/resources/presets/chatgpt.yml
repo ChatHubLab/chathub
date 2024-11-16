@@ -1,3 +1,7 @@
+keywords:
+    - chatgpt
+    - gpt
+
 prompts:
     - role: system
       content: |-
