@@ -11,6 +11,7 @@ import {
     ChainMiddlewareRunStatus,
     ChatChain
 } from '../chains/chain'
+import crypto from 'crypto'
 import { Config } from '../config'
 
 export function apply(ctx: Context, config: Config, chain: ChatChain) {
@@ -124,7 +125,11 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
 
         const chatLimitComputed = await session.resolve(chatLimitRaw)
 
-        const key = conversationId + '-' + session.userId
+        let key = conversationId + '-' + session.userId
+
+        // md5
+
+        key = crypto.createHash('md5').update(key).digest('hex')
 
         let chatLimitOnDataBase = await chatLimitCache.get(key)
 

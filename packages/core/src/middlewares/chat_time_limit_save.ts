@@ -6,6 +6,7 @@ import {
     ChainMiddlewareRunStatus,
     ChatChain
 } from '../chains/chain'
+import crypto from 'crypto'
 
 export function apply(ctx: Context, config: Config, chain: ChatChain) {
     const authService = ctx.chatluna_auth
@@ -43,7 +44,9 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
             )
         ) */
 
-        const key = conversationId + '-' + session.userId
+        let key = conversationId + '-' + session.userId
+
+        key = crypto.createHash('md5').update(key).digest('hex')
 
         chatLimit.count++
 
