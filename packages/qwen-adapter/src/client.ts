@@ -82,7 +82,8 @@ export class QWenClient extends PlatformModelAndEmbeddingsClient<ClientConfig> {
                     maxTokens: token,
                     functionCall:
                         model.includes('qwen-plus') ||
-                        model.includes('qwen-max'),
+                        model.includes('qwen-max') ||
+                        model.includes('qwen-turbo'),
                     supportMode: ['all']
                 } as ModelInfo
             })
