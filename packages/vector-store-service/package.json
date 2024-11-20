@@ -44,22 +44,22 @@
         "vectorstore"
     ],
     "resolutions": {
-        "@langchain/core": "0.3.11",
+        "@langchain/core": "0.3.18",
         "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
     },
     "overrides": {
-        "@langchain/core": "0.3.11",
+        "@langchain/core": "0.3.18",
         "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
     },
     "pnpm": {
         "overrides": {
-            "@langchain/core": "0.3.11",
+            "@langchain/core": "0.3.18",
             "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
         }
     },
     "dependencies": {
-        "@langchain/community": "^0.3.5",
-        "@langchain/core": "^0.3.11",
+        "@langchain/community": "^0.3.15",
+        "@langchain/core": "^0.3.18",
         "@langchain/redis": "^0.1.0",
         "redis": "^4.7.0",
         "zod-to-json-schema": "3.23.5"
@@ -69,12 +69,12 @@
         "@zilliz/milvus2-sdk-node": "^2.4.9",
         "atsc": "^2.1.0",
         "faiss-node": "^0.5.1",
-        "koishi": "^4.18.0"
+        "koishi": "^4.18.1"
     },
     "peerDependencies": {
         "@zilliz/milvus2-sdk-node": "^2.4.9",
         "faiss-node": "^0.5.1",
-        "koishi": "^4.18.0",
+        "koishi": "^4.18.1",
         "koishi-plugin-chatluna": "^1.0.0-beta.127"
     },
     "peerDependenciesMeta": {

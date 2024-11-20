@@ -997,7 +997,7 @@ export namespace ChatLunaPlugin {
         Schema.object({
             chatConcurrentMaxSize: Schema.number().min(1).max(8).default(3),
             chatTimeLimit: Schema.union([
-                Schema.natural(),
+                Schema.number().min(1).max(2000),
                 Schema.any().hidden()
             ])
                 .role('computed')

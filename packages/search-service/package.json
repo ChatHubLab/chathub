@@ -36,16 +36,16 @@
         "build": "atsc -b"
     },
     "resolutions": {
-        "@langchain/core": "0.3.11",
+        "@langchain/core": "0.3.18",
         "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
     },
     "overrides": {
-        "@langchain/core": "0.3.11",
+        "@langchain/core": "0.3.18",
         "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
     },
     "pnpm": {
         "overrides": {
-            "@langchain/core": "0.3.11",
+            "@langchain/core": "0.3.18",
             "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
         }
     },
@@ -61,18 +61,18 @@
         "search"
     ],
     "dependencies": {
-        "@langchain/core": "^0.3.11",
+        "@langchain/core": "^0.3.18",
         "@langchain/textsplitters": "^0.1.0"
     },
     "devDependencies": {
         "@types/jsdom": "^21.1.7",
         "@types/uuid": "^10.0.0",
         "atsc": "^2.1.0",
-        "koishi": "^4.18.0",
+        "koishi": "^4.18.1",
         "koishi-plugin-puppeteer": "^3.9.0"
     },
     "peerDependencies": {
-        "koishi": "^4.18.0",
+        "koishi": "^4.18.1",
         "koishi-plugin-chatluna": "^1.0.0-beta.127"
     },
     "koishi": {
