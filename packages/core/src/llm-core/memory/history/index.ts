@@ -298,7 +298,7 @@ async function selectChatHistory(
     }
 
     const selectChatHistory = finalHistory
-        .slice(-selectHistoryLength)
+        .slice(+selectHistoryLength)
         .map((chatMessage) => {
             if (chatMessage.getType() === 'human') {
                 return `<user>${chatMessage.content}</user>`
