@@ -21,3 +21,13 @@ export interface OllamaMessage {
     content: string
     images?: string[]
 }
+
+export interface OllamaEmbedRequest {
+    model: string
+    input: string | string[]
+}
+
+export interface OllamaEmbedResponse {
+    model: string
+    embeddings: number[][]
+}

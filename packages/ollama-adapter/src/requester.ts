@@ -1,6 +1,8 @@
 import { AIMessageChunk } from '@langchain/core/messages'
 import { ChatGenerationChunk } from '@langchain/core/outputs'
 import {
+    EmbeddingsRequester,
+    EmbeddingsRequestParams,
     ModelRequester,
     ModelRequestParams
 } from 'koishi-plugin-chatluna/llm-core/platform/api'
@@ -12,11 +14,18 @@ import {
 import { sse } from 'koishi-plugin-chatluna/utils/sse'
 import { readableStreamToAsyncIterable } from 'koishi-plugin-chatluna/utils/stream'
 import * as fetchType from 'undici/types/fetch'
-import { OllamaDeltaResponse, OllamaRequest } from './types'
+import {
+    OllamaDeltaResponse,
+    OllamaEmbedResponse,
+    OllamaRequest
+} from './types'
 import { langchainMessageToOllamaMessage } from './utils'
 import { ChatLunaPlugin } from 'koishi-plugin-chatluna/services/chat'
 
-export class OllamaRequester extends ModelRequester {
+export class OllamaRequester
+    extends ModelRequester
+    implements EmbeddingsRequester
+{
     constructor(
         private _config: ClientConfig,
         private _plugin: ChatLunaPlugin
@@ -109,6 +118,46 @@ export class OllamaRequester extends ModelRequester {
             } else {
                 throw new ChatLunaError(ChatLunaErrorCode.API_REQUEST_FAILED, e)
             }
+        }
+    }
+
+    async embeddings(
+        params: EmbeddingsRequestParams
+    ): Promise<number[] | number[][]> {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let data: OllamaEmbedResponse | string
+
+        try {
+            const response = await this._post('api/embed', {
+                input: params.input,
+                model: params.model
+            })
+
+            data = await response.text()
+
+            data = JSON.parse(data as string) as OllamaEmbedResponse
+
+            if (data.embeddings && data.embeddings.length > 0) {
+                if (
+                    typeof params.input === 'string' ||
+                    (Array.isArray(params.input) && params.input.length === 1)
+                ) {
+                    return data.embeddings[0]
+                }
+                return data.embeddings
+            }
+
+            throw new Error(
+                'error when calling ollama embeddings, Result: ' +
+                    JSON.stringify(data)
+            )
+        } catch (e) {
+            const error = new Error(
+                'error when calling ollama embeddings, Result: ' +
+                    JSON.stringify(data)
+            )
+
+            throw new ChatLunaError(ChatLunaErrorCode.API_REQUEST_FAILED, error)
         }
     }
 

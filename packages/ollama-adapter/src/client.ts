@@ -1,7 +1,10 @@
 import { Context } from 'koishi'
-import { PlatformModelClient } from 'koishi-plugin-chatluna/llm-core/platform/client'
+import { PlatformModelAndEmbeddingsClient } from 'koishi-plugin-chatluna/llm-core/platform/client'
 import { ClientConfig } from 'koishi-plugin-chatluna/llm-core/platform/config'
-import { ChatLunaChatModel } from 'koishi-plugin-chatluna/llm-core/platform/model'
+import {
+    ChatLunaChatModel,
+    ChatLunaEmbeddings
+} from 'koishi-plugin-chatluna/llm-core/platform/model'
 import {
     ModelInfo,
     ModelType
@@ -14,7 +17,7 @@ import { Config } from '.'
 import { OllamaRequester } from './requester'
 import { ChatLunaPlugin } from 'koishi-plugin-chatluna/services/chat'
 
-export class OllamaClient extends PlatformModelClient<ClientConfig> {
+export class OllamaClient extends PlatformModelAndEmbeddingsClient<ClientConfig> {
     platform = 'ollama'
 
     private _requester: OllamaRequester
@@ -43,7 +46,9 @@ export class OllamaClient extends PlatformModelClient<ClientConfig> {
             return rawModels.map((model) => {
                 return {
                     name: model,
-                    type: ModelType.llm,
+                    type: model.includes('embed')
+                        ? ModelType.embeddings
+                        : ModelType.llm,
                     supportMode: ['all'],
                     maxTokens: ((model: string) => {
                         if (model.startsWith('llama3')) {
@@ -75,7 +80,9 @@ export class OllamaClient extends PlatformModelClient<ClientConfig> {
         return models
     }
 
-    protected _createModel(model: string): ChatLunaChatModel {
+    protected _createModel(
+        model: string
+    ): ChatLunaChatModel | ChatLunaEmbeddings {
         const info = this._models[model]
 
         if (info == null) {
@@ -97,5 +104,11 @@ export class OllamaClient extends PlatformModelClient<ClientConfig> {
                 llmType: 'ollama'
             })
         }
+
+        return new ChatLunaEmbeddings({
+            model,
+            client: this._requester,
+            maxRetries: this._config.maxRetries
+        })
     }
 }
