@@ -183,6 +183,8 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                         ]
                     )
 
+                    cloneRoom.autoUpdate = true
+
                     logger.success(
                         session.text('chatluna.room.auto_create', [
                             session.userId,
@@ -210,6 +212,8 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                         ]
                     )
 
+                    cloneRoom.autoUpdate = true
+
                     logger.success(
                         session.text('chatluna.room.auto_create_template', [
                             session.userId,
@@ -223,10 +227,7 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                 joinRoom = cloneRoom
             }
 
-            if (
-                joinRoom?.visibility === 'template_clone' &&
-                joinRoom?.autoUpdate === true
-            ) {
+            if (joinRoom?.autoUpdate === true) {
                 // 直接从配置里面复制
 
                 // 对于 preset，chatModel 的变更，我们需要写入数据库
