@@ -441,7 +441,7 @@ commands:
                     document_id: '记忆 ID： {0}'
                     pages: '当前为第 [page] / [total] 页'
                     search_failed: '搜索记忆失败。'
-                    
+
             delete:
                 description: '删除记忆。'
                 arguments:
@@ -603,6 +603,6 @@ chatluna:
         auto_create_template: '已为用户 {0} 自动创建模版克隆房间 {1}。'
         room_name: '{0} 的房间'
         template_clone_room_name: '{0} 的模版克隆房间'
-    config_changed: '检测到模版房间 {0} 的配置变更，已更新到数据库。'
+        config_changed: '检测到模版房间 {0} 的配置变更，已更新到数据库。'
 
     cooldown_wait_message: '不要发这么快喵，等 {0}s 后我们再聊天喵。'

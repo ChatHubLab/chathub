@@ -442,7 +442,7 @@ commands:
                     document_id: 'Memory ID: {0}'
                     pages: 'Page: [page] / [total]'
                     search_failed: 'Failed to search memories.'
-                    
+
             delete:
                 description: 'Delete memory.'
                 arguments:
@@ -604,5 +604,5 @@ chatluna:
         auto_create_template: 'Template clone room {1} created for user {0}.'
         room_name: '{0} room'
         template_clone_room_name: '{0} template clone room'
-    config_changed: 'Configuration updated for template room {0}.'
+        config_changed: 'Configuration updated for template room {0}.'
     cooldown_wait_message: 'Message rate limit reached. Please wait {0}s before sending another message.'
