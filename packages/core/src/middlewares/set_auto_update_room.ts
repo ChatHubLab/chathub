@@ -37,11 +37,6 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                 return ChainMiddlewareRunStatus.STOP
             }
 
-            if (targetRoom.visibility !== 'template_clone') {
-                context.message = session.text('.not_template_clone')
-                return ChainMiddlewareRunStatus.STOP
-            }
-
             if (
                 targetRoom.roomMasterId !== session.userId &&
                 !(await checkAdmin(session))
