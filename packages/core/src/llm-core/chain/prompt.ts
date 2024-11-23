@@ -391,6 +391,8 @@ Your goal is to craft a response that intelligently incorporates relevant knowle
         insertPosition:
             | PresetTemplate['loreBooks']['insertPosition']
             | PresetTemplate['authorsNote']['insertPosition']
+            | 'before_char'
+            | 'after_char'
     ) {
         if (insertPosition === 'in_chat') {
             return chatHistory.length - 1
@@ -414,9 +416,11 @@ Your goal is to craft a response that intelligently incorporates relevant knowle
 
         switch (insertPosition) {
             case 'before_char_defs':
+            case 'before_char':
                 return charDefIndex !== -1 ? charDefIndex : 1
 
             case 'after_char_defs':
+            case 'after_char':
                 if (scenarioIndex !== -1) return scenarioIndex + 1
                 return charDefIndex !== -1
                     ? charDefIndex + 1
