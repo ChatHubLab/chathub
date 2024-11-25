@@ -84,9 +84,11 @@ export class ChatInterface {
             await this.disableConfig(config)
         }
 
-        throw error instanceof ChatLunaError
-            ? error
-            : new ChatLunaError(ChatLunaErrorCode.UNKNOWN_ERROR, error as Error)
+        if (error instanceof ChatLunaError) {
+            throw error
+        }
+
+        throw new ChatLunaError(ChatLunaErrorCode.UNKNOWN_ERROR, error as Error)
     }
 
     private async disableConfig(config: ClientConfigWrapper): Promise<void> {
