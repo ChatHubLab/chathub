@@ -99,7 +99,7 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
             message.additional_kwargs.images = images
 
             if (message.content?.length < 1) {
-                message.content = 'what is this?'
+                message.content = '[image]'
             }
         }
     )
