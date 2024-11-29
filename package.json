@@ -46,7 +46,6 @@
         "eslint-plugin-prettier": "^5.2.1",
         "eslint-plugin-promise": "^7.1.0",
         "faiss-node": "^0.5.1",
-        "fetch-socks": "^1.3.0",
         "he": "^1.2.0",
         "highlight.js": "^11.10.0",
         "https-proxy-agent": "^7.0.5",
