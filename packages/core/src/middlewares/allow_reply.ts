@@ -9,39 +9,79 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
             // 禁止套娃
             if (ctx.bots[session.uid]) return ChainMiddlewareRunStatus.STOP
 
-            const result =
-                // 私聊
+            // 私聊检查
+            if (
                 session.isDirect &&
                 config.allowPrivate &&
                 (context.command != null || config.privateChatWithoutCommand)
-                    ? true
-                    : // 群艾特
-                      session.stripped.appel && config.allowAtReply
-                      ? true
-                      : // bot名字
-                        session.content.startsWith(config.botName) &&
-                          config.isNickname
-                        ? true
-                        : // 随机回复
-                          Math.random() < config.randomReplyFrequency
-                          ? true
-                          : // 从 room name 匹配
-                            config.allowChatWithRoomName
-                            ? true
-                            : // 命令
-                              context.command != null
+            ) {
+                return await checkReplyPermission()
+            }
 
-            if (result) {
+            // 艾特检查
+            if (config.allowAtReply) {
+                let appel = session.stripped.appel
+
+                if (appel) {
+                    return await checkReplyPermission()
+                }
+
+                // 从消息元素中检测是否有被艾特当前用户
+
+                const botId = session.bot.userId
+
+                appel = session.elements.some(
+                    (element) =>
+                        element.type === 'at' && element.attrs?.['id'] === botId
+                )
+
+                if (appel) {
+                    return await checkReplyPermission()
+                }
+
+                // 检测回复的消息是否为 bot 本身
+
+                appel = session.quote?.user?.id === botId
+
+                if (appel) {
+                    return await checkReplyPermission()
+                }
+            }
+
+            // bot名字检查
+            if (
+                session.content.startsWith(config.botName) &&
+                config.isNickname
+            ) {
+                return await checkReplyPermission()
+            }
+
+            // 随机回复检查
+            if (Math.random() < config.randomReplyFrequency) {
+                return await checkReplyPermission()
+            }
+
+            // 房间名称匹配检查
+            if (config.allowChatWithRoomName) {
+                return await checkReplyPermission()
+            }
+
+            // 命令检查
+            if (context.command != null) {
+                return await checkReplyPermission()
+            }
+
+            return ChainMiddlewareRunStatus.STOP
+
+            // 辅助函数：检查回复权限
+            async function checkReplyPermission() {
                 const notReply = await ctx.serial(
                     'chatluna/before-check-sender',
                     session
                 )
-
                 return notReply
                     ? ChainMiddlewareRunStatus.STOP
                     : ChainMiddlewareRunStatus.CONTINUE
-            } else {
-                return ChainMiddlewareRunStatus.STOP
             }
         })
         .after('lifecycle-check')
