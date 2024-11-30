@@ -183,8 +183,6 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                         ]
                     )
 
-                    cloneRoom.autoUpdate = true
-
                     logger.success(
                         session.text('chatluna.room.auto_create', [
                             session.userId,
@@ -212,8 +210,6 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                         ]
                     )
 
-                    cloneRoom.autoUpdate = true
-
                     logger.success(
                         session.text('chatluna.room.auto_create_template', [
                             session.userId,
@@ -221,6 +217,8 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                         ])
                     )
                 }
+
+                cloneRoom.autoUpdate = true
 
                 await createConversationRoom(ctx, session, cloneRoom)
 

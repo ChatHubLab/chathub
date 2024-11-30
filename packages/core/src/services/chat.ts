@@ -426,7 +426,7 @@ export class ChatLunaService extends Service {
                 },
                 autoUpdate: {
                     type: 'boolean',
-                    initial: true
+                    initial: false
                 },
                 updatedTime: {
                     type: 'timestamp',
