@@ -282,19 +282,8 @@ async function selectChatHistory(
             break
         }
 
-        if (chatMessage.id === id) {
-            finalHistory.push(chatMessage)
-            messagesAdded++
-
-            // Add the corresponding AI message if available
-            if (i + 1 < chatHistory.length) {
-                const aiMessage = chatHistory[i + 1]
-                if (aiMessage && aiMessage.getType() === 'ai') {
-                    finalHistory.push(aiMessage)
-                    messagesAdded++
-                }
-            }
-        }
+        finalHistory.push(chatMessage)
+        messagesAdded++
     }
 
     const selectChatHistory = finalHistory
