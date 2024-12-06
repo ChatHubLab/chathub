@@ -1,7 +1,7 @@
 {
     "name": "koishi-plugin-chatluna-hunyuan-adapter",
     "description": "hunyuan adapter for chatluna",
-    "version": "1.0.0-rc.0",
+    "version": "1.0.0-rc.1",
     "main": "lib/index.cjs",
     "module": "lib/index.mjs",
     "typings": "lib/index.d.ts",
@@ -70,7 +70,7 @@
     },
     "peerDependencies": {
         "koishi": "^4.18.1",
-        "koishi-plugin-chatluna": "^1.0.0-rc.0"
+        "koishi-plugin-chatluna": "^1.0.0-rc.1"
     },
     "koishi": {
         "description": {
