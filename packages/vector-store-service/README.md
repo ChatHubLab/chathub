@@ -4,10 +4,4 @@
 
 > 为 ChatLuna 提供一些向量数据库支持
 
-## 怎么使用？
-
-1. 在插件市场安装本插件(`@dingyi222666/chatluna-vector-store-service`)，并安装好本插件依赖的前置插件
-2. 在插件的配置项选择你要使用的平台/模型，填写相关配置后启用本插件
-3. 就可以调用`chatluna.vectorstore.set`，列出目前支持的所有向量数据库，再调用`chatluna.vectorstore.set`，设置默认的向量数据库了。
-
-(更具体的教程还在施工中)
+[向量数据库插件文档](https://chatluna.chat/guide/configure-vector-database/introduction.html)
