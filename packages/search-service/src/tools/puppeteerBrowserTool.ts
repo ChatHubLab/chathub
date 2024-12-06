@@ -17,8 +17,6 @@ export interface PuppeteerBrowserToolOptions {
 export class PuppeteerBrowserTool extends StructuredTool {
     name = 'web_browser'
     description = `A tool to browse web pages using Puppeteer.
-    IMPORTANT: This tool can only be used ONCE per conversation turn.
-    You must use the 'open' action first before any other action.
     Available actions:
     - open [url]: Open a web page (required first action)
     - summarize [search_text?]: Simple summarize the current page, optionally with a search text.
@@ -27,12 +25,14 @@ export class PuppeteerBrowserTool extends StructuredTool {
     - previous: Go to the previous page
     - get-html: Get the HTML content of the current page
     - get-structured-urls: Get structured URLs from the current page
-    Example usage:
-    'open https://example.com'
-    Do not chain multiple actions in a single call. Use only one action per tool use.
+    Every action must be input with the URL of the page. Like this: {{
+        action: 'summarize',
+        params: 'xxx',
+        url: 'https://example.com'
+    }}
     After using this tool, you must process the result before considering using it again in the next turn.`
 
-    private page: Page | null = null
+    private pages: Record<string, Page> = {}
     private lastActionTime: number = Date.now()
     private readonly timeout: number = 30000 // 30 seconds timeout
     private readonly idleTimeout: number = 180000 // 5 minutes idle timeout
@@ -42,11 +42,15 @@ export class PuppeteerBrowserTool extends StructuredTool {
 
     schema = z.object({
         action: z.string().describe('The action to perform'),
-        params: z.string().optional().describe('The parameters for the action')
+        params: z.string().optional().describe('The parameters for the action'),
+        url: z.string().optional().describe('The URL to action on')
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }) as any
 
-    private actions: Record<string, (params: string) => Promise<string>> = {
+    private actions: Record<
+        string,
+        (url: string, params?: string) => Promise<string>
+    > = {
         open: this.openPage.bind(this),
         summarize: this.summarizePage.bind(this),
         text: this.getPageText.bind(this),
@@ -72,14 +76,18 @@ export class PuppeteerBrowserTool extends StructuredTool {
         this.startIdleTimer()
     }
 
-    async _call(input: { action: string; params: string }): Promise<string> {
+    async _call(input: {
+        url: string
+        action: string
+        params: string
+    }): Promise<string> {
         try {
-            const { action, params } = input
+            const { action, params, url } = input
 
             this.lastActionTime = Date.now()
 
             if (this.actions[action]) {
-                return await this.actions[action](params)
+                return await this.actions[action](url, params)
             } else {
                 return `Unknown action: ${action}. Available actions: ${Object.keys(this.actions).join(', ')}`
             }
@@ -91,28 +99,27 @@ export class PuppeteerBrowserTool extends StructuredTool {
         }
     }
 
-    private async initBrowser() {
-        try {
-            if (!this.page) {
-                const puppeteer = this.ctx.puppeteer
-                if (!puppeteer) {
-                    throw new Error('Puppeteer service is not available')
-                }
-                this.page = await puppeteer.browser.newPage()
+    private async getPage(url: string) {
+        if (!this.pages[url]) {
+            // Check if the page for the URL already exists
+            const puppeteer = this.ctx.puppeteer
+            if (!puppeteer) {
+                throw new Error('Puppeteer service is not available')
             }
-        } catch (error) {
-            console.error(error)
-            throw error
-        }
-    }
-
-    private async openPage(url: string): Promise<string> {
-        try {
-            await this.initBrowser()
-            await this.page!.goto(url, {
+            const page = await puppeteer.browser.newPage() // Store the page in the record
+            await page.goto(url, {
                 waitUntil: 'networkidle0',
                 timeout: this.timeout
             })
+            this.pages[url] = page
+        }
+
+        return this.pages[url]
+    }
+
+    private async openPage(url: string, params?: string): Promise<string> {
+        try {
+            await this.getPage(url ?? params)
             return 'Page opened successfully'
         } catch (error) {
             console.error(error)
@@ -120,9 +127,12 @@ export class PuppeteerBrowserTool extends StructuredTool {
         }
     }
 
-    private async summarizePage(searchText?: string): Promise<string> {
+    private async summarizePage(
+        url: string,
+        searchText?: string
+    ): Promise<string> {
         try {
-            const text = await this.getPageText(searchText)
+            const text = await this.getPageText(url, searchText)
             return this.summarizeText(text, searchText)
         } catch (error) {
             console.error(error)
@@ -130,12 +140,15 @@ export class PuppeteerBrowserTool extends StructuredTool {
         }
     }
 
-    private async getPageText(searchText?: string): Promise<string> {
+    private async getPageText(
+        url: string,
+        searchText?: string
+    ): Promise<string> {
         try {
-            if (!this.page)
-                return 'No page is open, please use open action first'
+            const page = await this.getPage(url)
+            if (!page) return 'No page is open, please use open action first'
 
-            const text = await this.page.evaluate(() => {
+            const text = await page.evaluate(() => {
                 // fix esbuild
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 window['__name'] = (func: any) => func
@@ -770,10 +783,11 @@ CRITICAL: Your summary MUST be in the same language as the original text. Do not
         }
     }
 
-    private async selectDiv(selector: string): Promise<string> {
+    private async selectDiv(url: string, selector: string): Promise<string> {
         try {
-            if (!this.page) return 'No page is open'
-            const content = await this.page.evaluate((sel) => {
+            const page = await this.getPage(url)
+            if (!page) return 'No page is open'
+            const content = await page.evaluate((sel) => {
                 const element = document.querySelector(sel)
                 return element ? element.textContent : 'Element not found'
             }, selector)
@@ -784,10 +798,11 @@ CRITICAL: Your summary MUST be in the same language as the original text. Do not
         }
     }
 
-    private async goToPreviousPage(): Promise<string> {
+    private async goToPreviousPage(url: string): Promise<string> {
         try {
-            if (!this.page) return 'No page is open'
-            await this.page.goBack({
+            const page = await this.getPage(url)
+            if (!page) return 'No page is open'
+            await page.goBack({
                 waitUntil: 'networkidle2',
                 timeout: this.timeout
             })
@@ -798,20 +813,22 @@ CRITICAL: Your summary MUST be in the same language as the original text. Do not
         }
     }
 
-    private async getHtml(): Promise<string> {
+    private async getHtml(url: string): Promise<string> {
         try {
-            if (!this.page) return 'No page is open'
-            return await this.page.content()
+            const page = await this.getPage(url)
+            if (!page) return 'No page is open'
+            return await page.content()
         } catch (error) {
             console.error(error)
             return `Error getting HTML: ${error.message}`
         }
     }
 
-    private async getStructuredUrls(): Promise<string> {
+    private async getStructuredUrls(url: string): Promise<string> {
         try {
-            if (!this.page) return 'No page is open'
-            return await this.page.evaluate(() => {
+            const page = await this.getPage(url)
+            if (!page) return 'No page is open'
+            return await page.evaluate(() => {
                 const urlStructure: { [key: string]: string[] } = {
                     search: [],
                     navigation: [],
@@ -868,9 +885,11 @@ CRITICAL: Your summary MUST be in the same language as the original text. Do not
 
     async closeBrowser() {
         try {
-            if (this.page) {
-                await this.page.close()
-                this.page = null
+            if (this.pages) {
+                for (const page of Object.values(this.pages)) {
+                    await page.close()
+                    delete this.pages[page.url()]
+                }
             }
         } catch (error) {
             this.ctx.logger.error(error)
