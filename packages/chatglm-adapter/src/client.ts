@@ -72,7 +72,7 @@ export class OpenLLMClient extends PlatformModelAndEmbeddingsClient<ClientConfig
             return Object.values(this._models)
         }
 
-        const models = await this.getModels()
+        const models = await this.refreshModels()
 
         this._models = {}
 
