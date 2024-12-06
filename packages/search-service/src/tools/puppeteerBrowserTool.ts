@@ -1,5 +1,5 @@
 /* eslint-disable max-len */
-import { Tool } from '@langchain/core/tools'
+import { StructuredTool } from '@langchain/core/tools'
 import { Context } from 'koishi'
 import type { Page } from 'puppeteer-core'
 import type {} from 'koishi-plugin-puppeteer'
@@ -8,17 +8,16 @@ import { Embeddings } from '@langchain/core/embeddings'
 import { MemoryVectorStore } from 'koishi-plugin-chatluna/llm-core/vectorstores'
 import { Document } from '@langchain/core/documents'
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters'
-
+import { z } from 'zod'
 export interface PuppeteerBrowserToolOptions {
     timeout?: number
     idleTimeout?: number
 }
 
-export class PuppeteerBrowserTool extends Tool {
+export class PuppeteerBrowserTool extends StructuredTool {
     name = 'web_browser'
     description = `A tool to browse web pages using Puppeteer.
     IMPORTANT: This tool can only be used ONCE per conversation turn.
-    Input should be in the format: 'action params'.
     You must use the 'open' action first before any other action.
     Available actions:
     - open [url]: Open a web page (required first action)
@@ -40,6 +39,12 @@ export class PuppeteerBrowserTool extends Tool {
     private model: BaseLanguageModel
     private embeddings: Embeddings
     private ctx: Context
+
+    schema = z.object({
+        action: z.string().describe('The action to perform'),
+        params: z.string().optional().describe('The parameters for the action')
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    }) as any
 
     private actions: Record<string, (params: string) => Promise<string>> = {
         open: this.openPage.bind(this),
@@ -67,25 +72,9 @@ export class PuppeteerBrowserTool extends Tool {
         this.startIdleTimer()
     }
 
-    async _call(input: string): Promise<string> {
+    async _call(input: { action: string; params: string }): Promise<string> {
         try {
-            let action: string
-            let params: string
-
-            const firstSpaceIndex = input.indexOf(' ')
-            if (firstSpaceIndex !== -1) {
-                action = input.slice(0, firstSpaceIndex).trim().toLowerCase()
-                params = input.slice(firstSpaceIndex + 1).trim()
-            } else {
-                // Check if the entire input is a valid action
-                action = input.trim().toLowerCase()
-                if (!this.actions[action]) {
-                    action = 'open'
-                    params = input.trim()
-                } else {
-                    params = ''
-                }
-            }
+            const { action, params } = input
 
             this.lastActionTime = Date.now()
 

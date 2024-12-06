@@ -62,6 +62,7 @@
     ],
     "dependencies": {
         "@langchain/core": "^0.3.18",
+        "zod": "^3.24.0-canary.20241107T043915",
         "@langchain/textsplitters": "^0.1.0"
     },
     "devDependencies": {

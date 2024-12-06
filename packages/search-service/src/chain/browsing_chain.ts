@@ -193,8 +193,15 @@ export class ChatLunaBrowsingChain
         )
 
         // open first
-        await webTool.invoke(`open ${url}`)
-        const text = await webTool.invoke(`summarize ${task}}`)
+        await webTool.invoke({
+            action: 'open',
+            params: url
+        })
+
+        const text = await webTool.invoke({
+            action: 'summarize',
+            params: task
+        })
 
         logger?.debug('fetch url content:', text)
 
