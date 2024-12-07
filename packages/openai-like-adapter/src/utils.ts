@@ -63,7 +63,7 @@ export function langchainMessageToOpenAIMessage(
         const lowerModel = model?.toLowerCase()
         if (
             (lowerModel?.includes('vision') ||
-                lowerModel?.startsWith('gpt-4o') ||
+                lowerModel?.startsWith('4o') ||
                 lowerModel?.startsWith('claude') ||
                 lowerModel?.includes('gemini')) &&
             images != null
