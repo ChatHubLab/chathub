@@ -61,7 +61,7 @@ export function langchainMessageToOpenAIMessage(
         const images = rawMessage.additional_kwargs.images as string[] | null
 
         if (
-            (model?.includes('vision') || model?.startsWith('4o')) &&
+            (model?.includes('vision') || model?.includes('gpt-4o')) &&
             images != null
         ) {
             msg.content = [
