@@ -22,6 +22,7 @@ import {
 import { ChatLunaLLMChainWrapper } from '../chain/base'
 import { LRUCache } from 'lru-cache'
 import { ChatLunaSaveableVectorStore } from 'koishi-plugin-chatluna/llm-core/model/base'
+import { logger } from '../..'
 
 export class PlatformService {
     private _platformClients: Record<string, BasePlatformClient> = {}
@@ -292,7 +293,13 @@ export class PlatformService {
         platform: string,
         config: ClientConfig
     ) {
-        const isAvailable = await client.isAvailable()
+        let isAvailable = false
+
+        try {
+            isAvailable = await client.isAvailable()
+        } catch (e) {
+            logger.error(e)
+        }
 
         const pool = this._configPools[platform]
 
@@ -302,7 +309,12 @@ export class PlatformService {
             return undefined
         }
 
-        const models = await client.getModels()
+        let models: ModelInfo[] | null = null
+        try {
+            models = await client.getModels()
+        } catch (e) {
+            logger.error(e)
+        }
 
         if (models == null) {
             await pool.markConfigStatus(config, false)
