@@ -22,7 +22,7 @@ import {
 import { ChatLunaLLMChainWrapper } from '../chain/base'
 import { LRUCache } from 'lru-cache'
 import { ChatLunaSaveableVectorStore } from 'koishi-plugin-chatluna/llm-core/model/base'
-import { logger } from '../..'
+import { logger } from 'koishi-plugin-chatluna'
 
 export class PlatformService {
     private _platformClients: Record<string, BasePlatformClient> = {}
