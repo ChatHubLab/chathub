@@ -267,7 +267,7 @@ async function selectChatHistory(
     id: string,
     count: number
 ) {
-    const selectHistoryLength = Math.max(4, count * 2)
+    const selectHistoryLength = Math.min(4, count * 2)
 
     const chatHistory = await chatInterface.chatHistory.getMessages()
 
@@ -282,12 +282,11 @@ async function selectChatHistory(
             break
         }
 
-        finalHistory.push(chatMessage)
+        finalHistory.unshift(chatMessage)
         messagesAdded++
     }
 
     const selectChatHistory = finalHistory
-        .slice(selectHistoryLength)
         .map((chatMessage) => {
             if (chatMessage.getType() === 'human') {
                 return `<user>${chatMessage.content}</user>`
