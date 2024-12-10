@@ -83,25 +83,27 @@ export function langchainMessageToZhipuMessage(
     }
 
     if (model === 'glm-4v-flash') {
-        // The 4v-flash only support one image
+        // The 4v-flash only supports one image
         let lastImageMessageIndex = mappedMessage
             .slice()
             .reverse()
             .findIndex((message) => Array.isArray(message.content))
 
-        lastImageMessageIndex = mappedMessage.length - lastImageMessageIndex
+        if (lastImageMessageIndex !== -1) {
+            lastImageMessageIndex = mappedMessage.length - lastImageMessageIndex
 
-        for (let index = lastImageMessageIndex - 1; index > 0; index--) {
-            const message = mappedMessage[index]
-            const content = message.content
+            for (let index = lastImageMessageIndex - 1; index > 0; index--) {
+                const message = mappedMessage[index]
+                const content = message.content
 
-            if (!Array.isArray(content)) {
-                continue
+                if (!Array.isArray(content)) {
+                    continue
+                }
+
+                message.content = content.find(
+                    (value) => value.type === 'text'
+                ).text
             }
-
-            message.content = content.find(
-                (value) => value.type === 'text'
-            ).text
         }
     }
 
