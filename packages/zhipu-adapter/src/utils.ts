@@ -90,7 +90,8 @@ export function langchainMessageToZhipuMessage(
             .findIndex((message) => Array.isArray(message.content))
 
         if (lastImageMessageIndex !== -1) {
-            lastImageMessageIndex = mappedMessage.length - lastImageMessageIndex
+            lastImageMessageIndex =
+                mappedMessage.length - 1 - lastImageMessageIndex
 
             for (let index = lastImageMessageIndex - 1; index > 0; index--) {
                 const message = mappedMessage[index]
