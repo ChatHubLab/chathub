@@ -49,7 +49,10 @@ export class MessageTransformer {
 
             // merge images
 
-            if (quoteMessage.content.length > 1) {
+            if (
+                quoteMessage.content.length > 0 &&
+                quoteMessage.content !== '[image]'
+            ) {
                 // eslint-disable-next-line max-len
                 message.content = `The following is a quoted message: "${quoteMessage.content}"\n\nPlease consider this quote when generating your response. User's message: ${message.content}`
             }
