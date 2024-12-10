@@ -33,7 +33,7 @@ export function langchainMessageToZhipuMessage(
             name: role === 'assistant' ? rawMessage.name : undefined,
             role,
             tool_call_id: (rawMessage as ToolMessage).tool_call_id,
-            tool_calls: model.includes('glm-4v')
+            tool_calls: model.includes('4v')
                 ? undefined
                 : rawMessage.additional_kwargs.tool_calls
         } as ChatCompletionResponseMessage
@@ -52,7 +52,7 @@ export function langchainMessageToZhipuMessage(
 
         const images = rawMessage.additional_kwargs.images as string[] | null
 
-        if (model.includes('glm-4v') && images != null) {
+        if (model.includes('4v') && images != null) {
             msg.content = [
                 {
                     type: 'text',

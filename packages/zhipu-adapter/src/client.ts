@@ -48,7 +48,9 @@ export class ZhipuClient extends PlatformModelAndEmbeddingsClient<ZhipuClientCon
             ['GLM-4-Air', 128000],
             ['GLM-4-FlashX', 128000],
             ['GLM-4-Flash', 128000],
-            ['GLM-4V', 2048]
+            ['GLM-4V', 2048],
+            ['GLM-4V-PLUS', 8192],
+            ['GLM-4V-Flash', 8192]
             //   ['GLM-4-AllTools', 128000]
         ] as [string, number][]
 
