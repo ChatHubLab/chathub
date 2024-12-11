@@ -5,6 +5,7 @@ $inner:
           $desc: 搜索引擎。
       topK: 参考结果数量（2-20）。
       enhancedSummary: 是否使用增强摘要。
+      fastEnhancedSummary: 是否使用快速增强摘要。开启后将不调用模型，直接返回搜索结果。（需要上下文较大的模型）
       puppeteerTimeout: Puppeteer 操作超时时间（毫秒）。
       puppeteerIdleTimeout: Puppeteer 空闲超时时间（毫秒）。
       summaryModel: 处理摘要的模型。选择较小并且速度较快的模型可以获得更快的响应速度。

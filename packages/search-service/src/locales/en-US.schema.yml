@@ -5,6 +5,7 @@ $inner:
           $desc: 'Search engine'
       topK: 'Number of reference results (2-20)'
       enhancedSummary: 'Enable enhanced summary'
+      fastEnhancedSummary: 'Enable fast enhanced summary. This will not call the model and directly return the search results. (Requires a larger context model)'
       puppeteerTimeout: 'Puppeteer operation timeout (ms)'
       puppeteerIdleTimeout: 'Puppeteer idle timeout (ms)'
       summaryModel: 'Model used for generating summaries. Opting for a smaller and faster model can yield quicker responses.'

@@ -382,7 +382,12 @@ export class ChatLunaBrowsingChain
                     }
                 })
 
-            await Promise.all(fetchPromises)
+            // 切片并发
+            const chunkedFetchPromises = chunkArray(fetchPromises, 5)
+
+            for (const chunk of chunkedFetchPromises) {
+                await Promise.all(chunk)
+            }
 
             vectorSearchResults =
                 await this.searchMemory.vectorStoreRetriever.invoke(newQuestion)
@@ -432,4 +437,10 @@ const formatChatHistoryAsString = (history: BaseMessage[]) => {
 interface ChatLunaToolWrapper {
     name: string
     tool: ChatLunaTool
+}
+
+export function chunkArray<T>(array: T[], size: number): T[][] {
+    return Array.from({ length: Math.ceil(array.length / size) }, (_, i) =>
+        array.slice(i * size, i * size + size)
+    )
 }

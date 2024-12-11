@@ -27,11 +27,22 @@ export function apply(ctx: Context, config: Config) {
     ctx.on('ready', async () => {
         plugin.registerToService()
 
+        if (config.fastEnhancedSummary && config.enhancedSummary) {
+            config.enhancedSummary = false
+            logger.warn(
+                'fastEnhancedSummary and enhancedSummary cannot be true at the same time, so enhancedSummary is disabled'
+            )
+        }
+
         const summaryModel = config.enhancedSummary
             ? await createModel(ctx, config.summaryModel)
             : undefined
 
-        const searchManager = new SearchManager(ctx, config, plugin)
+        const browserTool = config.fastEnhancedSummary
+            ? new PuppeteerBrowserTool(ctx, summaryModel, undefined)
+            : undefined
+
+        const searchManager = new SearchManager(ctx, config, browserTool)
 
         providerPlugin(ctx, config, plugin, searchManager)
 
@@ -123,6 +134,7 @@ export interface Config extends ChatLunaPlugin.Config {
     searchEngine: string[]
     topK: number
     enhancedSummary: boolean
+    fastEnhancedSummary: boolean
     summaryModel: string
 
     serperApiKey: string
@@ -168,8 +180,9 @@ export const Config: Schema<Config> = Schema.intersect([
         )
             .default(['bing-web'])
             .role('select'),
-        topK: Schema.number().min(2).max(20).step(1).default(5),
+        topK: Schema.number().min(2).max(50).step(1).default(5),
         enhancedSummary: Schema.boolean().default(false),
+        fastEnhancedSummary: Schema.boolean().default(false),
         puppeteerTimeout: Schema.number().default(60000),
         puppeteerIdleTimeout: Schema.number().default(300000),
         summaryModel: Schema.dynamic('model')
