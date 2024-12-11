@@ -9,6 +9,8 @@ import { MemoryVectorStore } from 'koishi-plugin-chatluna/llm-core/vectorstores'
 import { Document } from '@langchain/core/documents'
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters'
 import { z } from 'zod'
+import { LRUCache } from 'lru-cache'
+
 export interface PuppeteerBrowserToolOptions {
     timeout?: number
     idleTimeout?: number
@@ -32,7 +34,7 @@ export class PuppeteerBrowserTool extends StructuredTool {
     }}
     After using this tool, you must process the result before considering using it again in the next turn.`
 
-    private pages: Record<string, Page> = {}
+    private pages: LRUCache<string, Page>
     private lastActionTime: number = Date.now()
     private readonly timeout: number = 30000 // 30 seconds timeout
     private readonly idleTimeout: number = 180000 // 5 minutes idle timeout
@@ -73,6 +75,18 @@ export class PuppeteerBrowserTool extends StructuredTool {
         this.embeddings = embeddings
         this.timeout = options.timeout || this.timeout
         this.idleTimeout = options.idleTimeout || this.idleTimeout
+
+        this.pages = new LRUCache<string, Page>({
+            max: 20,
+            dispose: (value, key, reason) => {
+                value.close().catch((err) => {
+                    this.ctx.logger.error(
+                        `Error closing page ${key}: ${err.message}`
+                    )
+                })
+            }
+        })
+
         this.startIdleTimer()
     }
 
@@ -100,21 +114,22 @@ export class PuppeteerBrowserTool extends StructuredTool {
     }
 
     private async getPage(url: string) {
-        if (!this.pages[url]) {
-            // Check if the page for the URL already exists
+        if (!this.pages.has(url)) {
             const puppeteer = this.ctx.puppeteer
             if (!puppeteer) {
                 throw new Error('Puppeteer service is not available')
             }
-            const page = await puppeteer.browser.newPage() // Store the page in the record
+            const page = await puppeteer.browser.newPage()
             await page.goto(url, {
                 waitUntil: 'networkidle0',
                 timeout: this.timeout
             })
-            this.pages[url] = page
+            this.pages.set(url, page)
+        } else {
+            this.pages.get(url)
         }
 
-        return this.pages[url]
+        return this.pages.get(url)
     }
 
     private async openPage(url: string, params?: string): Promise<string> {
@@ -886,10 +901,7 @@ CRITICAL: Your summary MUST be in the same language as the original text. Do not
     async closeBrowser() {
         try {
             if (this.pages) {
-                for (const page of Object.values(this.pages)) {
-                    await page.close()
-                    delete this.pages[page.url()]
-                }
+                this.pages.clear()
             }
         } catch (error) {
             this.ctx.logger.error(error)

@@ -202,8 +202,6 @@ export class ChatLunaBrowsingChain
         logger?.debug('fetch url content:', text)
 
         await this.putContentToMemory(text, url)
-
-        await webTool.closeBrowser()
     }
 
     async putContentToMemory(content: string, url: string) {
