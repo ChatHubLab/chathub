@@ -64,7 +64,7 @@ export function langchainMessageToOpenAIMessage(
         if (
             (lowerModel?.includes('vision') ||
                 lowerModel?.includes('gpt-4o') ||
-                lowerModel?.startsWith('claude') ||
+                lowerModel?.includes('claude') ||
                 lowerModel?.includes('gemini')) &&
             images != null
         ) {
