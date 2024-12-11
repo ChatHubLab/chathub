@@ -690,21 +690,21 @@ export class PuppeteerBrowserTool extends StructuredTool {
                         if (links.samePath.length > 0) {
                             relatedLinksText +=
                                 '### Same Section\n' +
-                                links.samePath.slice(0, 5).join('\n') +
+                                links.samePath.slice(0, 2).join('\n') +
                                 '\n\n'
                         }
 
                         if (links.sameHost.length > 0) {
                             relatedLinksText +=
                                 '### Same Site\n' +
-                                links.sameHost.slice(0, 5).join('\n') +
+                                links.sameHost.slice(0, 2).join('\n') +
                                 '\n\n'
                         }
 
                         if (links.external.length > 0) {
                             relatedLinksText +=
                                 '### External References\n' +
-                                links.external.slice(0, 5).join('\n') +
+                                links.external.slice(0, 2).join('\n') +
                                 '\n\n'
                         }
                     }
