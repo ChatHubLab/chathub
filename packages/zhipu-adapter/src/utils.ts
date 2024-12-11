@@ -93,7 +93,7 @@ export function langchainMessageToZhipuMessage(
             lastImageMessageIndex =
                 mappedMessage.length - 1 - lastImageMessageIndex
 
-            for (let index = lastImageMessageIndex - 1; index > 0; index--) {
+            for (let index = lastImageMessageIndex - 1; index >= 0; index--) {
                 const message = mappedMessage[index]
                 const content = message.content
 
