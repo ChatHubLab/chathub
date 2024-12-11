@@ -5,9 +5,6 @@ import type { Page } from 'puppeteer-core'
 import type {} from 'koishi-plugin-puppeteer'
 import { BaseLanguageModel } from '@langchain/core/language_models/base'
 import { Embeddings } from '@langchain/core/embeddings'
-import { MemoryVectorStore } from 'koishi-plugin-chatluna/llm-core/vectorstores'
-import { Document } from '@langchain/core/documents'
-import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters'
 import { z } from 'zod'
 import { LRUCache } from 'lru-cache'
 
@@ -18,7 +15,7 @@ export interface PuppeteerBrowserToolOptions {
 
 export class PuppeteerBrowserTool extends StructuredTool {
     name = 'web_browser'
-    description = `A tool to browse web pages using Puppeteer.
+    description = `A powerful tool designed for seamless web browsing.
     Available actions:
     - open [url]: Open a web page (required first action)
     - summarize [search_text?]: Simple summarize the current page, optionally with a search text.
@@ -147,7 +144,10 @@ export class PuppeteerBrowserTool extends StructuredTool {
         searchText?: string
     ): Promise<string> {
         try {
-            const text = await this.getPageText(url, searchText)
+            const text = await this.getPageText(url)
+            if (text.includes('Error getting page text')) {
+                return text
+            }
             return this.summarizeText(text, searchText)
         } catch (error) {
             console.error(error)
@@ -729,7 +729,7 @@ export class PuppeteerBrowserTool extends StructuredTool {
                 return structuredText.trim().replace(/\n{3,}/g, '\n\n')
             })
 
-            if (searchText) {
+            /*  if (searchText) {
                 const textSplitter = new RecursiveCharacterTextSplitter({
                     chunkSize: 2000,
                     chunkOverlap: 200
@@ -754,7 +754,7 @@ export class PuppeteerBrowserTool extends StructuredTool {
                 )
                 return results.map((res) => res.pageContent).join('\n\n')
             }
-
+ */
             return text
         } catch (error) {
             console.error(error)
@@ -769,24 +769,24 @@ export class PuppeteerBrowserTool extends StructuredTool {
         try {
             const input = `Text: ${text}
 
-Please provide a comprehensive and objective summary of the above text${searchText ? `, with a focus on "${searchText}"` : ''}. Your summary should be well-structured and thorough, including:
+Please provide a comprehensive summary of the above text${searchText ? `, focusing on "${searchText}"` : ''}. Your summary should include:
 
-1. An overview of the main topic or themes (1 paragraph)
-2. A detailed breakdown of key points, arguments, or findings (3-4 paragraphs)
-3. Important supporting evidence, data, or examples (1-2 paragraphs)
-4. Any contrasting viewpoints or limitations mentioned in the text (1 paragraph, if applicable)
-5. Implications or conclusions drawn from the main points (1 paragraph)
+1. Overview of main topics or themes (1 paragraph)
+2. Breakdown of key points, arguments, or findings (4-5 paragraphs)
+3. Supporting evidence, data, or examples (2-3 paragraphs)
+4. Contrasting viewpoints or limitations (1 paragraph, if applicable)
+5. Conclusions drawn from the main points (1 paragraph)
 
-Guidelines for the summary:
- - Organize the content into clear, logically flowing paragraphs
- - Maintain an objective tone throughout, avoiding sensationalism or bias
- - Use transitional phrases to connect ideas and ensure smooth flow between paragraphs
- - Include relevant quotes or statistics from the original text to support key points
- - If applicable, incorporate up to 5 important links from the text, contextually integrated into your summary
- - Ensure all information is accurate and derived from the provided text
- - IMPORTANT: Use the exact same language as the input text for your summary. Do not translate or change the language.
+Guidelines:
+ - Organize content into clear, logical paragraphs
+ - Maintain an objective tone, avoiding bias
+ - Use transitional phrases for smooth flow
+ - Include relevant quotes or statistics
+ - Incorporate up to 5 important links from the text
+ - Ensure all information is accurate and derived from the text
+ - Use the same language as the input text; do not translate.
 
-Please aim for a balanced, informative summary that a reader could use to gain a comprehensive understanding of the original content.
+Aim for a balanced, informative summary that provides a comprehensive understanding of the original content.
 
 CRITICAL: Your summary MUST be in the same language as the original text. Do not translate or change the language under any circumstances.`
 

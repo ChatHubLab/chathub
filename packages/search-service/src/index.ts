@@ -27,22 +27,11 @@ export function apply(ctx: Context, config: Config) {
     ctx.on('ready', async () => {
         plugin.registerToService()
 
-        if (config.fastEnhancedSummary && config.enhancedSummary) {
-            config.enhancedSummary = false
-            logger.warn(
-                'fastEnhancedSummary and enhancedSummary cannot be true at the same time, so enhancedSummary is disabled'
-            )
-        }
-
         const summaryModel = config.enhancedSummary
             ? await createModel(ctx, config.summaryModel)
             : undefined
 
-        const browserTool = config.fastEnhancedSummary
-            ? new PuppeteerBrowserTool(ctx, summaryModel, undefined)
-            : undefined
-
-        const searchManager = new SearchManager(ctx, config, browserTool)
+        const searchManager = new SearchManager(ctx, config)
 
         providerPlugin(ctx, config, plugin, searchManager)
 
@@ -134,7 +123,6 @@ export interface Config extends ChatLunaPlugin.Config {
     searchEngine: string[]
     topK: number
     enhancedSummary: boolean
-    fastEnhancedSummary: boolean
     summaryModel: string
 
     serperApiKey: string

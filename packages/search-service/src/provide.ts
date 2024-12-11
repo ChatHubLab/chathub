@@ -6,8 +6,6 @@ import { Document } from '@langchain/core/documents'
 import { MemoryVectorStore } from 'koishi-plugin-chatluna/llm-core/vectorstores'
 import { parseRawModelName } from 'koishi-plugin-chatluna/llm-core/utils/count_tokens'
 import { ChatHubBaseEmbeddings } from 'koishi-plugin-chatluna/llm-core/platform/model'
-import { PuppeteerBrowserTool } from './tools/puppeteerBrowserTool'
-import { chunkArray } from './chain/browsing_chain'
 
 export abstract class SearchProvider {
     constructor(
@@ -28,8 +26,7 @@ export class SearchManager {
 
     constructor(
         private ctx: Context,
-        private config: Config,
-        private _browserTool: PuppeteerBrowserTool | undefined
+        private config: Config
     ) {}
 
     addProvider(provider: SearchProvider) {
@@ -69,9 +66,7 @@ export class SearchManager {
 
         if (providers.length === 1) {
             // 一个源就不用分了，直接返回
-            return this._browsingResults(
-                await providers[0].search(query, limit)
-            )
+            return await providers[0].search(query, limit)
         }
 
         const searchResults: SearchResult[] = []
@@ -94,45 +89,7 @@ export class SearchManager {
             return this._reRankResults(query, searchResults, limit)
         }
 
-        return this._browsingResults(searchResults)
-    }
-
-    private async _browsingResults(results: SearchResult[]) {
-        if (!this._browserTool) {
-            return results
-        }
-
-        const resultPromises: Promise<void>[] = []
-
-        for (let i = 0; i < results.length; i++) {
-            const result = results[i]
-
-            if (result.description.length > 500) {
-                continue
-            }
-
-            const url = result.url
-
-            resultPromises.push(
-                this._browserTool
-                    .invoke({ action: 'text', url })
-                    .then((text: string) => {
-                        logger.debug(`Fast enhanced summary: ${text}`)
-
-                        if (
-                            text != null &&
-                            !text.includes('Error getting page text') &&
-                            text.length > result.description.length
-                        ) {
-                            result.description = text
-                        }
-                    })
-            )
-        }
-
-        for (const chunk of chunkArray(resultPromises, 5)) {
-            await Promise.all(chunk)
-        }
+        return searchResults
     }
 
     private async _getEmbeddings() {

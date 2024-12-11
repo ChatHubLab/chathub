@@ -345,8 +345,6 @@ export class ChatLunaBrowsingChain
             return resultString
         })
 
-        logger?.debug('formatted search results', formattedSearchResults)
-
         const relatedContents: string[] = []
 
         let vectorSearchResults: Document[] = []
@@ -398,7 +396,7 @@ export class ChatLunaBrowsingChain
         }
 
         let responsePrompt = ''
-        if (searchResults?.length > 0) {
+        if (formattedSearchResults?.length > 0) {
             responsePrompt = await this.responsePrompt.format({
                 question: message.content,
                 context:
