@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Context, Logger, Schema } from 'koishi'
+import { Context, Logger, Schema, Time } from 'koishi'
 import { ClientConfig } from 'koishi-plugin-chatluna/llm-core/platform/config'
 import { PlatformService } from 'koishi-plugin-chatluna/llm-core/platform/service'
 import { ChatLunaPlugin } from 'koishi-plugin-chatluna/services/chat'
@@ -40,9 +40,19 @@ export function apply(ctx: Context, config: Config) {
                 const browserTool = new PuppeteerBrowserTool(
                     ctx,
                     summaryModel ?? params.model,
+                    params.embeddings,
+                    {
+                        waitUntil: 'domcontentloaded',
+                        timeout: 8 * Time.second,
+                        idleTimeout: 3 * Time.minute,
+                        fastMode: true
+                    }
+                )
+                return new SearchTool(
+                    searchManager,
+                    browserTool,
                     params.embeddings
                 )
-                return new SearchTool(searchManager, browserTool)
             },
             selector() {
                 return true
@@ -177,7 +187,6 @@ export const Config: Schema<Config> = Schema.intersect([
             .role('select'),
         topK: Schema.number().min(2).max(50).step(1).default(5),
         enhancedSummary: Schema.boolean().default(false),
-        fastEnhancedSummary: Schema.boolean().default(false),
         puppeteerTimeout: Schema.number().default(60000),
         puppeteerIdleTimeout: Schema.number().default(300000),
         summaryModel: Schema.dynamic('model'),

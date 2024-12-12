@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import { StructuredTool } from '@langchain/core/tools'
 import { Context } from 'koishi'
-import type { Page } from 'puppeteer-core'
+import type { Page, PuppeteerLifeCycleEvent } from 'puppeteer-core'
 import type {} from 'koishi-plugin-puppeteer'
 import { BaseLanguageModel } from '@langchain/core/language_models/base'
 import { Embeddings } from '@langchain/core/embeddings'
@@ -11,6 +11,8 @@ import { LRUCache } from 'lru-cache'
 export interface PuppeteerBrowserToolOptions {
     timeout?: number
     idleTimeout?: number
+    waitUntil?: PuppeteerLifeCycleEvent
+    fastMode?: boolean
 }
 
 export class PuppeteerBrowserTool extends StructuredTool {
@@ -38,7 +40,8 @@ export class PuppeteerBrowserTool extends StructuredTool {
     private model: BaseLanguageModel
     private embeddings: Embeddings
     private ctx: Context
-
+    private waitUntil: PuppeteerLifeCycleEvent
+    private fastMode: boolean
     schema = z.object({
         action: z.string().describe('The action to perform'),
         params: z.string().optional().describe('The parameters for the action'),
@@ -72,6 +75,7 @@ export class PuppeteerBrowserTool extends StructuredTool {
         this.embeddings = embeddings
         this.timeout = options.timeout || this.timeout
         this.idleTimeout = options.idleTimeout || this.idleTimeout
+        this.fastMode = options.fastMode || false
 
         this.pages = new LRUCache<string, Page>({
             max: 20,
@@ -83,6 +87,8 @@ export class PuppeteerBrowserTool extends StructuredTool {
                 })
             }
         })
+
+        this.waitUntil = options.waitUntil || this.waitUntil
 
         this.startIdleTimer()
     }
@@ -118,7 +124,7 @@ export class PuppeteerBrowserTool extends StructuredTool {
             }
             const page = await puppeteer.browser.newPage()
             await page.goto(url, {
-                waitUntil: 'networkidle0',
+                waitUntil: this.waitUntil,
                 timeout: this.timeout
             })
             this.pages.set(url, page)
@@ -358,7 +364,6 @@ export class PuppeteerBrowserTool extends StructuredTool {
                 }
 
                 const mainContent = findMainContent()
-                const baseUrl = window.location.href
                 let structuredText = ''
 
                 const processNode = (node: Node, depth: number = 0) => {
@@ -372,25 +377,6 @@ export class PuppeteerBrowserTool extends StructuredTool {
                         const tagName = element.tagName.toLowerCase()
 
                         switch (tagName) {
-                            case 'a': {
-                                const href = element.getAttribute('href')
-                                if (href) {
-                                    try {
-                                        const fullUrl = new URL(
-                                            href,
-                                            baseUrl
-                                        ).toString()
-                                        structuredText += ` [${element.textContent?.trim()}](${fullUrl})`
-                                    } catch (error) {
-                                        console.error('Invalid URL:', error)
-                                        structuredText += ` [${element.textContent?.trim()}](${href})`
-                                    }
-                                } else {
-                                    structuredText +=
-                                        ' ' + element.textContent?.trim()
-                                }
-                                break
-                            }
                             case 'p':
                             case 'h1':
                             case 'h2':
@@ -414,10 +400,12 @@ export class PuppeteerBrowserTool extends StructuredTool {
                                 structuredText += '\n'
                                 break
                             case 'li':
-                                structuredText +=
-                                    '\n' + '  '.repeat(depth) + '- '
-                                for (const child of element.childNodes) {
-                                    processNode(child, depth + 1)
+                                if (element.textContent?.trim()) {
+                                    structuredText +=
+                                        '\n' + '  '.repeat(depth) + '- '
+                                    for (const child of element.childNodes) {
+                                        processNode(child, depth + 1)
+                                    }
                                 }
                                 break
                             case 'br':
@@ -466,23 +454,6 @@ export class PuppeteerBrowserTool extends StructuredTool {
                             case 'td':
                                 structuredText += ` ${element.textContent?.trim()} |`
                                 break
-                            case 'img': {
-                                const alt = element.getAttribute('alt')
-                                const src = element.getAttribute('src')
-                                if (src) {
-                                    try {
-                                        const fullUrl = new URL(
-                                            src,
-                                            baseUrl
-                                        ).toString()
-                                        structuredText += ` ![${alt || 'image'}](${fullUrl})`
-                                    } catch (error) {
-                                        console.error('Invalid URL:', error)
-                                        structuredText += ` ![${alt || 'image'}](${src})`
-                                    }
-                                }
-                                break
-                            }
                             case 'mark':
                             case 'u':
                                 structuredText += ` __${element.textContent?.trim()}__ `
@@ -583,7 +554,8 @@ export class PuppeteerBrowserTool extends StructuredTool {
                             default:
                                 if (
                                     tagName !== 'script' &&
-                                    tagName !== 'style'
+                                    tagName !== 'style' &&
+                                    tagName !== 'meta'
                                 ) {
                                     for (const child of element.childNodes) {
                                         processNode(child, depth)
@@ -738,33 +710,11 @@ export class PuppeteerBrowserTool extends StructuredTool {
                 return structuredText.trim().replace(/\n{3,}/g, '\n\n')
             })
 
-            /*  if (searchText) {
-                const textSplitter = new RecursiveCharacterTextSplitter({
-                    chunkSize: 2000,
-                    chunkOverlap: 200
-                })
-                const texts = await textSplitter.splitText(text)
-
-                const docs = texts.map(
-                    (pageContent) =>
-                        new Document({
-                            pageContent,
-                            metadata: []
-                        })
-                )
-
-                const vectorStore = await MemoryVectorStore.fromDocuments(
-                    docs,
-                    this.embeddings
-                )
-                const results = await vectorStore.similaritySearch(
-                    searchText,
-                    20
-                )
-                return results.map((res) => res.pageContent).join('\n\n')
-            }
- */
+            // 去除空行，并去除首尾空行，还去除多空格为单空格
             return text
+                .trim()
+                .replace(/\n{3,}/g, '\n\n')
+                .trim()
         } catch (error) {
             console.error(error)
             return `Error getting page text: ${error.message}`

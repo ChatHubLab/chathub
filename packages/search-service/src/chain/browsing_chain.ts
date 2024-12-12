@@ -245,9 +245,11 @@ export class ChatLunaBrowsingChain
             input: message
         }
 
-        const chatHistory = (
+        let chatHistory = (
             await this.historyMemory.loadMemoryVariables(requests)
         )[this.historyMemory.memoryKey] as BaseMessage[]
+
+        chatHistory = chatHistory.slice()
 
         requests['chat_history'] = chatHistory
         requests['id'] = conversationId
@@ -322,7 +324,9 @@ export class ChatLunaBrowsingChain
         const searchTool = await this._selectTool('web-search')
 
         // Use the rephrased question for search
-        const rawSearchResults = await searchTool.invoke(newQuestion)
+        const rawSearchResults = await searchTool.invoke(
+            '$$character-' + newQuestion
+        )
 
         const searchResults =
             (JSON.parse(rawSearchResults as string) as unknown as {

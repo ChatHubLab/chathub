@@ -26,7 +26,7 @@ export class SearchManager {
 
     constructor(
         private ctx: Context,
-        private config: Config
+        public config: Config
     ) {}
 
     addProvider(provider: SearchProvider) {
