@@ -12,6 +12,7 @@ export interface Config {
     isLog: boolean
 
     isReplyWithAt: boolean
+    allowQuoteReply: boolean
     proxyAddress: string
     isProxy: boolean
     outputMode: string
@@ -57,6 +58,7 @@ export const Config: Schema<Config> = Schema.intersect([
     Schema.object({
         allowPrivate: Schema.boolean().default(true),
         allowAtReply: Schema.boolean().default(true),
+        allowQuoteReply: Schema.boolean().default(false),
         isReplyWithAt: Schema.boolean().default(false),
         isForwardMsg: Schema.boolean().default(false),
         privateChatWithoutCommand: Schema.boolean().default(true),

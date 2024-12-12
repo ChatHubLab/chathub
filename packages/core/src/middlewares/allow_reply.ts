@@ -18,6 +18,8 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                 return await checkReplyPermission()
             }
 
+            const botId = session.bot.userId
+
             // 艾特检查
             if (config.allowAtReply) {
                 let appel = session.stripped.appel
@@ -28,8 +30,6 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
 
                 // 从消息元素中检测是否有被艾特当前用户
 
-                const botId = session.bot.userId
-
                 appel = session.elements.some(
                     (element) =>
                         element.type === 'at' && element.attrs?.['id'] === botId
@@ -38,14 +38,13 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                 if (appel) {
                     return await checkReplyPermission()
                 }
+            }
 
-                // 检测回复的消息是否为 bot 本身
+            // 引用检查
+            // 检测回复的消息是否为 bot 本身
 
-                appel = session.quote?.user?.id === botId
-
-                if (appel) {
-                    return await checkReplyPermission()
-                }
+            if (config.allowQuoteReply && session.quote?.user?.id === botId) {
+                return await checkReplyPermission()
             }
 
             // bot名字检查

@@ -6,6 +6,7 @@ $inner:
     - $desc: 对话行为选项
       allowPrivate: 是否允许在私聊中触发对话。
       allowAtReply: 是否允许通过 @ bot 来触发对话。
+      allowQuoteReply: 是否允许通过引用 bot 的消息来触发对话。
       isReplyWithAt: 当 bot 回复时，是否引用原消息。
       isForwardMsg: 是否以转发消息的形式发送 bot 的回复。
       privateChatWithoutCommand: 在私聊中是否允许无需命令直接与 bot 对话。

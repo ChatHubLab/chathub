@@ -6,6 +6,7 @@ $inner:
     - $desc: Conversation Behavior
       allowPrivate: Enable private chat conversations.
       allowAtReply: Enable @mention triggering.
+      allowQuoteReply: Enable quote triggering.
       isReplyWithAt: Quote original message in bot replies.
       isForwardMsg: Send bot replies as forwarded messages.
       privateChatWithoutCommand: Enable direct conversation in private chats without commands.
