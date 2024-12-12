@@ -85,7 +85,7 @@ export class SearchTool extends Tool {
 
         const searchResults = await vectorStore.similaritySearch(
             arg,
-            this.searchManager.config.topK * 2
+            this.searchManager.config.topK * 1.3
         )
 
         return JSON.stringify(
