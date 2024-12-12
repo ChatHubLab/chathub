@@ -37,7 +37,12 @@ export function apply(ctx: Context, config: Config) {
 
         plugin.registerTool('web-search', {
             async createTool(params, session) {
-                return new SearchTool(searchManager)
+                const browserTool = new PuppeteerBrowserTool(
+                    ctx,
+                    summaryModel ?? params.model,
+                    params.embeddings
+                )
+                return new SearchTool(searchManager, browserTool)
             },
             selector() {
                 return true
@@ -244,80 +249,30 @@ FINAL REMINDER: Ensure that your entire response, including any explanations or 
         newQuestionPrompt: Schema.string()
             .role('textarea')
             .default(
-                `Evaluate the need for an internet search and rephrase the question based on the conversation context.
+                `Rephrase the follow-up question as a clear, concise, standalone question optimized for search engine queries, based on the context of the previous conversation.
 
-Rules for Confidence Score (0-1):
-- Score 1.0 for:
-  * Explicit search requests ("search for X", "find information about Y")
-  * Breaking news or current events
-  * Time-sensitive information (prices, weather, schedules)
-  * Technical specifications or version details
-  * Recent developments or updates
+Rules:
+- CRITICAL: Use the exact same language as the input. Do not translate or modify the language in any way, even if the language or phrasing seems ambiguous or unclear. The output must maintain the integrity of the original input.
+- Clarity: The rephrased question must be unambiguous, clear, and grammatically correct. Ensure that the question makes sense on its own and can be easily understood without additional context. Remove any extra words that don't add value or clarity.
+- Search Optimization: The question must be rephrased in a way that would be effective for a search engine. Use common search terms and focus on the keywords that would help users find relevant information quickly. Pay special attention to extracting Chinese proper nouns (e.g., names of shows, places, etc.), ensuring that they are correctly identified and used as the key terms in the rephrased question.
+- Exclusions:
+    - If the question is based on casual conversation or seeks personal opinions (e.g., “What do you think?” or “How are you today?”), output [skip].
+    - If the question involves simple calculations that can be easily deduced (e.g., "What’s 2 + 2?"), or asks for information that has already been addressed in the chat history, output [skip].
+    - If the question is conversational or rhetorical in nature (e.g., "I wonder why..."), output [skip].
+- Knowledge Requests:
+    - If the question is asking for a deeper explanation, new knowledge, or facts that are not directly provided in the chat history, rephrase it to clearly seek that information. Examples include technical inquiries, how-to guides, explanations of concepts, or requests for clarifications on complex topics.
+    - If the question implies a need for a detailed answer or background knowledge (e.g., "How does AI work?" or "What are the steps to set up a server?"), ensure the question is clear, specific, and well-defined for a search engine query.
+- Avoid Overly Broad Questions: Do not leave the question too vague or general. Instead of rephrasing something like “Tell me about technology,” focus on specific subtopics, such as “What are the latest advancements in AI technology?” or “How do quantum computers work?”
+- Avoid Redundancy: If the question is too similar to one already covered in the conversation, or if it has already been answered directly, output [skip]. Avoid rephrasing questions that do not bring new or unique queries into the conversation.
+- Maintain Context and Accuracy: Your rephrased question must directly reflect the user’s intended information-seeking query, based on the conversation so far. Do not make assumptions about what the user is asking for if it isn't clearly expressed.
 
-- Score 0.5-0.9 for:
-  * General knowledge needing verification
-  * Topics benefiting from multiple sources
-  * Historical events or facts
-  * How-to guides or procedures
-  * Scientific or technical concepts
+IMPORTANT: Your rephrased question or [skip] MUST be in the same language as the original input. This is crucial for maintaining context, accuracy, and the user’s intent.
 
-- Score 0.0 (Skip Search) for:
-  * Translation requests
-  * Personal opinions or preferences
-  * Simple calculations or logic
-  * Information in chat history
-  * Casual conversation
-  * Creative writing or hypotheticals
-  * Emotional support or advice
-  * Programming code generation
-  * Basic definitions
-  * Philosophical questions
-  * Rhetorical questions
-  * General explanations without specific facts
-  * Math problems
-  * Grammar or spelling checks
-
-Search Query Guidelines:
-- CRITICAL: Use the exact same language as the input
-- Extract exactly 2 most important keywords
-- Make keywords specific and search-engine friendly
-- For Chinese queries:
-  * Preserve proper nouns (人名/地名/作品名/品牌名等)
-  * Keep technical terms in their most common form
-  * Remove modal particles and conversational elements
-
-Reasoning Process (Step by Step):
-1. Analyze Input:
-   * Is this a new topic or continuation?
-   * What specific information is being sought?
-   * Is the information time-sensitive?
-
-2. Check Context:
-   * Is the answer already in chat history?
-   * Is this building on previous information?
-   * Are there any ambiguities to resolve?
-
-3. Evaluate Search Necessity:
-   * Can this be answered without search?
-   * Is external verification needed?
-   * Would multiple sources help?
-
-4. Determine Keywords:
-   * What are the core concepts?
-   * Which terms would yield best results?
-   * Are there better alternative search terms?
-
-Output JSON Format:
-{{
-    "reason": "[Step-by-step reasoning] -> [Final decision] -> [Confidence explanation]",
-    "new_question": "keyword1 keyword2",
-    "confidence": 0.XX
-}}
-
-Chat History: {chat_history}
+Chat History:
+{chat_history}
 Follow-up Input: {question}
-
-JSON Response:`
+Standalone Question or [skip]:
+`
             )
     })
 ]).i18n({

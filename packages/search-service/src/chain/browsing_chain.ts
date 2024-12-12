@@ -255,7 +255,7 @@ export class ChatLunaBrowsingChain
 
         // recreate questions
 
-        let needSearch = false
+        let needSearch = true
         const newQuestion = (
             await callChatLunaChain(
                 this.formatQuestionChain,
@@ -271,59 +271,18 @@ export class ChatLunaBrowsingChain
             )
         )['text'] as string
 
-        // Parse JSON response
-        let questionData: { new_question: string; confidence: number }
-        try {
-            questionData = JSON.parse(newQuestion)
-        } catch (e) {
-            // try match use regex
-            /*             ```json
-{
-  "question": "搜索 原神",
-  "confidence": 0.0
-}
-``` */
-            const matchJson = () => {
-                // match first { and last }
-                const start = newQuestion.indexOf('{')
-                const end = newQuestion.lastIndexOf('}')
-                const json = newQuestion.slice(start, end + 1)
-                return JSON.parse(json)
-            }
-
-            questionData = matchJson()
-
-            if (
-                questionData.new_question === null ||
-                questionData.confidence === null
-            ) {
-                logger?.warn(
-                    `Failed to parse question data JSON ${newQuestion}`
-                )
-                questionData = {
-                    new_question: message.content as string,
-                    confidence: 0
-                }
-            }
+        if (newQuestion.includes('[skip]')) {
+            needSearch = false
         }
 
-        // Skip search if confidence is below threshold
-        // 小数点比对
-        needSearch = questionData.confidence >= this.searchConfidenceThreshold
-
         logger?.debug(
-            `confidence: ${newQuestion}, need search: ${needSearch}, new question: ${questionData.new_question}`
+            `need search: ${needSearch}, new question: ${newQuestion}`
         )
 
         // search questions
 
         if (needSearch) {
-            await this._search(
-                questionData.new_question,
-                message,
-                chatHistory,
-                session
-            )
+            await this._search(newQuestion, message, chatHistory, session)
         }
 
         // format and call
@@ -399,7 +358,6 @@ export class ChatLunaBrowsingChain
         let vectorSearchResults: Document[] = []
 
         if (this.enhancedSummary && searchResults.length > 0) {
-            // TODO: concurrent limit
             const fetchPromises = searchResults
                 .filter((result) => result.url?.startsWith('http'))
                 .map(async (result) => {
