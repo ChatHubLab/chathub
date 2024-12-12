@@ -75,7 +75,7 @@
         "@zilliz/milvus2-sdk-node": "^2.4.9",
         "faiss-node": "^0.5.1",
         "koishi": "^4.18.1",
-        "koishi-plugin-chatluna": "^1.0.0-beta.131"
+        "koishi-plugin-chatluna": "^1.0.0-beta.132"
     },
     "peerDependenciesMeta": {
         "@zilliz/milvus2-sdk-node": {
