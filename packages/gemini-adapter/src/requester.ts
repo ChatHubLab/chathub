@@ -15,7 +15,7 @@ import {
 import { sse } from 'koishi-plugin-chatluna/utils/sse'
 import { readableStreamToAsyncIterable } from 'koishi-plugin-chatluna/utils/stream'
 import * as fetchType from 'undici/types/fetch'
-import { logger } from '.'
+import { Config, logger } from '.'
 import {
     ChatCompletionMessageFunctionCall,
     ChatFunctionCallingPart,
@@ -37,7 +37,8 @@ export class GeminiRequester
 {
     constructor(
         private _config: ClientConfig,
-        private _plugin: ChatLunaPlugin
+        private _plugin: ChatLunaPlugin,
+        private _pluginConfig: Config
     ) {
         super()
     }
@@ -80,10 +81,13 @@ export class GeminiRequester
                         topP: params.topP
                     },
                     tools:
-                        !params.model.includes('vision') && params.tools != null
+                        params.tools != null || this._pluginConfig.googleSearch
                             ? {
                                   functionDeclarations:
-                                      formatToolsToGeminiAITools(params.tools)
+                                      formatToolsToGeminiAITools(
+                                          params.tools ?? [],
+                                          this._pluginConfig
+                                      )
                               }
                             : undefined
                 },

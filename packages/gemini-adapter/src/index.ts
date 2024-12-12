@@ -40,6 +40,8 @@ export interface Config extends ChatLunaPlugin.Config {
     apiKeys: [string, string][]
     maxTokens: number
     temperature: number
+    googleSearch: boolean
+    searchThreshold: number
 }
 
 export const Config: Schema<Config> = Schema.intersect([
@@ -56,7 +58,9 @@ export const Config: Schema<Config> = Schema.intersect([
     }),
     Schema.object({
         maxTokens: Schema.number().min(16).max(2097000).step(16).default(8064),
-        temperature: Schema.percent().min(0).max(2).step(0.1).default(0.8)
+        temperature: Schema.percent().min(0).max(2).step(0.1).default(0.8),
+        googleSearch: Schema.boolean().default(false),
+        searchThreshold: Schema.number().min(0).max(1).step(0.1).default(0.5)
     })
 ]).i18n({
     'zh-CN': require('./locales/zh-CN.schema.yml'),

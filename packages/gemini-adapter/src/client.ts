@@ -33,7 +33,11 @@ export class GeminiClient extends PlatformModelAndEmbeddingsClient {
     ) {
         super(ctx, clientConfig)
 
-        this._requester = new GeminiRequester(clientConfig, plugin)
+        this._requester = new GeminiRequester(
+            clientConfig,
+            plugin,
+            this._config
+        )
     }
 
     async init(): Promise<void> {

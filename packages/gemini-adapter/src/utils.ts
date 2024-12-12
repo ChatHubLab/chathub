@@ -17,6 +17,7 @@ import {
     ChatPart,
     ChatUploadDataPart
 } from './types'
+import { Config } from '.'
 
 export async function langchainMessageToGeminiMessage(
     messages: BaseMessage[],
@@ -264,12 +265,26 @@ export function partAsType<T extends ChatPart>(part: ChatPart): T {
 }
 
 export function formatToolsToGeminiAITools(
-    tools: StructuredTool[]
+    tools: StructuredTool[],
+    config: Config
 ): ChatCompletionFunction[] {
-    if (tools.length < 1) {
+    if (tools.length < 1 && !config.googleSearch) {
         return undefined
     }
-    return tools.map(formatToolToGeminiAITool)
+    const result = tools.map(formatToolToGeminiAITool)
+
+    if (config.googleSearch) {
+        result.push({
+            google_search_retrieval: {
+                dynamic_retrieval_config: {
+                    mode: 'MODE_DYNAMIC',
+                    dynamic_threshold: config.searchThreshold
+                }
+            }
+        } as any)
+    }
+
+    return result
 }
 
 export function formatToolToGeminiAITool(
