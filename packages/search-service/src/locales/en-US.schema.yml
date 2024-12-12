@@ -9,6 +9,7 @@ $inner:
       puppeteerTimeout: 'Puppeteer operation timeout (ms)'
       puppeteerIdleTimeout: 'Puppeteer idle timeout (ms)'
       summaryModel: 'Model used for generating summaries. Opting for a smaller and faster model can yield quicker responses.'
+      searchConfidenceThreshold: 'Confidence threshold for search decisions. Higher values mean more likely to search.'
 
     - $desc: 'Serper Settings'
       serperApiKey: 'Serper API key'

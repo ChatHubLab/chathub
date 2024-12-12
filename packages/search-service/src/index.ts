@@ -82,7 +82,8 @@ export function apply(ctx: Context, config: Config) {
                     summaryModel: summaryModel ?? params.model,
                     thoughtMessage: ctx.chatluna.config.showThoughtMessage,
                     searchPrompt: config.searchPrompt,
-                    newQuestionPrompt: config.newQuestionPrompt
+                    newQuestionPrompt: config.newQuestionPrompt,
+                    searchConfidenceThreshold: config.searchConfidenceThreshold
                 }
 
                 return ChatLunaBrowsingChain.fromLLMAndTools(
@@ -146,6 +147,7 @@ export interface Config extends ChatLunaPlugin.Config {
 
     searchPrompt: string
     newQuestionPrompt: string
+    searchConfidenceThreshold: number
 }
 
 export const Config: Schema<Config> = Schema.intersect([
@@ -173,7 +175,8 @@ export const Config: Schema<Config> = Schema.intersect([
         fastEnhancedSummary: Schema.boolean().default(false),
         puppeteerTimeout: Schema.number().default(60000),
         puppeteerIdleTimeout: Schema.number().default(300000),
-        summaryModel: Schema.dynamic('model')
+        summaryModel: Schema.dynamic('model'),
+        searchConfidenceThreshold: Schema.percent().step(0.01).default(0.5)
     }),
 
     Schema.object({
@@ -241,22 +244,28 @@ FINAL REMINDER: Ensure that your entire response, including any explanations or 
         newQuestionPrompt: Schema.string()
             .role('textarea')
             .default(
-                `Rephrase the follow-up question as a standalone, search-engine-friendly question based on the given conversation context.
+                `Given the conversation context and follow-up question, determine if an internet search is needed and return a JSON response with the rephrased question and confidence score.
 
 Rules:
-- CRITICAL: Use the exact same language as the input. Do not translate or change the language under any circumstances.
-- Make the question self-contained and clear
-- Optimize for search engine queries
-- Do not add any explanations or additional content
-- If the question doesn't require an internet search (e.g., personal opinions, simple calculations, or information already provided in the chat history), output [skip] instead of rephrasing
-- If the user needs a detailed explanation, generate a new question that will provide comprehensive information on the topic
-
-IMPORTANT: Your rephrased question or [skip] MUST be in the same language as the original input. This is crucial for maintaining context and accuracy.
+- Output must be valid JSON with format: {{"question": "rephrased question", "confidence": 0.XX}}
+- Confidence score ranges from 0 to 1:
+  - 1.0: Definitely needs search (current events, facts, data, user request)
+  - 0.0: Definitely doesn't need search (opinions, chat, math)
+  - Score based on:
+    - Time sensitivity of information
+    - Factual vs subjective nature
+    - Presence in chat history
+    - Need for up-to-date data
+- Make the question self-contained and search-engine friendly
+- Use the exact same language as the input
+- If search is unnecessary, set confidence to 0 and question to original input
 
 Chat History:
 {chat_history}
+
 Follow-up Input: {question}
-Standalone Question or [skip]:`
+
+JSON Response:`
             )
     })
 ]).i18n({

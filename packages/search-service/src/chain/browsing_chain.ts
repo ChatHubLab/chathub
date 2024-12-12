@@ -46,6 +46,7 @@ export interface ChatLunaBrowsingChainInput {
 
     searchPrompt: string
     newQuestionPrompt: string
+    searchConfidenceThreshold: number
 }
 
 export class ChatLunaBrowsingChain
@@ -84,6 +85,8 @@ export class ChatLunaBrowsingChain
 
     newQuestionPrompt: string
 
+    searchConfidenceThreshold: number
+
     constructor({
         botName,
         embeddings,
@@ -93,7 +96,8 @@ export class ChatLunaBrowsingChain
         formatQuestionChain,
         enhancedSummary,
         thoughtMessage,
-        searchPrompt
+        searchPrompt,
+        searchConfidenceThreshold
     }: ChatLunaBrowsingChainInput & {
         chain: ChatLunaLLMChain
         formatQuestionChain: ChatLunaLLMChain
@@ -131,6 +135,7 @@ export class ChatLunaBrowsingChain
         this.responsePrompt = PromptTemplate.fromTemplate(searchPrompt)
         this.chain = chain
         this.tools = tools
+        this.searchConfidenceThreshold = searchConfidenceThreshold
     }
 
     static fromLLMAndTools(
@@ -145,7 +150,8 @@ export class ChatLunaBrowsingChain
             thoughtMessage,
             searchPrompt,
             newQuestionPrompt,
-            enhancedSummary
+            enhancedSummary,
+            searchConfidenceThreshold
         }: ChatLunaBrowsingChainInput
     ): ChatLunaBrowsingChain {
         const prompt = new ChatLunaChatPrompt({
@@ -174,7 +180,8 @@ export class ChatLunaBrowsingChain
             newQuestionPrompt,
             chain,
             tools,
-            enhancedSummary
+            enhancedSummary,
+            searchConfidenceThreshold
         })
     }
 
@@ -264,18 +271,60 @@ export class ChatLunaBrowsingChain
             )
         )['text'] as string
 
-        if (newQuestion.includes('[skip]')) {
-            needSearch = false
+        // Parse JSON response
+        let questionData: { question: string; confidence: number }
+        try {
+            questionData = JSON.parse(newQuestion)
+        } catch (e) {
+            // try match use regex
+            /*             ```json
+{
+  "question": "搜索 原神",
+  "confidence": 0.0
+}
+``` */
+            const matchJson = () => {
+                // match first { and last }
+                const start = newQuestion.indexOf('{')
+                const end = newQuestion.lastIndexOf('}')
+                const json = newQuestion.slice(start, end + 1)
+                return JSON.parse(json)
+            }
+
+            questionData = matchJson()
+
+            if (
+                questionData.question === null ||
+                questionData.confidence === null
+            ) {
+                logger?.warn(
+                    `Failed to parse question data JSON ${newQuestion}`
+                )
+                questionData = {
+                    question: message.content as string,
+                    confidence: 0
+                }
+            }
+        }
+
+        // Skip search if confidence is below threshold
+        if (questionData.confidence >= this.searchConfidenceThreshold) {
+            needSearch = true
         }
 
         logger?.debug(
-            `need search: ${needSearch}, new question: ${newQuestion}`
+            `confidence: ${questionData.confidence}, need search: ${needSearch}, new question: ${questionData.question}`
         )
 
         // search questions
 
         if (needSearch) {
-            await this._search(newQuestion, message, chatHistory, session)
+            await this._search(
+                questionData.question,
+                message,
+                chatHistory,
+                session
+            )
         }
 
         // format and call
@@ -314,6 +363,7 @@ export class ChatLunaBrowsingChain
     ) {
         const searchTool = await this._selectTool('web-search')
 
+        // Use the rephrased question for search
         const rawSearchResults = await searchTool.invoke(newQuestion)
 
         const searchResults =
