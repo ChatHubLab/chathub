@@ -247,7 +247,7 @@ FINAL REMINDER: Ensure that your entire response, including any explanations or 
                 `Given the conversation context and follow-up question, determine if an internet search is needed and return a JSON response with the rephrased question and confidence score.
 
 Rules:
-- Output must be valid JSON with format: {{"question": "rephrased question", "confidence": 0.XX}}
+- Output must be valid JSON with format: {{"new_question": "rephrased question", "confidence": 0.XX}}
 - Confidence score ranges from 0 to 1:
   - 1.0: Definitely needs search (current events, facts, data, user request)
   - 0.0: Definitely doesn't need search (opinions, chat, math)

@@ -255,7 +255,7 @@ export class ChatLunaBrowsingChain
 
         // recreate questions
 
-        let needSearch = true
+        let needSearch = false
         const newQuestion = (
             await callChatLunaChain(
                 this.formatQuestionChain,
@@ -272,7 +272,7 @@ export class ChatLunaBrowsingChain
         )['text'] as string
 
         // Parse JSON response
-        let questionData: { question: string; confidence: number }
+        let questionData: { new_question: string; confidence: number }
         try {
             questionData = JSON.parse(newQuestion)
         } catch (e) {
@@ -294,33 +294,32 @@ export class ChatLunaBrowsingChain
             questionData = matchJson()
 
             if (
-                questionData.question === null ||
+                questionData.new_question === null ||
                 questionData.confidence === null
             ) {
                 logger?.warn(
                     `Failed to parse question data JSON ${newQuestion}`
                 )
                 questionData = {
-                    question: message.content as string,
+                    new_question: message.content as string,
                     confidence: 0
                 }
             }
         }
 
         // Skip search if confidence is below threshold
-        if (questionData.confidence >= this.searchConfidenceThreshold) {
-            needSearch = true
-        }
+        // 小数点比对
+        needSearch = questionData.confidence >= this.searchConfidenceThreshold
 
         logger?.debug(
-            `confidence: ${questionData.confidence}, need search: ${needSearch}, new question: ${questionData.question}`
+            `confidence: ${questionData.confidence}, need search: ${needSearch}, new question: ${questionData.new_question}`
         )
 
         // search questions
 
         if (needSearch) {
             await this._search(
-                questionData.question,
+                questionData.new_question,
                 message,
                 chatHistory,
                 session

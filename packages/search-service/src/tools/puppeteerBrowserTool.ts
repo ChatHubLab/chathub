@@ -715,15 +715,24 @@ export class PuppeteerBrowserTool extends StructuredTool {
                 // 处理主要内容
                 processNode(mainContent)
 
-                // 添加相关链接
+                const findBestLinkContainer = (
+                    mainContent: Element
+                ): Element => {
+                    const MAX_PARENT_DEPTH = 6 // 限制最大父级查找深度
+                    let current: Element | null = mainContent
+
+                    for (let depth = 0; depth < MAX_PARENT_DEPTH; depth++) {
+                        if (!current) break
+
+                        current = current.parentElement
+                    }
+
+                    return mainContent // 如果没找到，返回原始内容
+                }
+
+                // 使用方式
                 structuredText += getRelatedLinks(
-                    mainContent.parentElement?.parentElement?.parentElement
-                        ?.parentElement?.parentElement ??
-                        mainContent.parentElement?.parentElement
-                            .parentElement ??
-                        mainContent.parentElement?.parentElement ??
-                        mainContent.parentElement ??
-                        mainContent
+                    findBestLinkContainer(mainContent)
                 )
 
                 return structuredText.trim().replace(/\n{3,}/g, '\n\n')
