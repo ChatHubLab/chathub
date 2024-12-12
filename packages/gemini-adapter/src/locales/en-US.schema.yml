@@ -1,14 +1,14 @@
 $inner:
-  - {}
-  - $desc: 'API Configuration'
-    apiKeys:
-      $inner:
-        - 'Gemini API Key'
-        - 'Gemini API Endpoint (optional)'
-      $desc: 'Gemini API access credentials'
+    - {}
+    - $desc: 'API Configuration'
+      apiKeys:
+          $inner:
+              - 'Gemini API Key'
+              - 'Gemini API Endpoint (optional)'
+          $desc: 'Gemini API access credentials'
 
-  - $desc: 'Model Parameters'
-    maxTokens: 'Max output tokens (16-2097000, multiple of 16). >2000 for 8k+ models'
-    temperature: 'Sampling temperature (0-2). Higher: more random, Lower: more deterministic'
-    googleSearch: 'Enable Google search'
-    searchThreshold: 'Search confidence [threshold](https://ai.google.dev/gemini-api/docs/grounding?lang=rest#dynamic-retrieval) (0-1). Lower: more likely to use Google search'
+    - $desc: 'Model Parameters'
+      maxTokens: 'Max output tokens (16-2097000, multiple of 16). >2000 for 8k+ models'
+      temperature: 'Sampling temperature (0-2). Higher: more random, Lower: more deterministic'
+      googleSearch: 'Enable Google search'
+      searchThreshold: 'Search confidence [threshold](https://ai.google.dev/gemini-api/docs/grounding?lang=rest#dynamic-retrieval) (0-1). Lower: more likely to use Google search'

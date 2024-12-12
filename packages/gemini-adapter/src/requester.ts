@@ -82,13 +82,11 @@ export class GeminiRequester
                     },
                     tools:
                         params.tools != null || this._pluginConfig.googleSearch
-                            ? {
-                                  functionDeclarations:
-                                      formatToolsToGeminiAITools(
-                                          params.tools ?? [],
-                                          this._pluginConfig
-                                      )
-                              }
+                            ? formatToolsToGeminiAITools(
+                                  params.tools ?? [],
+                                  this._pluginConfig,
+                                  params.model
+                              )
                             : undefined
                 },
                 {

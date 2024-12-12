@@ -17,7 +17,7 @@ import {
     ChatPart,
     ChatUploadDataPart
 } from './types'
-import { Config } from '.'
+import { Config, logger } from '.'
 
 export async function langchainMessageToGeminiMessage(
     messages: BaseMessage[],
@@ -266,22 +266,39 @@ export function partAsType<T extends ChatPart>(part: ChatPart): T {
 
 export function formatToolsToGeminiAITools(
     tools: StructuredTool[],
-    config: Config
-): ChatCompletionFunction[] {
+    config: Config,
+    model: string
+): Record<string, any> {
     if (tools.length < 1 && !config.googleSearch) {
         return undefined
     }
-    const result = tools.map(formatToolToGeminiAITool)
+    const functions = tools.map(formatToolToGeminiAITool)
+
+    const result = []
+
+    if (functions.length > 0 && !config.googleSearch) {
+        result.push({
+            functionDeclarations: functions
+        })
+    } else if (functions.length > 0 && config.googleSearch) {
+        logger.warn('Google search is enabled, function call will be disabled.')
+    }
 
     if (config.googleSearch) {
-        result.push({
-            google_search_retrieval: {
-                dynamic_retrieval_config: {
-                    mode: 'MODE_DYNAMIC',
-                    dynamic_threshold: config.searchThreshold
+        if (model.includes('gemini-2')) {
+            result.push({
+                google_search: {}
+            })
+        } else {
+            result.push({
+                google_search_retrieval: {
+                    dynamic_retrieval_config: {
+                        mode: 'MODE_DYNAMIC',
+                        dynamic_threshold: config.searchThreshold
+                    }
                 }
-            }
-        } as any)
+            })
+        }
     }
 
     return result
