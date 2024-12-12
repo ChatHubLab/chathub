@@ -312,7 +312,7 @@ export class ChatLunaBrowsingChain
         needSearch = questionData.confidence >= this.searchConfidenceThreshold
 
         logger?.debug(
-            `confidence: ${questionData.confidence}, need search: ${needSearch}, new question: ${questionData.new_question}`
+            `confidence: ${newQuestion}, need search: ${needSearch}, new question: ${questionData.new_question}`
         )
 
         // search questions
@@ -398,7 +398,7 @@ export class ChatLunaBrowsingChain
 
         let vectorSearchResults: Document[] = []
 
-        if (this.enhancedSummary) {
+        if (this.enhancedSummary && searchResults.length > 0) {
             // TODO: concurrent limit
             const fetchPromises = searchResults
                 .filter((result) => result.url?.startsWith('http'))

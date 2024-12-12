@@ -244,25 +244,77 @@ FINAL REMINDER: Ensure that your entire response, including any explanations or 
         newQuestionPrompt: Schema.string()
             .role('textarea')
             .default(
-                `Given the conversation context and follow-up question, determine if an internet search is needed and return a JSON response with the rephrased question and confidence score.
+                `Evaluate the need for an internet search and rephrase the question based on the conversation context.
 
-Rules:
-- Output must be valid JSON with format: {{"new_question": "rephrased question", "confidence": 0.XX}}
-- Confidence score ranges from 0 to 1:
-  - 1.0: Definitely needs search (current events, facts, data, user request)
-  - 0.0: Definitely doesn't need search (opinions, chat, math)
-  - Score based on:
-    - Time sensitivity of information
-    - Factual vs subjective nature
-    - Presence in chat history
-    - Need for up-to-date data
-- Make the question self-contained and search-engine friendly
-- Use the exact same language as the input
-- If search is unnecessary, set confidence to 0 and question to original input
+Rules for Confidence Score (0-1):
+- Score 1.0 for:
+  * Explicit search requests ("search for X", "find information about Y")
+  * Breaking news or current events
+  * Time-sensitive information (prices, weather, schedules)
+  * Technical specifications or version details
+  * Recent developments or updates
 
-Chat History:
-{chat_history}
+- Score 0.5-0.9 for:
+  * General knowledge needing verification
+  * Topics benefiting from multiple sources
+  * Historical events or facts
+  * How-to guides or procedures
+  * Scientific or technical concepts
 
+- Score 0.0 (Skip Search) for:
+  * Translation requests
+  * Personal opinions or preferences
+  * Simple calculations or logic
+  * Information in chat history
+  * Casual conversation
+  * Creative writing or hypotheticals
+  * Emotional support or advice
+  * Programming code generation
+  * Basic definitions
+  * Philosophical questions
+  * Rhetorical questions
+  * General explanations without specific facts
+  * Math problems
+  * Grammar or spelling checks
+
+Search Query Guidelines:
+- CRITICAL: Use the exact same language as the input
+- Extract exactly 2 most important keywords
+- Make keywords specific and search-engine friendly
+- For Chinese queries:
+  * Preserve proper nouns (人名/地名/作品名/品牌名等)
+  * Keep technical terms in their most common form
+  * Remove modal particles and conversational elements
+
+Reasoning Process (Step by Step):
+1. Analyze Input:
+   * Is this a new topic or continuation?
+   * What specific information is being sought?
+   * Is the information time-sensitive?
+
+2. Check Context:
+   * Is the answer already in chat history?
+   * Is this building on previous information?
+   * Are there any ambiguities to resolve?
+
+3. Evaluate Search Necessity:
+   * Can this be answered without search?
+   * Is external verification needed?
+   * Would multiple sources help?
+
+4. Determine Keywords:
+   * What are the core concepts?
+   * Which terms would yield best results?
+   * Are there better alternative search terms?
+
+Output JSON Format:
+{{
+    "reason": "[Step-by-step reasoning] -> [Final decision] -> [Confidence explanation]",
+    "new_question": "keyword1 keyword2",
+    "confidence": 0.XX
+}}
+
+Chat History: {chat_history}
 Follow-up Input: {question}
 
 JSON Response:`
