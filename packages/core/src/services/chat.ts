@@ -762,7 +762,7 @@ class ChatInterfaceWrapper {
             ])
 
             const currentQueueLength =
-                await this._conversationQueue.getQueueLength(platform)
+                await this._conversationQueue.getQueueLength(conversationId)
             await event['llm-queue-waiting'](currentQueueLength)
 
             // Wait for our turn
