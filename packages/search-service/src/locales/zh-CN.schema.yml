@@ -47,3 +47,4 @@ $inner:
     - $desc: 进阶设置
       searchPrompt: 搜索提示词。用于对搜索结果总结的 Prompt。
       newQuestionPrompt: 新问题提示词。用于生成新问题的 Prompt。
+      summaryPrompt: 文档总结提示词。用于总结文档的 Prompt。

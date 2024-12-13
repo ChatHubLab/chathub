@@ -10,7 +10,7 @@ import { SearchResult, SummaryType } from '../types'
 import { ChatLunaChatModel } from 'koishi-plugin-chatluna/llm-core/platform/model'
 import { PromptTemplate } from '@langchain/core/prompts'
 import { getMessageContent } from 'koishi-plugin-chatluna/utils/string'
-import fs from 'fs/promises'
+/* import fs from 'fs/promises' */
 
 export class SearchTool extends Tool {
     name = 'web_search'
@@ -27,7 +27,8 @@ export class SearchTool extends Tool {
         private searchManager: SearchManager,
         private browserTool: PuppeteerBrowserTool,
         private embeddings: Embeddings,
-        private llm: ChatLunaChatModel
+        private llm: ChatLunaChatModel,
+        private summaryType: SummaryType
     ) {
         super({})
     }
@@ -35,7 +36,7 @@ export class SearchTool extends Tool {
     async _call(arg: string): Promise<string> {
         const documents = await this.fetchSearchResult(arg)
 
-        if (this.searchManager.config.summaryType === SummaryType.Speed) {
+        if (this.summaryType !== SummaryType.Balanced) {
             return JSON.stringify(
                 documents.map((document) =>
                     Object.assign({}, document.metadata as SearchResult, {
@@ -46,6 +47,7 @@ export class SearchTool extends Tool {
         }
 
         const fakeSearchResult = await generateFakeSearchResult(arg, this.llm)
+
         return JSON.stringify(
             await this._reRankDocuments(
                 getMessageContent(fakeSearchResult.content),
@@ -57,7 +59,7 @@ export class SearchTool extends Tool {
     private async fetchSearchResult(query: string) {
         const results = await this.searchManager.search(query)
 
-        if (this.searchManager.config.summaryType === SummaryType.Quality) {
+        if (this.summaryType === SummaryType.Quality) {
             return await Promise.all(
                 results.map(async (result, k) => {
                     let pageContent = result.description
@@ -66,12 +68,16 @@ export class SearchTool extends Tool {
                         const browserContent: string =
                             await this.browserTool.invoke({
                                 url: result.url,
-                                action: 'summary',
+                                action: 'summarize',
                                 params: query
                             })
 
+                        console.log(browserContent)
                         if (
-                            !browserContent.includes('Error getting page text:')
+                            !browserContent.includes(
+                                'Error getting page text:'
+                            ) &&
+                            browserContent !== '[none]'
                         ) {
                             pageContent = browserContent
                         }
@@ -96,9 +102,7 @@ export class SearchTool extends Tool {
                     return chunks
                 })
             ).then((documents) => documents.flat())
-        } else if (
-            this.searchManager.config.summaryType === SummaryType.Balanced
-        ) {
+        } else if (this.summaryType === SummaryType.Balanced) {
             return await Promise.all(
                 results.map(async (result, k) => {
                     let pageContent = result.description
@@ -154,12 +158,12 @@ export class SearchTool extends Tool {
 
         const searchResult = await vectorStore.similaritySearchWithScore(
             query,
-            this.searchManager.config.topK * 3
+            this.searchManager.config.topK * 2
         )
 
-        for (const [index, result] of searchResult.entries()) {
+        /*   for (const [index, result] of searchResult.entries()) {
             await fs.writeFile(`tmp/tmp-${index}.txt`, result[0].pageContent)
-        }
+        } */
 
         return searchResult
             .filter(
@@ -184,7 +188,15 @@ export async function generateFakeSearchResult(
 }
 
 const GENERATE_FAKE_SEARCH_RESULT_PROMPT = new PromptTemplate({
-    template:
-        'Generate a fake search result for the query: "{query}". The response should be relevant to web content, concise, and between 50 to 100 characters long.',
+    template: `Based on the question: "{query}"
+
+Generate a brief, factual answer that:
+- Directly addresses the core question
+- Uses clear and concise language
+- Stays between 50-100 characters
+- Contains key factual information
+- Avoids speculation or uncertainty
+
+Answer the question as if you are a search result snippet.`,
     inputVariables: ['query']
 })

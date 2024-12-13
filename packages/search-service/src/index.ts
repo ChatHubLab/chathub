@@ -14,6 +14,7 @@ import { SearchManager } from './provide'
 import { providerPlugin } from './plugin'
 import { SearchTool } from './tools/search'
 import { SummaryType } from './types'
+
 export let logger: Logger
 
 export function apply(ctx: Context, config: Config) {
@@ -39,6 +40,8 @@ export function apply(ctx: Context, config: Config) {
 
         plugin.registerTool('web-search', {
             async createTool(params, session) {
+                const summaryType: SummaryType =
+                    params['summaryType'] ?? config.summaryType
                 const model = summaryModel ?? params.model
                 const browserTool = new PuppeteerBrowserTool(
                     ctx,
@@ -46,11 +49,11 @@ export function apply(ctx: Context, config: Config) {
                     params.embeddings,
                     {
                         waitUntil:
-                            config.summaryType === SummaryType.Balanced
+                            summaryType === SummaryType.Balanced
                                 ? 'domcontentloaded'
                                 : 'networkidle2',
                         timeout:
-                            config.summaryType === SummaryType.Balanced
+                            summaryType === SummaryType.Balanced
                                 ? 8 * Time.second
                                 : 30 * Time.second,
                         idleTimeout: 3 * Time.minute
@@ -60,7 +63,8 @@ export function apply(ctx: Context, config: Config) {
                     searchManager,
                     browserTool,
                     params.embeddings,
-                    model
+                    model,
+                    summaryType
                 )
             },
             selector() {

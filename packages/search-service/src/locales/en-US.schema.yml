@@ -41,3 +41,4 @@ $inner:
     - $desc: 'Advanced Settings'
       searchPrompt: 'Search prompt. Used for summarizing search results.'
       newQuestionPrompt: 'New question prompt. Used for generating new questions.'
+      summaryPrompt: 'Summary prompt. Used for summarizing documents.'

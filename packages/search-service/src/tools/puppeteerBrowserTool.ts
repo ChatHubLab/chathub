@@ -716,6 +716,7 @@ export class PuppeteerBrowserTool extends StructuredTool {
                 .trim()
                 .replace(/\n{3,}/g, '\n\n')
                 .trim()
+                .replace(/\s+/g, ' ')
         } catch (error) {
             console.error(error)
             return `Error getting page text: ${error.message}`
