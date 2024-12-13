@@ -1,4 +1,4 @@
-import { Context, Logger, sleep } from 'koishi'
+import { Context, Logger } from 'koishi'
 import { Config } from '../config'
 import {
     ChainMiddlewareContextOptions,
@@ -25,9 +25,6 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                     thinkingTimeoutObject,
                     context.options
                 )
-
-                // sleep to wait think
-                await sleep(config.sendThinkingMessageTimeout)
 
                 if (thinkingTimeoutObject.timeout == null || queueCount < 1) {
                     return
@@ -59,7 +56,7 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                     },
                     1000 * 60 * 2 - 1000 * 3
                 )
-            }, 0)
+            }, config.sendThinkingMessageTimeout)
 
             return ChainMiddlewareRunStatus.CONTINUE
         })
