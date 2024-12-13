@@ -14,7 +14,6 @@ import { SearchManager } from './provide'
 import { providerPlugin } from './plugin'
 import { SearchTool } from './tools/search'
 import { SummaryType } from './types'
-
 export let logger: Logger
 
 export function apply(ctx: Context, config: Config) {
