@@ -70,9 +70,14 @@ export class SearchManager {
 
         const searchResults: SearchResult[] = []
 
+        const signalLimit =
+            this.config.mulitSourceMode === 'average'
+                ? Math.round(limit / providers.length)
+                : limit
+
         const searchPromises = providers.map(async (provider) => {
             try {
-                const results = await provider.search(query, limit)
+                const results = await provider.search(query, signalLimit)
                 searchResults.push(...results)
             } catch (error) {
                 logger.error(
