@@ -39,9 +39,10 @@ export function apply(ctx: Context, config: Config) {
 
         plugin.registerTool('web-search', {
             async createTool(params, session) {
+                const model = summaryModel ?? params.model
                 const browserTool = new PuppeteerBrowserTool(
                     ctx,
-                    summaryModel ?? params.model,
+                    model,
                     params.embeddings,
                     {
                         waitUntil:
@@ -58,7 +59,8 @@ export function apply(ctx: Context, config: Config) {
                 return new SearchTool(
                     searchManager,
                     browserTool,
-                    params.embeddings
+                    params.embeddings,
+                    model
                 )
             },
             selector() {
@@ -199,11 +201,11 @@ export const Config: Schema<Config> = Schema.intersect([
             Schema.const('speed'),
             Schema.const('balanced'),
             Schema.const('quality')
-        ]) as Schema<Config['summaryType']>,
+        ]).default('balanced') as Schema<Config['summaryType']>,
         mulitSourceMode: Schema.union([
             Schema.const('average'),
             Schema.const('total')
-        ]) as Schema<Config['mulitSourceMode']>,
+        ]).default('average') as Schema<Config['mulitSourceMode']>,
         summaryModel: Schema.dynamic('model'),
         searchThreshold: Schema.percent().step(0.01).default(0.25)
     }),

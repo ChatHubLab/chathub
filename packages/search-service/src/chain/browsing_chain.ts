@@ -156,7 +156,7 @@ export class ChatLunaBrowsingChain
 
         return chatLunaTool.tool.createTool({
             embeddings: this.embeddings,
-            model: this.summaryModel
+            model: this.summaryModel ?? this.chain.llm
         })
     }
 
@@ -192,7 +192,8 @@ export class ChatLunaBrowsingChain
                     chat_history: formatChatHistoryAsString(
                         chatHistory.slice(-6)
                     ),
-                    question: message.content
+                    question: message.content,
+                    temperature: 0
                 },
                 {
                     'llm-used-token-count': events['llm-used-token-count']

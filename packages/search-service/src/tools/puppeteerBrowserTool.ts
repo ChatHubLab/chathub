@@ -3,10 +3,11 @@ import { StructuredTool } from '@langchain/core/tools'
 import { Context } from 'koishi'
 import type { Page, PuppeteerLifeCycleEvent } from 'puppeteer-core'
 import type {} from 'koishi-plugin-puppeteer'
-import { BaseLanguageModel } from '@langchain/core/language_models/base'
 import { Embeddings } from '@langchain/core/embeddings'
 import { z } from 'zod'
 import { LRUCache } from 'lru-cache'
+import { ChatLunaChatModel } from 'koishi-plugin-chatluna/llm-core/platform/model'
+import { getMessageContent } from 'koishi-plugin-chatluna/utils/string'
 
 export interface PuppeteerBrowserToolOptions {
     timeout?: number
@@ -37,7 +38,7 @@ export class PuppeteerBrowserTool extends StructuredTool {
     private lastActionTime: number = Date.now()
     private readonly timeout: number = 30000 // 30 seconds timeout
     private readonly idleTimeout: number = 180000 // 5 minutes idle timeout
-    private model: BaseLanguageModel
+    private model: ChatLunaChatModel
     private embeddings: Embeddings
     private ctx: Context
     private waitUntil: PuppeteerLifeCycleEvent
@@ -64,7 +65,7 @@ export class PuppeteerBrowserTool extends StructuredTool {
 
     constructor(
         ctx: Context,
-        model: BaseLanguageModel,
+        model: ChatLunaChatModel,
         embeddings: Embeddings,
         options: PuppeteerBrowserToolOptions = {}
     ) {
@@ -728,29 +729,54 @@ export class PuppeteerBrowserTool extends StructuredTool {
         try {
             const input = `Text: ${text}
 
-Please provide a comprehensive summary of the above text${searchText ? `, focusing on "${searchText}"` : ''}. Your summary should include:
+${
+    searchText
+        ? `Search Focus: "${searchText}"
 
-1. Overview of main topics or themes (1 paragraph)
-2. Breakdown of key points, arguments, or findings (4-5 paragraphs)
-3. Supporting evidence, data, or examples (2-3 paragraphs)
-4. Contrasting viewpoints or limitations (1 paragraph, if applicable)
-5. Conclusions drawn from the main points (1 paragraph)
+First, evaluate if the text content is relevant to the search focus:
+1. Identify key concepts in both the search focus and text
+2. Check for direct mentions or related terminology
+3. Assess contextual relevance
+4. Consider semantic relationships
+
+If the content is NOT relevant to the search focus, output exactly: [none]
+
+Only if the content IS relevant, provide a comprehensive summary following these guidelines:`
+        : 'Please provide a comprehensive summary following these guidelines:'
+}
+
+1. Main Points (1-2 paragraphs):
+   - Key topics and themes
+   - Central arguments or findings
+   - Essential context
+
+2. Supporting Details (2-3 paragraphs):
+   - Evidence and examples
+   - Data or statistics
+   - Expert opinions or quotes
+   ${searchText ? '- Specific information related to search focus' : ''}
+
+3. Additional Context (1 paragraph):
+   - Limitations or caveats
+   - Alternative viewpoints
+   - Related considerations
 
 Guidelines:
- - Organize content into clear, logical paragraphs
- - Maintain an objective tone, avoiding bias
- - Use transitional phrases for smooth flow
- - Include relevant quotes or statistics
- - Incorporate up to 5 important links from the text
- - Ensure all information is accurate and derived from the text
- - Use the same language as the input text; do not translate.
+- Use clear, concise language
+- Maintain objectivity
+- Include relevant quotes or statistics
+- Reference up to 5 important links
+- Stay faithful to source material
+- CRITICAL: Use the exact same language as the input text
 
-Aim for a balanced, informative summary that provides a comprehensive understanding of the original content.
+IMPORTANT: Your summary MUST be in the same language as the original text. Do not translate or change the language under any circumstances.
 
-CRITICAL: Your summary MUST be in the same language as the original text. Do not translate or change the language under any circumstances.`
+Your summary or [none]:`
 
-            const summary = await this.model.invoke(input)
-            return summary.content
+            const summary = await this.model.invoke(input, {
+                temperature: 0
+            })
+            return getMessageContent(summary.content)
         } catch (error) {
             console.error(error)
             return `Error summarizing text: ${error.message}`
