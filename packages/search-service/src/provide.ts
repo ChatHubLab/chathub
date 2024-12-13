@@ -46,7 +46,6 @@ export class SearchManager {
     updateSchema(schema: Schema) {
         this.schemas.push(schema)
 
-        console.log(this.schemas)
         this.ctx.schema.set(
             'search-engine',
             Schema.array(Schema.union(this.schemas))

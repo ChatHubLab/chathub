@@ -1,6 +1,6 @@
 import { Context, Schema } from 'koishi'
 import { SearchManager, SearchProvider } from '../provide'
-import { SearchResult } from '../types'
+import { SearchResult, SummaryType } from '../types'
 import { ChatLunaPlugin } from 'koishi-plugin-chatluna/services/chat'
 import { Config, createModel, logger } from '..'
 import { ChatLunaChatModel } from 'koishi-plugin-chatluna/llm-core/platform/model'
@@ -273,9 +273,10 @@ export async function apply(
         return
     }
 
-    const summaryModel = config.enhancedSummary
-        ? await createModel(ctx, config.summaryModel)
-        : undefined
+    const summaryModel =
+        config.summaryType === SummaryType.Quality
+            ? await createModel(ctx, config.summaryModel)
+            : undefined
 
     const wikipediaBaseURLs = config.wikipediaBaseURL
     for (const baseURL of wikipediaBaseURLs) {
@@ -286,7 +287,10 @@ export async function apply(
                 plugin,
                 {
                     baseUrl: baseURL,
-                    maxDocContentLength: config.maxWikipediaDocContentLength
+                    maxDocContentLength:
+                        config.summaryType !== SummaryType.Balanced
+                            ? config.maxWikipediaDocContentLength
+                            : 100000
                 },
                 summaryModel
             )

@@ -3,13 +3,25 @@ $inner:
     - $desc: 搜索服务配置
       searchEngine:
           $desc: 搜索引擎。
-      topK: 参考结果数量（2-20）。
+      topK: 参考结果数量（2-50）。
       enhancedSummary: 是否使用增强摘要。
       fastEnhancedSummary: 是否使用快速增强摘要。开启后将不调用模型，直接返回搜索结果。（需要上下文较大的模型）
       puppeteerTimeout: Puppeteer 操作超时时间（毫秒）。
       puppeteerIdleTimeout: Puppeteer 空闲超时时间（毫秒）。
       summaryModel: 处理摘要的模型。选择较小并且速度较快的模型可以获得更快的响应速度。
       searchConfidenceThreshold: 搜索决策的置信阈值。较高的值意味着更可能进行搜索。
+      summaryType:
+           $desc: 摘要模式。不同的摘要模式可以提高信息的质量。
+           $inner:
+                - 性能模式。注重快速的信息获取。
+                - 平衡模式。在信息获取和信息质量之间取得平衡。
+                - 质量模式。注重高信息质量的获取。
+      searchThreshold: 搜索内容的相似度阈值。
+      mulitSourceMode:
+          $desc: 多源模式。
+          $inner:
+              - 平均模式。将多个来源的搜索结果各取平均个。
+              - 总和模式。将多个来源的搜索结果进行总和后取前 topK 个。
 
     - $desc: Serper 设置
       serperApiKey: Serper API 密钥。

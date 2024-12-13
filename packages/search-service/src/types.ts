@@ -4,3 +4,9 @@ export interface SearchResult {
     description: string
     image?: string
 }
+
+export enum SummaryType {
+    Speed = 'speed',
+    Balanced = 'balanced',
+    Quality = 'quality'
+}

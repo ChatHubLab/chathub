@@ -13,6 +13,7 @@ import { ChatLunaChatModel } from 'koishi-plugin-chatluna/llm-core/platform/mode
 import { SearchManager } from './provide'
 import { providerPlugin } from './plugin'
 import { SearchTool } from './tools/search'
+import { SummaryType } from './types'
 export let logger: Logger
 
 export function apply(ctx: Context, config: Config) {
@@ -27,9 +28,10 @@ export function apply(ctx: Context, config: Config) {
     ctx.on('ready', async () => {
         plugin.registerToService()
 
-        const summaryModel = config.enhancedSummary
-            ? await createModel(ctx, config.summaryModel)
-            : undefined
+        const summaryModel =
+            config.summaryType === SummaryType.Quality
+                ? await createModel(ctx, config.summaryModel)
+                : undefined
 
         const searchManager = new SearchManager(ctx, config)
 
@@ -42,10 +44,15 @@ export function apply(ctx: Context, config: Config) {
                     summaryModel ?? params.model,
                     params.embeddings,
                     {
-                        waitUntil: 'domcontentloaded',
-                        timeout: 8 * Time.second,
-                        idleTimeout: 3 * Time.minute,
-                        fastMode: true
+                        waitUntil:
+                            config.summaryType === SummaryType.Balanced
+                                ? 'domcontentloaded'
+                                : 'networkidle2',
+                        timeout:
+                            config.summaryType === SummaryType.Balanced
+                                ? 8 * Time.second
+                                : 30 * Time.second,
+                        idleTimeout: 3 * Time.minute
                     }
                 )
                 return new SearchTool(
@@ -93,12 +100,11 @@ export function apply(ctx: Context, config: Config) {
                     botName: params.botName,
                     embeddings: params.embeddings,
                     historyMemory: params.historyMemory,
-                    enhancedSummary: config.enhancedSummary,
+                    summaryType: config.summaryType,
                     summaryModel: summaryModel ?? params.model,
                     thoughtMessage: ctx.chatluna.config.showThoughtMessage,
                     searchPrompt: config.searchPrompt,
-                    newQuestionPrompt: config.newQuestionPrompt,
-                    searchConfidenceThreshold: config.searchConfidenceThreshold
+                    newQuestionPrompt: config.newQuestionPrompt
                 }
 
                 return ChatLunaBrowsingChain.fromLLMAndTools(
@@ -138,8 +144,9 @@ export async function createModel(ctx: Context, model: string) {
 export interface Config extends ChatLunaPlugin.Config {
     searchEngine: string[]
     topK: number
-    enhancedSummary: boolean
+    summaryType: SummaryType
     summaryModel: string
+    mulitSourceMode: 'average' | 'total'
 
     serperApiKey: string
     serperCountry: string
@@ -162,7 +169,7 @@ export interface Config extends ChatLunaPlugin.Config {
 
     searchPrompt: string
     newQuestionPrompt: string
-    searchConfidenceThreshold: number
+    searchThreshold: number
 }
 
 export const Config: Schema<Config> = Schema.intersect([
@@ -186,11 +193,19 @@ export const Config: Schema<Config> = Schema.intersect([
             .default(['bing-web'])
             .role('select'),
         topK: Schema.number().min(2).max(50).step(1).default(5),
-        enhancedSummary: Schema.boolean().default(false),
         puppeteerTimeout: Schema.number().default(60000),
         puppeteerIdleTimeout: Schema.number().default(300000),
+        summaryType: Schema.union([
+            Schema.const('speed'),
+            Schema.const('balanced'),
+            Schema.const('quality')
+        ]) as Schema<Config['summaryType']>,
+        mulitSourceMode: Schema.union([
+            Schema.const('average'),
+            Schema.const('total')
+        ]) as Schema<Config['mulitSourceMode']>,
         summaryModel: Schema.dynamic('model'),
-        searchConfidenceThreshold: Schema.percent().step(0.01).default(0.5)
+        searchThreshold: Schema.percent().step(0.01).default(0.25)
     }),
 
     Schema.object({
@@ -258,30 +273,22 @@ FINAL REMINDER: Ensure that your entire response, including any explanations or 
         newQuestionPrompt: Schema.string()
             .role('textarea')
             .default(
-                `Rephrase the follow-up question as a clear, concise, standalone question optimized for search engine queries, based on the context of the previous conversation.
+                `Rephrase the follow-up question as a standalone, search-engine-friendly question based on the given conversation context.
 
 Rules:
-- CRITICAL: Use the exact same language as the input. Do not translate or modify the language in any way, even if the language or phrasing seems ambiguous or unclear. The output must maintain the integrity of the original input.
-- Clarity: The rephrased question must be unambiguous, clear, and grammatically correct. Ensure that the question makes sense on its own and can be easily understood without additional context. Remove any extra words that don't add value or clarity.
-- Search Optimization: The question must be rephrased in a way that would be effective for a search engine. Use common search terms and focus on the keywords that would help users find relevant information quickly. Pay special attention to extracting Chinese proper nouns (e.g., names of shows, places, etc.), ensuring that they are correctly identified and used as the key terms in the rephrased question.
-- Exclusions:
-    - If the question is based on casual conversation or seeks personal opinions (e.g., “What do you think?” or “How are you today?”), output [skip].
-    - If the question involves simple calculations that can be easily deduced (e.g., "What’s 2 + 2?"), or asks for information that has already been addressed in the chat history, output [skip].
-    - If the question is conversational or rhetorical in nature (e.g., "I wonder why..."), output [skip].
-- Knowledge Requests:
-    - If the question is asking for a deeper explanation, new knowledge, or facts that are not directly provided in the chat history, rephrase it to clearly seek that information. Examples include technical inquiries, how-to guides, explanations of concepts, or requests for clarifications on complex topics.
-    - If the question implies a need for a detailed answer or background knowledge (e.g., "How does AI work?" or "What are the steps to set up a server?"), ensure the question is clear, specific, and well-defined for a search engine query.
-- Avoid Overly Broad Questions: Do not leave the question too vague or general. Instead of rephrasing something like “Tell me about technology,” focus on specific subtopics, such as “What are the latest advancements in AI technology?” or “How do quantum computers work?”
-- Avoid Redundancy: If the question is too similar to one already covered in the conversation, or if it has already been answered directly, output [skip]. Avoid rephrasing questions that do not bring new or unique queries into the conversation.
-- Maintain Context and Accuracy: Your rephrased question must directly reflect the user’s intended information-seeking query, based on the conversation so far. Do not make assumptions about what the user is asking for if it isn't clearly expressed.
+- CRITICAL: Use the exact same language as the input. Do not translate or change the language under any circumstances.
+- Make the question self-contained and clear
+- Optimize for search engine queries
+- Do not add any explanations or additional content
+- If the question doesn't require an internet search (e.g., personal opinions, simple calculations, or information already provided in the chat history), output [skip] instead of rephrasing
+- If the user needs a detailed explanation, generate a new question that will provide comprehensive information on the topic
 
-IMPORTANT: Your rephrased question or [skip] MUST be in the same language as the original input. This is crucial for maintaining context, accuracy, and the user’s intent.
+IMPORTANT: Your rephrased question or [skip] MUST be in the same language as the original input. This is crucial for maintaining context and accuracy.
 
 Chat History:
 {chat_history}
 Follow-up Input: {question}
-Standalone Question or [skip]:
-`
+Standalone Question or [skip]:`
             )
     })
 ]).i18n({

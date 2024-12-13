@@ -1,5 +1,4 @@
 /* eslint-disable max-len */
-import { Document } from '@langchain/core/documents'
 import { Embeddings } from '@langchain/core/embeddings'
 import {
     AIMessage,
@@ -17,18 +16,13 @@ import {
     ChatLunaLLMChainWrapper
 } from 'koishi-plugin-chatluna/llm-core/chain/base'
 import { ChatLunaChatModel } from 'koishi-plugin-chatluna/llm-core/platform/model'
-import {
-    BufferMemory,
-    VectorStoreRetrieverMemory
-} from 'koishi-plugin-chatluna/llm-core/memory/langchain'
-import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters'
-import { MemoryVectorStore } from 'koishi-plugin-chatluna/llm-core/vectorstores'
+import { BufferMemory } from 'koishi-plugin-chatluna/llm-core/memory/langchain'
 import { logger } from '..'
 import { PresetTemplate } from 'koishi-plugin-chatluna/llm-core/prompt'
 import { ChatLunaChatPrompt } from 'koishi-plugin-chatluna/llm-core/chain/prompt'
 import { ChatLunaTool } from 'koishi-plugin-chatluna/llm-core/platform/types'
-import { PuppeteerBrowserTool } from '../tools/puppeteerBrowserTool'
 import { Session } from 'koishi'
+import { SummaryType } from '../types'
 
 // github.com/langchain-ai/weblangchain/blob/main/nextjs/app/api/chat/stream_log/route.ts#L81
 
@@ -38,7 +32,7 @@ export interface ChatLunaBrowsingChainInput {
     embeddings: Embeddings
 
     historyMemory: BufferMemory
-    enhancedSummary: boolean
+    summaryType: SummaryType
 
     thoughtMessage: boolean
 
@@ -46,7 +40,6 @@ export interface ChatLunaBrowsingChainInput {
 
     searchPrompt: string
     newQuestionPrompt: string
-    searchConfidenceThreshold: number
 }
 
 export class ChatLunaBrowsingChain
@@ -57,8 +50,6 @@ export class ChatLunaBrowsingChain
 
     embeddings: Embeddings
 
-    searchMemory: VectorStoreRetrieverMemory
-
     chain: ChatLunaLLMChain
 
     historyMemory: BufferMemory
@@ -67,15 +58,11 @@ export class ChatLunaBrowsingChain
 
     formatQuestionChain: ChatLunaLLMChain
 
-    textSplitter: RecursiveCharacterTextSplitter
-
     tools: ChatLunaToolWrapper[]
-
-    cacheUrls: string[]
 
     responsePrompt: PromptTemplate
 
-    enhancedSummary: boolean
+    summaryType: SummaryType
 
     summaryModel: ChatLunaChatModel
 
@@ -85,8 +72,6 @@ export class ChatLunaBrowsingChain
 
     newQuestionPrompt: string
 
-    searchConfidenceThreshold: number
-
     constructor({
         botName,
         embeddings,
@@ -94,10 +79,9 @@ export class ChatLunaBrowsingChain
         chain,
         tools,
         formatQuestionChain,
-        enhancedSummary,
+        summaryType,
         thoughtMessage,
-        searchPrompt,
-        searchConfidenceThreshold
+        searchPrompt
     }: ChatLunaBrowsingChainInput & {
         chain: ChatLunaLLMChain
         formatQuestionChain: ChatLunaLLMChain
@@ -108,34 +92,18 @@ export class ChatLunaBrowsingChain
         this.botName = botName
 
         this.embeddings = embeddings
-        this.enhancedSummary = enhancedSummary
-
-        this.textSplitter = new RecursiveCharacterTextSplitter({
-            chunkSize: 1400,
-            chunkOverlap: 200
-        })
+        this.summaryType = summaryType
 
         // use memory
-        this.searchMemory = new VectorStoreRetrieverMemory({
-            vectorStoreRetriever: new MemoryVectorStore(embeddings).asRetriever(
-                10
-            ),
-            memoryKey: 'long_history',
-            inputKey: 'input',
-            outputKey: 'result',
-            returnDocs: true
-        })
+
         this.formatQuestionChain = formatQuestionChain
 
         this.historyMemory = historyMemory
         this.thoughtMessage = thoughtMessage
 
-        this.cacheUrls = []
-
         this.responsePrompt = PromptTemplate.fromTemplate(searchPrompt)
         this.chain = chain
         this.tools = tools
-        this.searchConfidenceThreshold = searchConfidenceThreshold
     }
 
     static fromLLMAndTools(
@@ -150,8 +118,7 @@ export class ChatLunaBrowsingChain
             thoughtMessage,
             searchPrompt,
             newQuestionPrompt,
-            enhancedSummary,
-            searchConfidenceThreshold
+            summaryType
         }: ChatLunaBrowsingChainInput
     ): ChatLunaBrowsingChain {
         const prompt = new ChatLunaChatPrompt({
@@ -180,8 +147,7 @@ export class ChatLunaBrowsingChain
             newQuestionPrompt,
             chain,
             tools,
-            enhancedSummary,
-            searchConfidenceThreshold
+            summaryType
         })
     }
 
@@ -192,45 +158,6 @@ export class ChatLunaBrowsingChain
             embeddings: this.embeddings,
             model: this.summaryModel
         })
-    }
-
-    async fetchUrlContent(url: string, task: string) {
-        const webTool = await this._selectTool('web-browser').then(
-            (tool) => tool as PuppeteerBrowserTool
-        )
-
-        // open first
-        const text = await webTool.invoke({
-            action: 'summarize',
-            params: task,
-            url
-        })
-
-        logger?.debug('fetch url content:', text)
-
-        await this.putContentToMemory(text, url)
-    }
-
-    async putContentToMemory(content: string, url: string) {
-        if (this.cacheUrls.includes(url)) {
-            return
-        }
-
-        await this.searchMemory.vectorStoreRetriever.vectorStore.addDocuments(
-            await this.textSplitter.splitText(content).then((texts) =>
-                texts.map(
-                    (text) =>
-                        new Document({
-                            pageContent: text,
-                            metadata: {
-                                source: url
-                            }
-                        })
-                )
-            )
-        )
-
-        this.cacheUrls.push(url)
     }
 
     async call({
@@ -324,9 +251,7 @@ export class ChatLunaBrowsingChain
         const searchTool = await this._selectTool('web-search')
 
         // Use the rephrased question for search
-        const rawSearchResults = await searchTool.invoke(
-            '$$character-' + newQuestion
-        )
+        const rawSearchResults = await searchTool.invoke(newQuestion)
 
         const searchResults =
             (JSON.parse(rawSearchResults as string) as unknown as {
@@ -357,63 +282,11 @@ export class ChatLunaBrowsingChain
             return resultString
         })
 
-        const relatedContents: string[] = []
-
-        let vectorSearchResults: Document[] = []
-
-        if (this.enhancedSummary && searchResults.length > 0) {
-            const fetchPromises = searchResults
-                .filter((result) => result.url?.startsWith('http'))
-                .map(async (result) => {
-                    if (result.description.length > 500) {
-                        // 不对大内容作二次解读
-                        await this.putContentToMemory(
-                            result.description,
-                            result.url
-                        )
-
-                        return
-                    }
-
-                    if (this.thoughtMessage) {
-                        await session.send(`Reading ${result.url}...`)
-                    }
-
-                    try {
-                        return await this.fetchUrlContent(
-                            result.url,
-                            newQuestion
-                        )
-                    } catch (e) {
-                        logger.warn(`Error fetching ${result.url}:`, e)
-                    }
-                })
-
-            // 切片并发
-            const chunkedFetchPromises = chunkArray(fetchPromises, 5)
-
-            for (const chunk of chunkedFetchPromises) {
-                await Promise.all(chunk)
-            }
-
-            vectorSearchResults =
-                await this.searchMemory.vectorStoreRetriever.invoke(newQuestion)
-
-            for (const result of vectorSearchResults) {
-                relatedContents.push(
-                    `content: ${result.pageContent}, source: ${result.metadata.source}`
-                )
-            }
-        }
-
         let responsePrompt = ''
         if (formattedSearchResults?.length > 0) {
             responsePrompt = await this.responsePrompt.format({
                 question: message.content,
-                context:
-                    relatedContents.join('\n\n') +
-                    '\n\n' +
-                    formattedSearchResults.join('\n\n')
+                context: formattedSearchResults.join('\n\n')
             })
 
             chatHistory.push(new SystemMessage(responsePrompt))
@@ -423,8 +296,6 @@ export class ChatLunaBrowsingChain
                     "OK. I understand. I will respond to the your's question using the same language as your input. What's the your's question?"
                 )
             )
-
-            logger?.debug('formatted search results', searchResults)
         }
 
         return responsePrompt
