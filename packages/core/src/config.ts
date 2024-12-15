@@ -1,4 +1,4 @@
-import { Awaitable, Computed, Schema } from 'koishi'
+import { Awaitable, Computed, Schema, Time } from 'koishi'
 
 export interface Config {
     botName: string
@@ -111,7 +111,7 @@ export const Config: Schema<Config> = Schema.intersect([
         autoDelete: Schema.boolean().default(false),
         autoDeleteTimeout: Schema.number()
             .default(86400 * 10)
-            .min(86400)
+            .min(Time.hour)
     }),
 
     Schema.object({

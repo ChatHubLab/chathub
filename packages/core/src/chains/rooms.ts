@@ -55,7 +55,7 @@ export async function queryPublicConversationRoom(
     const groupRoomInfoList = await ctx.database.get(
         'chathub_room_group_member',
         {
-            groupId: session.event.guild.id,
+            groupId: session.guildId,
             roomVisibility: {
                 // TODO: better type
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -214,13 +214,13 @@ export async function getTemplateConversationRoom(
 }
 
 export async function getConversationRoomCount(ctx: Context) {
-    const counts: number = await ctx.database.eval(
+    const count = await ctx.database.eval(
         'chathub_room',
         (row) => $.max(row.roomId),
         {}
     )
 
-    return counts
+    return count
 }
 
 export async function transferConversationRoom(

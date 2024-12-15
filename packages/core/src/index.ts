@@ -229,5 +229,8 @@ async function setupAutoDelete(ctx: Context, config: Config) {
 
     await execute()
 
-    ctx.setInterval(execute, Time.minute * 30)
+    ctx.setInterval(async () => {
+        logger.info('auto delete task running')
+        await execute()
+    }, Time.minute * 5)
 }
