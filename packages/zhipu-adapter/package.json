@@ -63,7 +63,7 @@
         "@langchain/core": "^0.3.18",
         "jsonwebtoken": "^9.0.2",
         "zod": "^3.24.0-canary.20241107T043915",
-        "zod-to-json-schema": "^3.23.5"
+        "zod-to-json-schema": "^3.24.1"
     },
     "devDependencies": {
         "@types/jsonwebtoken": "^9.0.7",

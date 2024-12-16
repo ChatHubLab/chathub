@@ -61,7 +61,7 @@
     ],
     "dependencies": {
         "@langchain/core": "^0.3.18",
-        "zod-to-json-schema": "^3.23.5"
+        "zod-to-json-schema": "^3.24.1"
     },
     "devDependencies": {
         "atsc": "^2.1.0",
