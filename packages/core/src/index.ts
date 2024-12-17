@@ -37,15 +37,15 @@ export const inject2 = {
 export let logger: Logger
 
 export const usage = `
-## chatluna v1.0 beta
+## chatluna v1.0 rc
 
-### 目前插件还在 beta 阶段，可能会有很多 bug，可以去插件主页那边提 issue 或加群反馈。
+### 目前插件在 rc 阶段，已经趋于稳定，但是还会有少量 bug，可以去插件主页那边提 issue 或加群反馈。
 
-ChatLuna 插件交流群：282381753 （有问题不知道怎么弄先加群问）
+ChatLuna 插件交流群：282381753 （有问题或出现 Bug 先加群问）
 
 群里目前没有搭载该插件的 bot，加群的话最好是来询问问题或者提出意见的
 
-[文档](https://chatluna.chat) 也在缓慢制作中，有问题可以在群里提出。
+[文档](https://chatluna.chat) 也在制作中，有问题可以在群里提出。
 `
 
 export function apply(ctx: Context, config: Config) {
