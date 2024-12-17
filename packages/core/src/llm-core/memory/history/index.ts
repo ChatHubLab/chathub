@@ -209,16 +209,7 @@ async function createVectorStoreRetriever(
 
     const embeddings = chatInterface.embeddings
 
-    const chatMode = chatInterface.chatMode
-
-    if (chatMode !== 'chat' && chatMode !== 'browsing') {
-        vectorStoreRetriever =
-            await inMemoryVectorStoreRetrieverProvider.createVectorStoreRetriever(
-                {
-                    embeddings
-                }
-            )
-    } else if (config.defaultVectorStore == null) {
+    if (config.defaultVectorStore == null) {
         logger?.warn(
             'Vector store is empty, falling back to fake vector store. Try check your config.'
         )
