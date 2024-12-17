@@ -20,12 +20,6 @@ export function apply(ctx: Context, config: Config): void {
     ctx.on(
         'chatluna/before-chat',
         async (conversationId, message, promptVariables, chatInterface) => {
-            const chatMode = chatInterface.chatMode
-
-            if (chatMode === 'plugin') {
-                return
-            }
-
             const longMemoryId = resolveLongMemoryId(message, conversationId)
 
             let retriever = longMemoryCache[longMemoryId]
