@@ -122,6 +122,8 @@ export class MemorySaveTool extends Tool {
             }
         ])
 
+        await vectorStore.save()
+
         return 'Memory saved successfully.'
     }
 
