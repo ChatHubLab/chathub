@@ -24,6 +24,7 @@ export interface Config {
     censor: boolean
     autoDelete: boolean
     autoDeleteTimeout: number
+    messageDelay: number
 
     longMemory: boolean
     privateChatWithoutCommand: boolean
@@ -74,6 +75,11 @@ export const Config: Schema<Config> = Schema.intersect([
         sendThinkingMessage: Schema.boolean().default(true),
         sendThinkingMessageTimeout: Schema.number().default(15000),
         msgCooldown: Schema.number().min(0).max(3600).step(1).default(0),
+        messageDelay: Schema.number()
+            .min(0)
+            .max(60 * Time.second)
+            .step(1)
+            .default(0),
         showThoughtMessage: Schema.boolean().default(false)
     }),
 

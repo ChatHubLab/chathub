@@ -35,6 +35,7 @@ import { apply as list_all_preset } from './middlewares/list_all_preset'
 import { apply as list_all_vectorstore } from './middlewares/list_all_vectorstore'
 import { apply as list_auth_group } from './middlewares/list_auth_group'
 import { apply as list_room } from './middlewares/list_room'
+import { apply as message_delay } from './middlewares/message_delay'
 import { apply as mute_user } from './middlewares/mute_user'
 import { apply as query_balance } from './middlewares/query_balance'
 import { apply as read_chat_message } from './middlewares/read_chat_message'
@@ -102,6 +103,7 @@ export async function middleware(ctx: Context, config: Config) {
             list_all_vectorstore,
             list_auth_group,
             list_room,
+            message_delay,
             mute_user,
             query_balance,
             read_chat_message,
