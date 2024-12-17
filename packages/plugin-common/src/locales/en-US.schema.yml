@@ -25,7 +25,7 @@ $inner:
         commandList:
             $desc: 'Available commands. If empty, all first-level commands are registered'
             $inner:
-                command: 'Command to trigger'
+                command: 'Command to trigger‘
                 description: 'Description of the command tool'
                 selector: 'Keyword to trigger the command tool'
 

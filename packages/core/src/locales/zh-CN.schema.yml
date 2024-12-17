@@ -32,7 +32,7 @@ $inner:
       blockText: 设置对被拉黑用户的固定回复内容。
 
     - $desc: 长期记忆选项
-      longMemory: 是否启用长期记忆功能。启用后，模型能够记住较久远的对话内容（需要提供向量数据库和 Embeddings 服务）。
+      longMemory: 是否启用长期记忆功能。启用后，模型能够记住较久远的对话内容（需要使用向量数据库和 Embeddings 服务）。
       longMemorySimilarity: 设置长期记忆的相似度阈值。
       longMemoryInterval: 设置长期记忆调用的频率，即每隔多少轮对话调用一次长期记忆。
       longMemoryExtractModel: 设置长期记忆的提取模型。使用较快的模型可以提升提取的速度。
