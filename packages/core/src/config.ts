@@ -110,8 +110,8 @@ export const Config: Schema<Config> = Schema.intersect([
             .default(40),
         autoDelete: Schema.boolean().default(false),
         autoDeleteTimeout: Schema.number()
-            .default(86400 * 10)
-            .min(Time.hour)
+            .default((Time.day * 10) / Time.second)
+            .min(Time.hour / Time.second)
     }),
 
     Schema.object({
