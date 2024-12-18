@@ -53,6 +53,8 @@ export class ClaudeClient extends PlatformModelClient {
             'claude-3-5-sonnet-20240620',
             'claude-3-opus-20240229',
             'claude-3-sonnet-20240229',
+            'claude-3-5-sonnet-20241022',
+            'claude-3-5-haiku-20241022',
             'claude-3-haiku-20240307',
             'claude-2.1',
             'claude-2.0',
@@ -64,6 +66,7 @@ export class ClaudeClient extends PlatformModelClient {
                     model.includes('2.0') || model.includes('1.2')
                         ? 1000000
                         : 2000000,
+                functionCall: model.includes('claude-3'),
                 type: ModelType.llm
             }
         })
