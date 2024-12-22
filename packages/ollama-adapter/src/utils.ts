@@ -3,7 +3,7 @@ import { OllamaMessage } from './types'
 
 export function langchainMessageToOllamaMessage(
     messages: BaseMessage[],
-    supportImage: boolean,
+    supportImage: boolean
 ): OllamaMessage[] {
     const result: OllamaMessage[] = []
 
