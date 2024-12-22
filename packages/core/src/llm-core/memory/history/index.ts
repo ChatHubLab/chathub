@@ -119,9 +119,18 @@ export function apply(ctx: Context, config: Config): void {
                 }
             }
 
+            const vectorStore = retriever.vectorStore as VectorStore
+
+            if (config.longMemoryAddSimilarity > 0) {
+                resultArray = await filterSimilarMemory(
+                    resultArray,
+                    vectorStore,
+                    config.longMemoryAddSimilarity
+                )
+            }
+
             logger?.debug(`Long memory extract: ${JSON.stringify(resultArray)}`)
 
-            const vectorStore = retriever.vectorStore as VectorStore
             await vectorStore.addDocuments(
                 resultArray.map((value) => ({
                     pageContent: value,
@@ -176,6 +185,42 @@ function parseResultContent(content: string): string[] {
     }
 
     throw new Error('Invalid content format')
+}
+
+async function filterSimilarMemory(
+    memoryArray: string[],
+    vectorStore: VectorStore,
+    similarityScore: number
+) {
+    const result: string[] = []
+
+    for (const memory of memoryArray) {
+        let similarityMemorys = await vectorStore.similaritySearchWithScore(
+            memory,
+            10
+        )
+        if (similarityMemorys.length < 1) {
+            result.push(memory)
+            continue
+        }
+
+        similarityMemorys = similarityMemorys.filter(
+            (value) => value[1] > similarityScore
+        )
+
+        if (similarityMemorys.length < 1) {
+            result.push(memory)
+            continue
+        }
+
+        logger.warn(
+            `Find ${similarityMemorys.length} about ${memory} similar memorys\n` +
+                `bigger than ${similarityScore}:\n` +
+                `${similarityMemorys.map((t) => t[0].pageContent).join(',')}`
+        )
+    }
+
+    return result
 }
 
 function resolveLongMemoryId(message: HumanMessage, conversationId: string) {
