@@ -2,21 +2,22 @@ import { BaseMessage, MessageType } from '@langchain/core/messages'
 import { OllamaMessage } from './types'
 
 export function langchainMessageToOllamaMessage(
-    messages: BaseMessage[]
+    messages: BaseMessage[],
+    supportImage: boolean,
 ): OllamaMessage[] {
     const result: OllamaMessage[] = []
 
     const mappedMessage = messages.map((rawMessage) => {
         let images: string[] = []
 
-        if (rawMessage.additional_kwargs.images != null) {
+        if (rawMessage.additional_kwargs.images != null && supportImage) {
             images = rawMessage.additional_kwargs.images as string[]
         } else {
             images = undefined
         }
 
         const result = {
-            role: messageTypeToOllamaRole(rawMessage._getType()),
+            role: messageTypeToOllamaRole(rawMessage.getType()),
             content: rawMessage.content as string,
             images
         }

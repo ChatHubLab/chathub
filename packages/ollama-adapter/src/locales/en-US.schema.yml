@@ -3,6 +3,7 @@ $inner:
   - $desc: 'API Configuration'
     apiEndpoints:
       $desc: 'Ollama API endpoints'
+    supportImage: 'Whether the current model supports multi-modal image input'
 
   - $desc: 'Model Parameters'
     maxTokens: 'Max response tokens (16-4096, multiple of 16). Note: >2000 for 8k+ token models'

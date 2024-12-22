@@ -21,6 +21,7 @@ import {
 } from './types'
 import { langchainMessageToOllamaMessage } from './utils'
 import { ChatLunaPlugin } from 'koishi-plugin-chatluna/services/chat'
+import { Config } from '.'
 
 export class OllamaRequester
     extends ModelRequester
@@ -28,7 +29,7 @@ export class OllamaRequester
 {
     constructor(
         private _config: ClientConfig,
-        private _plugin: ChatLunaPlugin
+        private _plugin: ChatLunaPlugin<ClientConfig, Config>
     ) {
         super()
     }
@@ -41,7 +42,10 @@ export class OllamaRequester
                 'api/chat',
                 {
                     model: params.model,
-                    messages: langchainMessageToOllamaMessage(params.input),
+                    messages: langchainMessageToOllamaMessage(
+                        params.input,
+                        this._plugin.config.supportImage
+                    ),
                     options: {
                         temperature: params.temperature,
                         // top_k: params.n,

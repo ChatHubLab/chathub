@@ -28,7 +28,7 @@ export class OllamaClient extends PlatformModelAndEmbeddingsClient<ClientConfig>
         ctx: Context,
         private _config: Config,
         clientConfig: ClientConfig,
-        plugin: ChatLunaPlugin
+        plugin: ChatLunaPlugin<ClientConfig, Config>
     ) {
         super(ctx, clientConfig)
 
