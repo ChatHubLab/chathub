@@ -27,10 +27,13 @@ export async function apply(
             collectionName: 'chatluna_collection',
             partitionName: params.key ?? 'chatluna',
             url: config.milvusUrl,
+            autoId: false,
             username: config.milvusUsername,
             password: config.milvusPassword,
             textFieldMaxLength: 3000
         })
+
+        logger.debug(`Loading milvus store from %c`, params.key ?? 'chatluna')
 
         const testVector = await embeddings.embedDocuments(['test'])
 
@@ -38,7 +41,10 @@ export async function apply(
             await vectorStore.ensureCollection(testVector, [
                 {
                     pageContent: 'test',
-                    metadata: {}
+                    metadata: {
+                        raw_id: 'z'.repeat(100),
+                        source: 'z'.repeat(100)
+                    }
                 }
             ])
 
@@ -68,7 +74,10 @@ export async function apply(
                 await vectorStore.ensureCollection(testVector, [
                     {
                         pageContent: 'test',
-                        metadata: {}
+                        metadata: {
+                            raw_id: 'z'.repeat(100),
+                            source: 'z'.repeat(100)
+                        }
                     }
                 ])
 
@@ -106,15 +115,21 @@ export async function apply(
 
                     const ids: string[] = []
                     if (options.ids) {
-                        ids.push(...options.ids)
+                        ids.push(
+                            ...options.ids.map((id) => id.replaceAll('-', '_'))
+                        )
                     }
 
                     if (options.documents) {
                         const documentIds = options.documents
                             ?.map((document) => {
-                                return document.metadata?.raw_id as
+                                const id = document.metadata?.raw_id as
                                     | string
                                     | undefined
+
+                                return id != null
+                                    ? id.replaceAll('-', '_')
+                                    : undefined
                             })
                             .filter((id): id is string => id != null)
 
@@ -125,9 +140,19 @@ export async function apply(
                         return
                     }
 
-                    await store.delete({
+                    const client = store.client
+
+                    const deleteResp = await client.delete({
+                        collection_name: store.collectionName,
+                        partition_name: params.key ?? 'chatluna',
                         ids
                     })
+
+                    if (deleteResp.status.error_code !== 'Success') {
+                        throw new Error(
+                            `Error deleting data with ids: ${JSON.stringify(deleteResp)}`
+                        )
+                    }
                 },
                 async addDocumentsFunction(store, documents, options) {
                     let ids = options?.ids ?? []
@@ -136,11 +161,12 @@ export async function apply(
                         const id = ids[i] ?? crypto.randomUUID()
 
                         document.metadata = {
+                            source: 'unknown',
                             ...document.metadata,
                             raw_id: id
                         }
 
-                        return id
+                        return id.replaceAll('-', '_')
                     })
 
                     await store.addDocuments(documents, {
