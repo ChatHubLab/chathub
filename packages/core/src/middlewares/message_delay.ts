@@ -18,7 +18,10 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
     logger = createLogger(ctx)
     chain
         .middleware('message_delay', async (session, context) => {
-            if (config.messageDelay === 0 || (context.command != null && context.command.length > 0)) {
+            if (
+                config.messageDelay === 0 ||
+                (context.command != null && context.command.length > 0)
+            ) {
                 return ChainMiddlewareRunStatus.CONTINUE
             }
 
