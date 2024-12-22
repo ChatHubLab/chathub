@@ -34,6 +34,8 @@ export async function apply(
         })
         const testVector = await embeddings.embedDocuments(['test'])
 
+        logger.debug(`Loading redis store from %c`, vectorStore.indexName)
+
         try {
             await vectorStore.createIndex(testVector[0].length)
         } catch (e) {
@@ -51,7 +53,11 @@ export async function apply(
             {
                 async deletableFunction(store, options) {
                     if (options.deleteAll) {
-                        await store.delete({ deleteAll: true })
+                        // await vectorStore.dropIndex(true)
+                        await client.ft.dropIndex(vectorStore.indexName, {
+                            DD: true
+                        })
+
                         return
                     }
 
@@ -77,7 +83,7 @@ export async function apply(
                     }
 
                     for (const id of ids) {
-                        await client.del(id)
+                        await client.del(store.keyPrefix + id)
                     }
                 },
                 async addDocumentsFunction(store, documents, options) {
@@ -91,14 +97,15 @@ export async function apply(
                             raw_id: id
                         }
 
-                        return id
+                        return store.keyPrefix + id
                     })
 
                     await store.addDocuments(documents, {
                         keys,
                         batchSize: options?.batchSize
                     })
-                }
+                },
+                async saveableFunction(store) {}
             }
         )
 
