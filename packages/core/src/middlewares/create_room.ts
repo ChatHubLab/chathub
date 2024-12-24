@@ -1,7 +1,6 @@
 import { randomUUID } from 'crypto'
-import { Context, Logger, Session } from 'koishi'
+import { Context, Session } from 'koishi'
 import { ModelType } from 'koishi-plugin-chatluna/llm-core/platform/types'
-import { createLogger } from 'koishi-plugin-chatluna/utils/logger'
 import {
     ChainMiddlewareContext,
     ChainMiddlewareContextOptions,
@@ -15,10 +14,7 @@ import {
 import { Config } from '../config'
 import { ConversationRoom } from '../types'
 
-let logger: Logger
-
 export function apply(ctx: Context, config: Config, chain: ChatChain) {
-    logger = createLogger(ctx)
     const service = ctx.chatluna.platform
 
     chain
@@ -35,13 +31,6 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
 
             let { model, preset, name, chatMode, password, visibility } =
                 roomResolve
-
-            logger.debug(
-                `[create_room] model: ${model}, length: ${
-                    Object.values(roomResolve).filter((value) => value != null)
-                        .length
-                }, visibility: ${visibility}`
-            )
 
             if (
                 Object.values(roomResolve).filter((value) => value != null)
