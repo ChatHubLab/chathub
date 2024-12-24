@@ -1,7 +1,7 @@
 {
     "name": "koishi-plugin-chatluna-ollama-adapter",
     "description": "ollama adapter for chatluna",
-    "version": "1.0.0-rc.1",
+    "version": "1.0.0-rc.2",
     "main": "lib/index.cjs",
     "module": "lib/index.mjs",
     "typings": "lib/index.d.ts",
@@ -54,7 +54,7 @@
     },
     "peerDependencies": {
         "koishi": "^4.18.1",
-        "koishi-plugin-chatluna": "^1.0.0-beta.140"
+        "koishi-plugin-chatluna": "^1.0.0-rc.2"
     },
     "resolutions": {
         "@langchain/core": "0.3.18",
