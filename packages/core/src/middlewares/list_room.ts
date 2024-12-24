@@ -3,7 +3,8 @@ import { Config } from '../config'
 import { ChainMiddlewareRunStatus, ChatChain } from '../chains/chain'
 import {
     checkConversationRoomAvailability,
-    getAllJoinedConversationRoom
+    getAllJoinedConversationRoom,
+    queryPublicConversationRooms
 } from '../chains/rooms'
 import { ConversationRoom } from '../types'
 import { Pagination } from 'koishi-plugin-chatluna/utils/pagination'
@@ -22,7 +23,7 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
         .middleware('list_room', async (session, context) => {
             const {
                 command,
-                options: { page, limit }
+                options: { page, limit, all_room }
             } = context
 
             if (command !== 'list_room') return ChainMiddlewareRunStatus.SKIPPED
@@ -38,6 +39,18 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
             )
 
             const rooms = await getAllJoinedConversationRoom(ctx, session)
+
+            if (all_room) {
+                const publicRooms = await queryPublicConversationRooms(
+                    ctx,
+                    session
+                )
+                for (const room of publicRooms) {
+                    if (!rooms.find((r) => r.roomId === room.roomId)) {
+                        rooms.push(room)
+                    }
+                }
+            }
 
             const key = session.isDirect
                 ? session.userId
@@ -84,5 +97,9 @@ async function formatRoomInfo(
 declare module '../chains/chain' {
     interface ChainMiddlewareName {
         list_room: never
+    }
+
+    interface ChainMiddlewareContextOptions {
+        all_room?: boolean
     }
 }

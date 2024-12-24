@@ -129,10 +129,12 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
     ctx.command('chatluna.room.list')
         .option('page', '-p <page:number>')
         .option('limit', '-l <limit:number>')
+        .option('all', '-a <all:boolean>')
         .action(async ({ options, session }) => {
             await chain.receiveCommand(session, 'list_room', {
                 page: options.page ?? 1,
-                limit: options.limit ?? 2
+                limit: options.limit ?? 2,
+                all_room: options.all ?? false
             })
         })
 

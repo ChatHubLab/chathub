@@ -40,31 +40,31 @@ export async function queryJoinedConversationRoom(
     return await resolveConversationRoom(ctx, userRoomInfo.defaultRoomId)
 }
 
-export async function queryPublicConversationRoom(
-    ctx: Context,
-    session: Session
-) {
+export function queryPublicConversationRooms(ctx: Context, session: Session) {
     // 如果是私聊，直接返回 null
 
     if (session.isDirect) {
-        return undefined
+        return []
     }
 
     // 如果是群聊，那么就查询群聊的公共房间
 
-    const groupRoomInfoList = await ctx.database.get(
-        'chathub_room_group_member',
-        {
-            groupId: session.guildId,
-            roomVisibility: {
-                // TODO: better type
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                $in: ['template_clone', 'public'] as unknown as any
-                //    $in: ['template_clone', 'public']
-            }
+    return ctx.database.get('chathub_room_group_member', {
+        groupId: session.guildId,
+        roomVisibility: {
+            // TODO: better type
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            $in: ['template_clone', 'public'] as unknown as any
+            //    $in: ['template_clone', 'public']
         }
-    )
+    })
+}
 
+export async function queryPublicConversationRoom(
+    ctx: Context,
+    session: Session
+) {
+    const groupRoomInfoList = await queryPublicConversationRooms(ctx, session)
     // 优先加入模版克隆房间
     const templateCloneRoom = groupRoomInfoList.find(
         (it) => it.roomVisibility === 'template_clone'
