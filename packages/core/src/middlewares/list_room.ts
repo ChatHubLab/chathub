@@ -4,6 +4,7 @@ import { ChainMiddlewareRunStatus, ChatChain } from '../chains/chain'
 import {
     checkConversationRoomAvailability,
     getAllJoinedConversationRoom,
+    queryConversationRoom,
     queryPublicConversationRooms
 } from '../chains/rooms'
 import { ConversationRoom } from '../types'
@@ -47,7 +48,13 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                 )
                 for (const room of publicRooms) {
                     if (!rooms.find((r) => r.roomId === room.roomId)) {
-                        rooms.push(room)
+                        rooms.push(
+                            await queryConversationRoom(
+                                ctx,
+                                session,
+                                room.roomId
+                            )
+                        )
                     }
                 }
             }

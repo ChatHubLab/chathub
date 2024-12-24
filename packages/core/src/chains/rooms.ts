@@ -40,11 +40,14 @@ export async function queryJoinedConversationRoom(
     return await resolveConversationRoom(ctx, userRoomInfo.defaultRoomId)
 }
 
-export function queryPublicConversationRooms(ctx: Context, session: Session) {
+export function queryPublicConversationRooms(
+    ctx: Context,
+    session: Session
+): Promise<ConversationRoomGroupInfo[]> {
     // 如果是私聊，直接返回 null
 
     if (session.isDirect) {
-        return []
+        return Promise.resolve([])
     }
 
     // 如果是群聊，那么就查询群聊的公共房间
@@ -406,16 +409,17 @@ export async function leaveConversationRoom(
 export async function queryConversationRoom(
     ctx: Context,
     session: Session,
-    name: string
+    name: string | number
 ) {
-    const roomId = parseInt(name)
+    const roomId = typeof name === 'number' ? name : parseInt(name)
+    const roomName = typeof name === 'string' ? name : undefined
 
     const roomList = Number.isNaN(roomId)
         ? await ctx.database.get('chathub_room', {
-              roomName: name
+              roomName
           })
         : await ctx.database.get('chathub_room', {
-              roomId: parseInt(name)
+              roomId
           })
 
     if (roomList.length === 1) {
