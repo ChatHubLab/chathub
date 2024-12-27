@@ -197,7 +197,7 @@ async function filterSimilarMemory(
     for (const memory of memoryArray) {
         const similarityMemorys = await vectorStore.similaritySearchWithScore(
             memory,
-            20
+            10
         )
 
         if (similarityMemorys.length < 1) {
