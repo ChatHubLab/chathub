@@ -190,22 +190,14 @@ function parseResultContent(content: string): string[] {
 async function filterSimilarMemory(
     memoryArray: string[],
     vectorStore: VectorStore,
-    similarityScore: number
+    similarityThreshold: number
 ) {
     const result: string[] = []
 
     for (const memory of memoryArray) {
-        let similarityMemorys = await vectorStore.similaritySearchWithScore(
+        const similarityMemorys = await vectorStore.similaritySearchWithScore(
             memory,
-            10
-        )
-        if (similarityMemorys.length < 1) {
-            result.push(memory)
-            continue
-        }
-
-        similarityMemorys = similarityMemorys.filter(
-            (value) => value[1] > similarityScore
+            20
         )
 
         if (similarityMemorys.length < 1) {
@@ -213,14 +205,53 @@ async function filterSimilarMemory(
             continue
         }
 
-        logger.warn(
-            `Find ${similarityMemorys.length} about ${memory} similar memorys\n` +
-                `bigger than ${similarityScore}:\n` +
-                `${similarityMemorys.map((t) => t[0].pageContent).join(',')}`
-        )
+        let isMemoryTooSimilar = false
+        for (const [doc] of similarityMemorys) {
+            const existingMemory = doc.pageContent
+            const cosineScore = cosineSimilarity(memory, existingMemory)
+
+            if (cosineScore > similarityThreshold) {
+                isMemoryTooSimilar = true
+                logger.warn(
+                    `Memory too similar (cosine score: ${cosineScore}):\n` +
+                    `New: ${memory}\n` +
+                    `Existing: ${existingMemory}`
+                )
+                break
+            }
+        }
+
+        if (!isMemoryTooSimilar) {
+            result.push(memory)
+        }
     }
 
     return result
+}
+
+function cosineSimilarity(str1: string, str2: string): number {
+    function getWordVector(str: string): Map<string, number> {
+        const words = str.toLowerCase().split(/\s+/)
+        const vector = new Map<string, number>()
+        words.forEach(word => {
+            vector.set(word, (vector.get(word) || 0) + 1)
+        })
+        return vector
+    }
+
+    const vector1 = getWordVector(str1)
+    const vector2 = getWordVector(str2)
+
+    let dotProduct = 0
+    for (const [word, count1] of vector1) {
+        const count2 = vector2.get(word) || 0
+        dotProduct += count1 * count2
+    }
+
+    const magnitude1 = Math.sqrt([...vector1.values()].reduce((sum, count) => sum + count * count, 0))
+    const magnitude2 = Math.sqrt([...vector2.values()].reduce((sum, count) => sum + count * count, 0))
+
+    return dotProduct / (magnitude1 * magnitude2) || 0
 }
 
 function resolveLongMemoryId(message: HumanMessage, conversationId: string) {
