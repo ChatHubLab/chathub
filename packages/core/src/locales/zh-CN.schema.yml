@@ -32,13 +32,6 @@ $inner:
       blackList: 设置黑名单列表。请谨慎使用，只对需要拉黑的用户或群启用。错误配置可能导致所有聊天被拉黑而无法响应。
       blockText: 设置对被拉黑用户的固定回复内容。
 
-    - $desc: 长期记忆选项
-      longMemory: 是否启用长期记忆功能。启用后，模型能够记住较久远的对话内容（需要使用向量数据库和 Embeddings 服务）。
-      longMemorySimilarity: 设置长期记忆的相似度阈值。
-      longMemoryAddSimilarity: 设置长期记忆在添加前检索的相似度阈值。如果设置为 0，则不进行检索。基于添加前的记忆进行检索，如检索到的记忆超过此阈值，则不会添加到长期记忆中。
-      longMemoryInterval: 设置长期记忆调用的频率，即每隔多少轮对话调用一次长期记忆。
-      longMemoryExtractModel: 设置长期记忆的提取模型。使用较快的模型可以提升提取的速度。
-
     - $desc: 历史记录选项
       messageCount: 设置最大消息数量，用于限制聊天历史中保存的消息数。超出此数量后，最早的消息将被自动删除。
       autoDelete: 是否自动删除长期未使用的房间。

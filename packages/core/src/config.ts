@@ -26,7 +26,6 @@ export interface Config {
     autoDeleteTimeout: number
     messageDelay: number
 
-    longMemory: boolean
     privateChatWithoutCommand: boolean
     allowAtReply: boolean
     streamResponse: boolean
@@ -45,10 +44,7 @@ export interface Config {
 
     voiceSpeakId: number
 
-    longMemorySimilarity: number
-    longMemoryAddSimilarity: number
-    longMemoryInterval: number
-    longMemoryExtractModel: string
+    enableSimilarityCheck: boolean
 }
 
 export const Config: Schema<Config> = Schema.intersect([
@@ -95,22 +91,6 @@ export const Config: Schema<Config> = Schema.intersect([
         blackList: Schema.union([Schema.boolean(), Schema.any().hidden()])
             .role('computed')
             .default(false)
-    }),
-
-    Schema.object({
-        longMemory: Schema.dynamic('long-memory').default(false),
-        longMemorySimilarity: Schema.percent()
-            .min(0)
-            .max(1)
-            .step(0.01)
-            .default(0.3),
-        longMemoryAddSimilarity: Schema.percent()
-            .min(0)
-            .max(1)
-            .step(0.01)
-            .default(0),
-        longMemoryInterval: Schema.number().default(3).min(1).max(10),
-        longMemoryExtractModel: Schema.dynamic('model').default('无')
     }),
 
     Schema.object({

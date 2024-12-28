@@ -957,7 +957,6 @@ class ChatInterfaceWrapper {
             },
             model: room.model,
             conversationId: room.conversationId,
-            longMemory: config.longMemory,
             embeddings:
                 config.defaultEmbeddings && config.defaultEmbeddings.length > 0
                     ? config.defaultEmbeddings

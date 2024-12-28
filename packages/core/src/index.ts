@@ -13,7 +13,6 @@ import { ChatLunaAuthService } from './authorization/service'
 import { command } from './command'
 import { Config } from './config'
 import { defaultFactory } from './llm-core/chat/default'
-import { apply as longMemory } from './llm-core/memory/history'
 import { apply as loreBook } from './llm-core/memory/lore_book'
 import { apply as authorsNote } from './llm-core/memory/authors_note'
 import { middleware } from './middleware'
@@ -105,7 +104,6 @@ async function initializeComponents(ctx: Context, config: Config) {
     await command(ctx, config)
     await ctx.chatluna.preset.init()
     await setupAutoDelete(ctx, config)
-    longMemory(ctx, config)
     loreBook(ctx, config)
     authorsNote(ctx, config)
 }

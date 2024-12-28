@@ -1,5 +1,4 @@
 import { Context, Dict } from 'koishi'
-import { Config, logger } from 'koishi-plugin-chatluna'
 import { VectorStore, VectorStoreRetriever } from '@langchain/core/vectorstores'
 import { ChatInterface } from 'koishi-plugin-chatluna/llm-core/chat/app'
 import { BaseMessage, HumanMessage } from '@langchain/core/messages'
@@ -8,13 +7,11 @@ import { inMemoryVectorStoreRetrieverProvider } from 'koishi-plugin-chatluna/llm
 import { parseRawModelName } from 'koishi-plugin-chatluna/llm-core/utils/count_tokens'
 import { ChatLunaChatModel } from 'koishi-plugin-chatluna/llm-core/platform/model'
 import { ChatLunaSaveableVectorStore } from 'koishi-plugin-chatluna/llm-core/model/base'
+import { calculateSimilarity } from '../similarity'
 import crypto from 'crypto'
+import { Config, logger } from 'koishi-plugin-chatluna-long-memory'
 
-export function apply(ctx: Context, config: Config): void {
-    if (!config.longMemory) {
-        return
-    }
-
+export function apply(ctx: Context, config: Config) {
     let longMemoryCache: Dict<VectorStoreRetriever> = {}
 
     ctx.on(
@@ -121,11 +118,14 @@ export function apply(ctx: Context, config: Config): void {
 
             const vectorStore = retriever.vectorStore as VectorStore
 
-            if (config.longMemoryAddSimilarity > 0) {
+            if (
+                config.longMemoryDuplicateThreshold < 1 &&
+                config.longMemoryDuplicateCheck
+            ) {
                 resultArray = await filterSimilarMemory(
                     resultArray,
                     vectorStore,
-                    config.longMemoryAddSimilarity
+                    config.longMemoryDuplicateThreshold
                 )
             }
 
@@ -152,7 +152,7 @@ export function apply(ctx: Context, config: Config): void {
 
     ctx.on(
         'chatluna/clear-chat-history',
-        async (conversationId, chatInterface) => {
+        async (_conversationId, _chatInterface) => {
             // clear all
             longMemoryCache = {}
         }
@@ -190,34 +190,41 @@ function parseResultContent(content: string): string[] {
 async function filterSimilarMemory(
     memoryArray: string[],
     vectorStore: VectorStore,
-    similarityScore: number
+    similarityThreshold: number
 ) {
     const result: string[] = []
 
     for (const memory of memoryArray) {
-        let similarityMemorys = await vectorStore.similaritySearchWithScore(
+        const similarityMemorys = await vectorStore.similaritySearchWithScore(
             memory,
             10
         )
-        if (similarityMemorys.length < 1) {
-            result.push(memory)
-            continue
-        }
-
-        similarityMemorys = similarityMemorys.filter(
-            (value) => value[1] > similarityScore
-        )
 
         if (similarityMemorys.length < 1) {
             result.push(memory)
             continue
         }
 
-        logger.warn(
-            `Find ${similarityMemorys.length} about ${memory} similar memorys\n` +
-                `bigger than ${similarityScore}:\n` +
-                `${similarityMemorys.map((t) => t[0].pageContent).join(',')}`
-        )
+        let isMemoryTooSimilar = false
+        for (const [doc] of similarityMemorys) {
+            const existingMemory = doc.pageContent
+            const similarityResult = calculateSimilarity(memory, existingMemory)
+
+            if (similarityResult.score > similarityThreshold) {
+                isMemoryTooSimilar = true
+                logger.warn(
+                    `Memory too similar (score: ${similarityResult.score}):\n` +
+                        `Details: ${JSON.stringify(similarityResult.details)}\n` +
+                        `New: ${memory}\n` +
+                        `Existing: ${existingMemory}`
+                )
+                break
+            }
+        }
+
+        if (!isMemoryTooSimilar) {
+            result.push(memory)
+        }
     }
 
     return result
@@ -254,7 +261,9 @@ async function createVectorStoreRetriever(
 
     const embeddings = chatInterface.embeddings
 
-    if (config.defaultVectorStore == null) {
+    const chatlunaConfig = ctx.chatluna.config
+
+    if (chatlunaConfig.defaultVectorStore == null) {
         logger?.warn(
             'Vector store is empty, falling back to fake vector store. Try check your config.'
         )
@@ -267,7 +276,7 @@ async function createVectorStoreRetriever(
             )
     } else {
         const store = await ctx.chatluna.platform.createVectorStore(
-            config.defaultVectorStore,
+            chatlunaConfig.defaultVectorStore,
             {
                 embeddings,
                 key: longMemoryId
