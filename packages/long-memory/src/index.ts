@@ -5,8 +5,6 @@ import { ChatLunaPlugin } from 'koishi-plugin-chatluna/services/chat'
 import { createLogger } from 'koishi-plugin-chatluna/utils/logger'
 import { plugins } from './plugin'
 
-// See https://github.com/idranme/koishi-plugin-status-image/blob/main/src/index.ts
-
 export let logger: Logger
 
 export function apply(ctx: Context, config: Config) {
