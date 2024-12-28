@@ -1,14 +1,16 @@
 import { Jieba } from '@node-rs/jieba'
 import { dict } from '@node-rs/jieba/dict'
 import TinySegmenter from 'tiny-segmenter'
+import stopwords from 'stopwords-iso'
 
 const jieba = Jieba.withDict(dict)
 const segmenter = new TinySegmenter()
 
 const SIMILARITY_WEIGHTS = {
-    cosine: 0.4,
-    levenshtein: 0.3,
-    jaccard: 0.3
+    cosine: 0.3,
+    levenshtein: 0.2,
+    jaccard: 0.2,
+    bm25: 0.3
 } as const
 
 export interface SimilarityResult {
@@ -17,30 +19,83 @@ export interface SimilarityResult {
         cosine: number
         levenshtein: number
         jaccard: number
+        bm25: number
     }
 }
 
 class TextTokenizer {
-    private static isChinese(text: string): boolean {
-        return /[\u4e00-\u9fa5]/.test(text)
+    private static stopwords = new Set([
+        ...stopwords.zh,
+        ...stopwords.en,
+        ...stopwords.ja
+    ])
+
+    private static readonly REGEX = {
+        chinese: /[\u4e00-\u9fff]/,
+        japanese: /[\u3040-\u30ff\u3400-\u4dbf]/,
+        english: /[a-zA-Z]/
     }
 
-    private static isJapanese(text: string): boolean {
-        return /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff]/.test(text)
+    private static detectLanguages(text: string): Set<string> {
+        const languages = new Set<string>()
+
+        if (this.REGEX.chinese.test(text)) languages.add('zh')
+        if (this.REGEX.japanese.test(text)) languages.add('ja')
+        if (this.REGEX.english.test(text)) languages.add('en')
+
+        return languages
     }
 
     static tokenize(text: string): string[] {
-        if (this.isChinese(text)) {
-            return jieba.cut(text, false)
+        const languages = this.detectLanguages(text)
+        let tokens: string[] = []
+
+        if (languages.size === 1 && languages.has('en')) {
+            tokens = text.split(/\s+/)
+            return this.removeStopwords(tokens)
         }
-        if (this.isJapanese(text)) {
-            return segmenter.segment(text)
+
+        let currentText = text
+
+        if (languages.has('zh')) {
+            const zhTokens = jieba.cut(currentText, false)
+            currentText = zhTokens.join('▲')
         }
-        return text.split(/\s+/)
+
+        if (languages.has('ja')) {
+            const segments = segmenter.segment(currentText)
+            currentText = segments.join('▲')
+        }
+
+        if (languages.has('en')) {
+            currentText = currentText.replace(/\s+/g, '▲')
+        }
+
+        tokens = currentText.split('▲').filter(Boolean)
+
+        return this.removeStopwords(tokens)
     }
 
     static normalize(text: string): string {
-        return text.toLowerCase().trim().replace(/\s+/g, ' ')
+        return text
+            .toLowerCase()
+            .trim()
+            .replace(/[^\w\s\u4e00-\u9fff\u3040-\u30ff\u3400-\u4dbf]/g, '')
+            .replace(/\s+/g, ' ')
+    }
+
+    static removeStopwords(tokens: string[]): string[] {
+        return tokens.filter(token => {
+            if (!token || /^\d+$/.test(token)) return false
+
+            if (token.length === 1 &&
+                !this.REGEX.chinese.test(token) &&
+                !this.REGEX.japanese.test(token)) {
+                return false
+            }
+
+            return !this.stopwords.has(token)
+        })
     }
 }
 
@@ -109,6 +164,35 @@ export class SimilarityCalculator {
         return dotProduct / (magnitude1 * magnitude2)
     }
 
+    private static calculateBM25Similarity(s1: string, s2: string): number {
+        const k1 = 1.5
+        const b = 0.75
+        const tokens1 = TextTokenizer.tokenize(s1)
+        const tokens2 = TextTokenizer.tokenize(s2)
+
+        const docLength = tokens2.length
+        const avgDocLength = (tokens1.length + tokens2.length) / 2
+
+        const termFrequencies = new Map<string, number>()
+        tokens1.forEach(token => {
+            termFrequencies.set(token, (termFrequencies.get(token) || 0) + 1)
+        })
+
+        let score = 0
+        for (const [term, tf] of termFrequencies) {
+            const termFreqInDoc2 = tokens2.filter(t => t === term).length
+            if (termFreqInDoc2 === 0) continue
+
+            const idf = Math.log(1 + Math.abs(tokens1.length - termFreqInDoc2 + 0.5) / (termFreqInDoc2 + 0.5))
+            const numerator = tf * (k1 + 1)
+            const denominator = tf + k1 * (1 - b + b * (docLength / avgDocLength))
+
+            score += idf * (numerator / denominator)
+        }
+
+        return score / tokens1.length
+    }
+
     public static calculate(str1: string, str2: string): SimilarityResult {
         if (!str1 || !str2) {
             throw new Error('Input strings cannot be empty')
@@ -120,15 +204,17 @@ export class SimilarityCalculator {
         const cosine = this.cosineSimilarity(text1, text2)
         const levenshtein = this.levenshteinDistance(text1, text2)
         const jaccard = this.jaccardSimilarity(text1, text2)
+        const bm25 = this.calculateBM25Similarity(text1, text2)
 
         const score =
             cosine * SIMILARITY_WEIGHTS.cosine +
             levenshtein * SIMILARITY_WEIGHTS.levenshtein +
-            jaccard * SIMILARITY_WEIGHTS.jaccard
+            jaccard * SIMILARITY_WEIGHTS.jaccard +
+            bm25 * SIMILARITY_WEIGHTS.bm25
 
         return {
             score,
-            details: { cosine, levenshtein, jaccard }
+            details: { cosine, levenshtein, jaccard, bm25 }
         }
     }
 }

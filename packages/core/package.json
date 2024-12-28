@@ -219,6 +219,7 @@
         "md5": "^2.3.0",
         "socks": "^2.8.2",
         "socks-proxy-agent": "^8.0.4",
+        "stopwords-iso": "^1.1.0",
         "tiny-segmenter": "^0.2.0",
         "undici": "^6.21.0",
         "uuid": "^9.0.1",
