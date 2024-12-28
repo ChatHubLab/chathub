@@ -59,12 +59,12 @@
         "@types/jsdom": "^21.1.7",
         "@types/uuid": "^10.0.0",
         "atsc": "^2.1.0",
-        "koishi": "^4.18.1",
+        "koishi": "^4.18.4",
         "koishi-plugin-puppeteer": "^3.9.0"
     },
     "peerDependencies": {
-        "koishi": "^4.18.1",
-        "koishi-plugin-chatluna": "^1.0.0-rc.2"
+        "koishi": "^4.18.4",
+        "koishi-plugin-chatluna": "^1.0.0-beta.144"
     },
     "koishi": {
         "description": {

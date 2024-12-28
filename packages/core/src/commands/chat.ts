@@ -92,4 +92,8 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
             await chain.receiveCommand(session, 'wipe')
         }
     )
+
+    ctx.command('chatluna.restart').action(async ({ options, session }) => {
+        await chain.receiveCommand(session, 'restart')
+    })
 }

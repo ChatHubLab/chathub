@@ -255,6 +255,11 @@ commands:
                 incorrect_input: 'Incorrect input. Deletion cancelled.'
                 success: 'Data deleted. Restarting to apply changes.'
 
+        restart:
+            description: Restart the ChatLuna.
+            messages:
+                success: Successfully restarted ChatLuna.
+
         auth:
             description: ChatLuna authentication commands.
             list:

@@ -240,10 +240,14 @@ export class KoishiChatMessageHistory extends BaseChatMessageHistory {
             (item) => item.id === this._latestId
         )
 
-        const additionalArgs = message.additional_kwargs
+        let additionalArgs = Object.assign({}, message.additional_kwargs)
 
         if (additionalArgs?.['preset']) {
             delete additionalArgs['preset']
+        }
+
+        if (Object.keys(additionalArgs).length === 0) {
+            additionalArgs = null
         }
 
         const serializedMessage: ChatLunaMessage = {
@@ -252,7 +256,7 @@ export class KoishiChatMessageHistory extends BaseChatMessageHistory {
             parent: lastedMessage?.id ?? null,
             role: message.getType(),
             additional_kwargs: additionalArgs
-                ? JSON.stringify(message.additional_kwargs)
+                ? JSON.stringify(additionalArgs)
                 : null,
             rawId: message.id ?? null,
             conversation: this.conversationId

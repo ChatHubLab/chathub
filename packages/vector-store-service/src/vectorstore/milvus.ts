@@ -26,6 +26,7 @@ export async function apply(
         const vectorStore = new MilvusClass(embeddings, {
             collectionName: 'chatluna_collection',
             partitionName: params.key ?? 'chatluna',
+            partitionKey: `_${params.key ?? 'chatluna'}`,
             url: config.milvusUrl,
             autoId: false,
             username: config.milvusUsername,

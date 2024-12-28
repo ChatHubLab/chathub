@@ -71,7 +71,7 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
 
             context.message = session.text('.success', [presetName])
 
-            ctx.runtime.parent.scope.restart()
+            ctx.scope.parent.scope.update(config, true)
 
             return ChainMiddlewareRunStatus.STOP
         })

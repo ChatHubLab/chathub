@@ -42,19 +42,30 @@ export class QWenClient extends PlatformModelAndEmbeddingsClient<ClientConfig> {
 
     async refreshModels(): Promise<ModelInfo[]> {
         const rawModels: [string, number | undefined][] = [
-            ['qwen-turbo', 7000],
-            ['qwen-plus', 6000],
-            ['qwen-max', 7000],
+            ['qwen-turbo', 1000000],
+            ['qwen-long', 1000000],
+            ['qwen-plus', 131072],
+            ['qwen-max', 30720],
             ['qwen-max-latest', 30720],
-            ['qwen-max-longcontext', 32768],
             ['qwen-plus-latest', 1280000],
             ['qwen-turbo-latest', 1280000],
             ['qwen-vl-max', 32000],
             ['qwen-vl-max-latest', 32000],
             ['qwen-vl-plus', 8000],
             ['qwen-vl-plus-latest', 1280000],
+            ['qwen-vl-ocr', 34096],
+            ['qwen-vl-ocr-latest', 34096],
+            ['qwq-32b-preview', 30720],
+            ['qvq-72b-preview', 30720],
             ['qwen-math-plus', 4000],
             ['qwen-math-turbo', 4000],
+            ['qwen2.5-72b-instruct', 131072],
+            ['qwen2.5-32b-instruct', 129024],
+            ['qwen2.5-14b-instruct', 8192],
+            ['qwen2.5-7b-instruct', 32768],
+            ['qwen2.5-3b-instruct', 30720],
+            ['qwen2.5-1.5b-instruct', 30720],
+            ['qwen2.5-0.5b-instruct', 30720],
             ['text-embedding-v1', 2048],
             ['text-embedding-v2', 2048],
             ['text-embedding-v3', 8192]
@@ -130,6 +141,7 @@ export class QWenClient extends PlatformModelAndEmbeddingsClient<ClientConfig> {
         return new ChatLunaEmbeddings({
             client: this._requester,
             model: info.name,
+            batchSize: 5,
             maxRetries: this._config.maxRetries
         })
     }

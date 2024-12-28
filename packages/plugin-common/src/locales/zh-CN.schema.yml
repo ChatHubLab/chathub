@@ -29,6 +29,7 @@ $inner:
                 command: 需要触发的指令。
                 description: 指令工具描述。
                 selector: 触发指令工具的关键词。
+                confirm: 执行指令时是否需要确认。
 
     - - $desc: 代码执行器配置
         codeSandboxAPIKey: 代码执行器 API Key。[申请地址](https://e2b.dev/)
