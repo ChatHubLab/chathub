@@ -61,7 +61,7 @@
     },
     "peerDependencies": {
         "koishi": "^4.18.1",
-        "koishi-plugin-chatluna": "^1.0.0-beta.143"
+        "koishi-plugin-chatluna": "^1.0.0-beta.144"
     },
     "resolutions": {
         "@langchain/core": "0.3.18",
