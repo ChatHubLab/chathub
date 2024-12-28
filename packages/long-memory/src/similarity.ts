@@ -1,9 +1,7 @@
-import { Jieba } from '@node-rs/jieba'
-import { dict } from '@node-rs/jieba/dict'
+import { cut } from 'jieba-wasm'
 import TinySegmenter from 'tiny-segmenter'
 import stopwords from 'stopwords-iso'
 
-const jieba = Jieba.withDict(dict)
 const segmenter = new TinySegmenter()
 
 const SIMILARITY_WEIGHTS = {
@@ -79,7 +77,7 @@ class TextTokenizer {
         let currentText = text
 
         if (languages.has('zh')) {
-            const zhTokens = jieba.cut(currentText, false)
+            const zhTokens = cut(currentText, false)
             currentText = zhTokens.join('▲')
         }
 
@@ -188,37 +186,49 @@ export class SimilarityCalculator {
     }
 
     private static calculateBM25Similarity(s1: string, s2: string): number {
-        const k1 = 1.5
-        const b = 0.75
+        const k1 = 1.5 // 词频饱和参数
+        const b = 0.75 // 文档长度归一化参数
+        const epsilon = 0.25 // 平滑因子
+
         const tokens1 = TextTokenizer.tokenize(s1)
         const tokens2 = TextTokenizer.tokenize(s2)
 
-        const docLength = tokens2.length
-        const avgDocLength = (tokens1.length + tokens2.length) / 2
+        const doc1Length = tokens1.length
+        const doc2Length = tokens2.length
+        const avgDocLength = (doc1Length + doc2Length) / 2
 
-        const termFrequencies = new Map<string, number>()
+        const termFreqDoc1 = new Map<string, number>()
+        const termFreqDoc2 = new Map<string, number>()
+
+        const uniqueTerms = new Set([...tokens1, ...tokens2])
+
         tokens1.forEach((token) => {
-            termFrequencies.set(token, (termFrequencies.get(token) || 0) + 1)
+            termFreqDoc1.set(token, (termFreqDoc1.get(token) || 0) + 1)
+        })
+
+        tokens2.forEach((token) => {
+            termFreqDoc2.set(token, (termFreqDoc2.get(token) || 0) + 1)
         })
 
         let score = 0
-        for (const [term, tf] of termFrequencies) {
-            const termFreqInDoc2 = tokens2.filter((t) => t === term).length
-            if (termFreqInDoc2 === 0) continue
 
-            const idf = Math.log(
-                1 +
-                    Math.abs(tokens1.length - termFreqInDoc2 + 0.5) /
-                        (termFreqInDoc2 + 0.5)
-            )
-            const numerator = tf * (k1 + 1)
-            const denominator =
-                tf + k1 * (1 - b + b * (docLength / avgDocLength))
+        // 计算每个词条的 BM25 得分
+        for (const term of uniqueTerms) {
+            const tf = termFreqDoc1.get(term) || 0
+            const docFreq = (termFreqDoc2.get(term) || 0) > 0 ? 1 : 0
 
-            score += idf * (numerator / denominator)
+            const idf = Math.log((2 - docFreq + epsilon) / (docFreq + epsilon))
+
+            if (tf > 0) {
+                const numerator = tf * (k1 + 1)
+                const denominator =
+                    tf + k1 * (1 - b + b * (doc2Length / avgDocLength))
+                score += idf * (numerator / denominator)
+            }
         }
 
-        return score / tokens1.length
+        const maxPossibleScore = Math.log(2) * doc1Length // 理论最大得分
+        return score / maxPossibleScore
     }
 
     public static calculate(str1: string, str2: string): SimilarityResult {

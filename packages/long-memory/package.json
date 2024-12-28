@@ -49,7 +49,7 @@
     ],
     "dependencies": {
         "@langchain/core": "^0.3.18",
-        "@node-rs/jieba": "^2.0.1",
+        "jieba-wasm": "^2.2.0",
         "stopwords-iso": "^1.1.0",
         "tiny-segmenter": "^0.2.0"
     },
