@@ -1,9 +1,7 @@
-import { Jieba } from '@node-rs/jieba'
-import { dict } from '@node-rs/jieba/dict'
+import { cut } from 'jieba-wasm'
 import TinySegmenter from 'tiny-segmenter'
 import stopwords from 'stopwords-iso'
 
-const jieba = Jieba.withDict(dict)
 const segmenter = new TinySegmenter()
 
 const SIMILARITY_WEIGHTS = {
@@ -79,7 +77,7 @@ class TextTokenizer {
         let currentText = text
 
         if (languages.has('zh')) {
-            const zhTokens = jieba.cut(currentText, false)
+            const zhTokens = cut(currentText, false)
             currentText = zhTokens.join('▲')
         }
 
