@@ -13,6 +13,21 @@ const SIMILARITY_WEIGHTS = {
     bm25: 0.3
 } as const
 
+function validateAndAdjustWeights(weights: typeof SIMILARITY_WEIGHTS) {
+    const totalWeight = Object.values(weights).reduce((sum, weight) => sum + weight, 0)
+
+    if (Math.abs(totalWeight - 1) > 0.0001) {
+        const adjustmentFactor = 1 / totalWeight
+        return Object.fromEntries(
+            Object.entries(weights).map(([key, value]) => [key, value * adjustmentFactor])
+        ) as typeof SIMILARITY_WEIGHTS
+    }
+
+    return weights
+}
+
+const VALIDATED_WEIGHTS = validateAndAdjustWeights(SIMILARITY_WEIGHTS)
+
 export interface SimilarityResult {
     score: number
     details: {
@@ -207,10 +222,10 @@ export class SimilarityCalculator {
         const bm25 = SimilarityCalculator.calculateBM25Similarity(text1, text2)
 
         const score =
-            cosine * SIMILARITY_WEIGHTS.cosine +
-            levenshtein * SIMILARITY_WEIGHTS.levenshtein +
-            jaccard * SIMILARITY_WEIGHTS.jaccard +
-            bm25 * SIMILARITY_WEIGHTS.bm25
+            cosine * VALIDATED_WEIGHTS.cosine +
+            levenshtein * VALIDATED_WEIGHTS.levenshtein +
+            jaccard * VALIDATED_WEIGHTS.jaccard +
+            bm25 * VALIDATED_WEIGHTS.bm25
 
         return {
             score,
