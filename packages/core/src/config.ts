@@ -49,6 +49,8 @@ export interface Config {
     longMemoryAddSimilarity: number
     longMemoryInterval: number
     longMemoryExtractModel: string
+
+    enableSimilarityCheck: boolean
 }
 
 export const Config: Schema<Config> = Schema.intersect([
@@ -108,7 +110,10 @@ export const Config: Schema<Config> = Schema.intersect([
             .min(0)
             .max(1)
             .step(0.01)
-            .default(0),
+            .default(0.8),
+        enableSimilarityCheck: Schema.boolean()
+            .default(true)
+            .description('是否启用记忆相似度检查'),
         longMemoryInterval: Schema.number().default(3).min(1).max(10),
         longMemoryExtractModel: Schema.dynamic('model').default('无')
     }),
