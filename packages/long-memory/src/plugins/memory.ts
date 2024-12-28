@@ -12,10 +12,6 @@ import crypto from 'crypto'
 import { Config, logger } from 'koishi-plugin-chatluna-long-memory'
 
 export function apply(ctx: Context, config: Config) {
-    if (!config.longMemory) {
-        return
-    }
-
     let longMemoryCache: Dict<VectorStoreRetriever> = {}
 
     ctx.on(
