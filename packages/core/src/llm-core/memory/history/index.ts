@@ -9,6 +9,7 @@ import { parseRawModelName } from 'koishi-plugin-chatluna/llm-core/utils/count_t
 import { ChatLunaChatModel } from 'koishi-plugin-chatluna/llm-core/platform/model'
 import { ChatLunaSaveableVectorStore } from 'koishi-plugin-chatluna/llm-core/model/base'
 import crypto from 'crypto'
+import { calculateSimilarity } from './similarity'
 
 export function apply(ctx: Context, config: Config): void {
     if (!config.longMemory) {
@@ -208,14 +209,15 @@ async function filterSimilarMemory(
         let isMemoryTooSimilar = false
         for (const [doc] of similarityMemorys) {
             const existingMemory = doc.pageContent
-            const cosineScore = cosineSimilarity(memory, existingMemory)
+            const similarityResult = calculateSimilarity(memory, existingMemory)
 
-            if (cosineScore > similarityThreshold) {
+            if (similarityResult.score > similarityThreshold) {
                 isMemoryTooSimilar = true
                 logger.warn(
-                    `Memory too similar (cosine score: ${cosineScore}):\n` +
-                    `New: ${memory}\n` +
-                    `Existing: ${existingMemory}`
+                    `Memory too similar (score: ${similarityResult.score}):\n` +
+                        `Details: ${JSON.stringify(similarityResult.details)}\n` +
+                        `New: ${memory}\n` +
+                        `Existing: ${existingMemory}`
                 )
                 break
             }
@@ -227,31 +229,6 @@ async function filterSimilarMemory(
     }
 
     return result
-}
-
-function cosineSimilarity(str1: string, str2: string): number {
-    function getWordVector(str: string): Map<string, number> {
-        const words = str.toLowerCase().split(/\s+/)
-        const vector = new Map<string, number>()
-        words.forEach(word => {
-            vector.set(word, (vector.get(word) || 0) + 1)
-        })
-        return vector
-    }
-
-    const vector1 = getWordVector(str1)
-    const vector2 = getWordVector(str2)
-
-    let dotProduct = 0
-    for (const [word, count1] of vector1) {
-        const count2 = vector2.get(word) || 0
-        dotProduct += count1 * count2
-    }
-
-    const magnitude1 = Math.sqrt([...vector1.values()].reduce((sum, count) => sum + count * count, 0))
-    const magnitude2 = Math.sqrt([...vector2.values()].reduce((sum, count) => sum + count * count, 0))
-
-    return dotProduct / (magnitude1 * magnitude2) || 0
 }
 
 function resolveLongMemoryId(message: HumanMessage, conversationId: string) {
