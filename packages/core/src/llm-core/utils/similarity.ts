@@ -39,15 +39,15 @@ class TextTokenizer {
     private static detectLanguages(text: string): Set<string> {
         const languages = new Set<string>()
 
-        if (this.REGEX.chinese.test(text)) languages.add('zh')
-        if (this.REGEX.japanese.test(text)) languages.add('ja')
-        if (this.REGEX.english.test(text)) languages.add('en')
+        if (TextTokenizer.REGEX.chinese.test(text)) languages.add('zh')
+        if (TextTokenizer.REGEX.japanese.test(text)) languages.add('ja')
+        if (TextTokenizer.REGEX.english.test(text)) languages.add('en')
 
         return languages
     }
 
     static tokenize(text: string): string[] {
-        const languages = this.detectLanguages(text)
+        const languages = TextTokenizer.detectLanguages(text)
         let tokens: string[] = []
 
         if (languages.size === 1 && languages.has('en')) {
@@ -89,12 +89,12 @@ class TextTokenizer {
             if (!token || /^\d+$/.test(token)) return false
 
             if (token.length === 1 &&
-                !this.REGEX.chinese.test(token) &&
-                !this.REGEX.japanese.test(token)) {
+                !TextTokenizer.REGEX.chinese.test(token) &&
+                !TextTokenizer.REGEX.japanese.test(token)) {
                 return false
             }
 
-            return !this.stopwords.has(token)
+            return !TextTokenizer.stopwords.has(token)
         })
     }
 }
@@ -201,10 +201,10 @@ export class SimilarityCalculator {
         const text1 = TextTokenizer.normalize(str1)
         const text2 = TextTokenizer.normalize(str2)
 
-        const cosine = this.cosineSimilarity(text1, text2)
-        const levenshtein = this.levenshteinDistance(text1, text2)
-        const jaccard = this.jaccardSimilarity(text1, text2)
-        const bm25 = this.calculateBM25Similarity(text1, text2)
+        const cosine = SimilarityCalculator.cosineSimilarity(text1, text2)
+        const levenshtein = SimilarityCalculator.levenshteinDistance(text1, text2)
+        const jaccard = SimilarityCalculator.jaccardSimilarity(text1, text2)
+        const bm25 = SimilarityCalculator.calculateBM25Similarity(text1, text2)
 
         const score =
             cosine * SIMILARITY_WEIGHTS.cosine +
