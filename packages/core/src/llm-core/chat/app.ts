@@ -134,17 +134,6 @@ export class ChatInterface {
         } & ChainValues
         this._chatCount++
 
-        // Process response
-        this.ctx.parallel(
-            'chatluna/after-chat',
-            arg.conversationId,
-            arg.message,
-            response.message as AIMessage,
-            { ...arg.variables, chatCount: this._chatCount },
-            this,
-            wrapper
-        )
-
         // Handle post-processing if needed
         if (arg.postHandler) {
             const handlerResult = await this.handlePostProcessing(arg, response)
@@ -161,6 +150,17 @@ export class ChatInterface {
             await this.chatHistory.addMessage(arg.message)
             await this.chatHistory.addMessage(response.message)
         }
+
+        // Process response
+        this.ctx.parallel(
+            'chatluna/after-chat',
+            arg.conversationId,
+            arg.message,
+            response.message as AIMessage,
+            { ...arg.variables, chatCount: this._chatCount },
+            this,
+            wrapper
+        )
 
         return response
     }
