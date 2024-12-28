@@ -258,7 +258,7 @@ commands:
         restart:
             description: 重启 ChatLuna 服务。
             messages:
-                success: '已成功重启 ChatLuna 插件。'
+                success: '已成功重启 ChatLuna。'
 
         auth:
             description: ChatLuna 鉴权相关指令。
