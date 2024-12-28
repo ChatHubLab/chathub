@@ -62,6 +62,7 @@ export interface RoleBook {
     matchWholeWord?: boolean
     caseSensitive?: boolean
     enabled?: boolean
+    constant?: boolean
     order?: number
     insertPosition?:
         | 'before_char_defs'

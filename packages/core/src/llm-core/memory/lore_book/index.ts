@@ -123,7 +123,10 @@ export class LoreBookMatcher {
                     const contentParts = this.splitContent(config, content)
 
                     for (const part of contentParts) {
-                        if (!this.matchKeywords(part, loreBook)) {
+                        if (
+                            !this.matchKeywords(part, loreBook) &&
+                            !loreBook.constant
+                        ) {
                             continue
                         }
 
