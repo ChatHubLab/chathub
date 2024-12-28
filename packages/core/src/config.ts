@@ -112,8 +112,7 @@ export const Config: Schema<Config> = Schema.intersect([
             .step(0.01)
             .default(0.8),
         enableSimilarityCheck: Schema.boolean()
-            .default(true)
-            .description('是否启用记忆相似度检查'),
+            .default(true),
         longMemoryInterval: Schema.number().default(3).min(1).max(10),
         longMemoryExtractModel: Schema.dynamic('model').default('无')
     }),
