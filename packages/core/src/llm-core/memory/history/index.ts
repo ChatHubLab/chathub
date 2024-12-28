@@ -196,7 +196,7 @@ async function filterSimilarMemory(
     enableCheck: boolean
 ) {
     if (similarityThreshold >= 1 || !enableCheck) {
-        return memoryArray;
+        return memoryArray
     }
 
     const result: string[] = []
@@ -221,9 +221,9 @@ async function filterSimilarMemory(
                 isMemoryTooSimilar = true
                 logger.warn(
                     `Memory too similar (score: ${similarityResult.score}):\n` +
-                    `Details: ${JSON.stringify(similarityResult.details)}\n` +
-                    `New: ${memory}\n` +
-                    `Existing: ${existingMemory}`
+                        `Details: ${JSON.stringify(similarityResult.details)}\n` +
+                        `New: ${memory}\n` +
+                        `Existing: ${existingMemory}`
                 )
                 break
             }
