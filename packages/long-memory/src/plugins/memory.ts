@@ -9,10 +9,9 @@ import { ChatLunaChatModel } from 'koishi-plugin-chatluna/llm-core/platform/mode
 import { ChatLunaSaveableVectorStore } from 'koishi-plugin-chatluna/llm-core/model/base'
 import { calculateSimilarity } from '../similarity'
 import crypto from 'crypto'
-import { Config as ChatLunaConfig } from 'koishi-plugin-chatluna'
-import { Config, logger } from '..'
+import { Config, logger } from 'koishi-plugin-chatluna-long-memory'
 
-export function apply(ctx: Context, config: Config): void {
+export function apply(ctx: Context, config: Config) {
     if (!config.longMemory) {
         return
     }
@@ -29,7 +28,7 @@ export function apply(ctx: Context, config: Config): void {
             if (!retriever) {
                 retriever = await createVectorStoreRetriever(
                     ctx,
-                    ctx.chatluna.config,
+                    config,
                     chatInterface,
                     longMemoryId
                 )
@@ -259,7 +258,7 @@ function resolveLongMemoryId(message: HumanMessage, conversationId: string) {
 
 async function createVectorStoreRetriever(
     ctx: Context,
-    config: ChatLunaConfig,
+    config: Config,
     chatInterface: ChatInterface,
     longMemoryId: string
 ) {
@@ -269,7 +268,9 @@ async function createVectorStoreRetriever(
 
     const embeddings = chatInterface.embeddings
 
-    if (config.defaultVectorStore == null) {
+    const chatlunaConfig = ctx.chatluna.config
+
+    if (chatlunaConfig.defaultVectorStore == null) {
         logger?.warn(
             'Vector store is empty, falling back to fake vector store. Try check your config.'
         )
@@ -282,7 +283,7 @@ async function createVectorStoreRetriever(
             )
     } else {
         const store = await ctx.chatluna.platform.createVectorStore(
-            config.defaultVectorStore,
+            chatlunaConfig.defaultVectorStore,
             {
                 embeddings,
                 key: longMemoryId
