@@ -27,6 +27,7 @@ export interface Config extends ChatLunaPlugin.Config {
         command: string
         description: string
         selector: string[]
+        confirm: boolean
     }[]
     chat: boolean
     think: boolean
@@ -91,7 +92,8 @@ export const Config: Schema<Config> = Schema.intersect([
                 Schema.object({
                     command: Schema.string(),
                     description: Schema.string(),
-                    selector: Schema.array(Schema.string()).role('table')
+                    selector: Schema.array(Schema.string()).role('table'),
+                    confirm: Schema.boolean().default(true)
                 })
             )
         }),

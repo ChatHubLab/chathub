@@ -28,6 +28,7 @@ $inner:
                 command: 'Command to trigger‘
                 description: 'Description of the command tool'
                 selector: 'Keyword to trigger the command tool'
+                confirm: 'Whether validation is required when executing the command'
 
     - - $desc: 'Code Executor Configuration'
         codeSandboxAPIKey: 'Code executor API Key. [Apply here](https://e2b.dev/)'

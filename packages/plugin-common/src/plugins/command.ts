@@ -150,6 +150,7 @@ function getCommandList(
             return {
                 ...item,
                 selector: rawCommand?.selector,
+                confirm: rawCommand?.confirm ?? true,
                 description
             }
         })
@@ -222,17 +223,20 @@ export class CommandExecuteTool extends StructuredTool {
     async _call(input: any) {
         const koishiCommand = this.parseInput(input)
 
-        const validationString = randomString(8)
         const session = this.session
 
-        await session.send(
-            `模型请求执行指令 ${koishiCommand}，如需同意，请输入以下字符：${validationString}`
-        )
-        const canRun = await this.session.prompt()
+        if (this.command.confirm ?? true) {
+            const validationString = randomString(8)
 
-        if (canRun !== validationString) {
-            await this.session.send('指令执行失败')
-            return `The command ${koishiCommand} execution failed, because the user didn't confirm`
+            await session.send(
+                `模型请求执行指令 ${koishiCommand}，如需同意，请输入以下字符：${validationString}`
+            )
+            const canRun = await this.session.prompt()
+
+            if (canRun !== validationString) {
+                await this.session.send('指令执行失败')
+                return `The command ${koishiCommand} execution failed, because the user didn't confirm`
+            }
         }
 
         try {
@@ -298,11 +302,12 @@ export function randomString(size: number) {
 export function elementToString(elements: Element[]) {
     return h
         .select(elements, 'text')
-        .map((element) => element.toString())
+        .map((element) => element.toString(true))
         .join(' ')
 }
 
 type PickCommandType = Omit<CommandType, 'description'> & {
     description?: string
     selector?: string[]
+    confirm?: boolean
 }
