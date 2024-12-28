@@ -34,7 +34,8 @@ export const Config: Schema<Config> = Schema.intersect([
             Schema.union([
                 Schema.const('faiss').description('Faiss'),
                 Schema.const('redis').description('Redis'),
-                Schema.const('milvus').description('Milvus')
+                Schema.const('milvus').description('Milvus'),
+                Schema.const('voy').description('Voy')
             ])
         )
             .default([])

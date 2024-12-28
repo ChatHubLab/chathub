@@ -4,7 +4,8 @@ import { Config } from '.'
 // import start
 import { apply as faiss } from './vectorstore/faiss'
 import { apply as milvus } from './vectorstore/milvus'
-import { apply as redis } from './vectorstore/redis' // import end
+import { apply as redis } from './vectorstore/redis'
+import { apply as voy } from './vectorstore/voy' // import end
 
 export async function vectorStore(
     ctx: Context,
@@ -19,7 +20,7 @@ export async function vectorStore(
 
     const middlewares: VectorStore[] =
         // middleware start
-        [faiss, milvus, redis] // middleware end
+        [faiss, milvus, redis, voy] // middleware end
 
     for (const middleware of middlewares) {
         try {

@@ -52,7 +52,7 @@ export async function apply(
                 logger.error(
                     `embeddings dimension mismatch: ${testEmbedding.length} !== ${faissStore.index.getDimension()}. Please check the embeddings.`
                 )
-                faissStore = undefined
+                // faissStore = undefined
             }
         } catch (e) {
             faissStore = await FaissStore.fromTexts(

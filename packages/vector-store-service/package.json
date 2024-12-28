@@ -62,6 +62,7 @@
         "@langchain/core": "^0.3.18",
         "@langchain/redis": "^0.1.0",
         "redis": "^4.7.0",
+        "voy-search": "^0.6.3",
         "zod-to-json-schema": "3.23.5"
     },
     "devDependencies": {
