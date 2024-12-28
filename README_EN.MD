@@ -28,7 +28,7 @@ _A bot plugin for LLM chat services with multi-model integration, extensibility,
 - 🎭 Custom conversation presets
 - 🛡️ Rate limiting & blacklist system
 - 🎨 Multi-format output (text, voice, image, mixed)
-- 🧠 Context-aware with long-term memory
+- 🧠 Context-aware with [long-term memory](./packages/long-memory/README.md)
 - 🔀 Three modes: chat, browsing, plugin
 - 🔒 Content moderation via [Koishi censor](https://censor.koishi.chat/)
 
