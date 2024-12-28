@@ -59,7 +59,6 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
 
             ctx.scope.parent.scope.update(config, true)
 
-
             return ChainMiddlewareRunStatus.STOP
         })
         .after('lifecycle-handle_command')

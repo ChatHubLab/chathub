@@ -255,6 +255,11 @@ commands:
                 incorrect_input: '你的输入不正确，已取消删除。'
                 success: '已删除相关数据，即将重启完成更改。'
 
+        restart:
+            description: 重启 ChatLuna 服务。
+            messages:
+                success: '已成功重启 ChatLuna 插件。'
+
         auth:
             description: ChatLuna 鉴权相关指令。
             list:

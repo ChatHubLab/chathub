@@ -192,7 +192,6 @@ export async function getTemplateConversationRoom(
 
         ctx.scope.parent.scope.update(config, true)
 
-
         // throw new ChatLunaError(ChatLunaErrorCode.INIT_ROOM)
     }
 
