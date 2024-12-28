@@ -17,9 +17,8 @@ export class ChatLunaSaveableVectorStore<T extends VectorStore = VectorStore>
     ) => Promise<void>
 
     similaritySearchVectorWithScoreFunction?: (
-        query: number[],
-        k: number,
-        filter?: T['FilterType']
+        store: T,
+        ...args: Parameters<T['similaritySearchVectorWithScore']>
     ) => Promise<[Document, number][]>
 
     constructor(
@@ -31,7 +30,7 @@ export class ChatLunaSaveableVectorStore<T extends VectorStore = VectorStore>
         this.deletableFunction = input.deletableFunction
         this.addDocumentsFunction = input.addDocumentsFunction
         this.similaritySearchVectorWithScoreFunction =
-            input.similaritySearchVectorWithScore
+            input.similaritySearchVectorWithScoreFunction
     }
 
     addVectors(...args: Parameters<typeof this._store.addVectors>) {
@@ -46,18 +45,19 @@ export class ChatLunaSaveableVectorStore<T extends VectorStore = VectorStore>
     }
 
     similaritySearchVectorWithScore(
-        query: number[],
-        k: number,
-        filter?: T['FilterType']
+        ...args: Parameters<T['similaritySearchVectorWithScore']>
     ) {
         if (this.similaritySearchVectorWithScoreFunction) {
             return this.similaritySearchVectorWithScoreFunction(
-                query,
-                k,
-                filter
+                this._store,
+                ...args
             )
         }
-        return this._store.similaritySearchVectorWithScore(query, k, filter)
+        return this._store.similaritySearchVectorWithScore(
+            args[0],
+            args[1],
+            args[2]
+        )
     }
 
     async editDocument(oldDocumentId: string, newDocument: Document) {
@@ -97,10 +97,9 @@ export interface ChatLunaSaveableVectorStoreInput<T extends VectorStore> {
         store: T,
         ...args: Parameters<T['addDocuments']>
     ) => Promise<void>
-    similaritySearchVectorWithScore?: (
-        query: number[],
-        k: number,
-        filter?: T['FilterType']
+    similaritySearchVectorWithScoreFunction?: (
+        store: T,
+        ...args: Parameters<T['similaritySearchVectorWithScore']>
     ) => Promise<[Document, number][]>
 }
 
