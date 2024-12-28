@@ -327,13 +327,10 @@ export class ChatInterface {
         service: PlatformService
     ): Promise<ChatHubBaseEmbeddings> {
         if (
-            this._input.chatMode === 'chat' &&
-            this._input.longMemory === false
+            this._input.embeddings == null ||
+            this._input.embeddings.length < 1 ||
+            this._input.embeddings === '无'
         ) {
-            return emptyEmbeddings
-        }
-
-        if (this._input.embeddings == null) {
             logger.warn(
                 'Embeddings are empty, falling back to fake embeddings. Try check your config.'
             )
@@ -446,7 +443,6 @@ export interface ChatInterfaceInput {
     vectorStoreName?: string
     conversationId: string
     maxMessagesCount: number
-    longMemory: boolean
 }
 
 function checkRange(times: number[], delayTime: number) {

@@ -1,5 +1,4 @@
 import { Context, Dict } from 'koishi'
-import { Config, logger } from 'koishi-plugin-chatluna'
 import { VectorStore, VectorStoreRetriever } from '@langchain/core/vectorstores'
 import { ChatInterface } from 'koishi-plugin-chatluna/llm-core/chat/app'
 import { BaseMessage, HumanMessage } from '@langchain/core/messages'
@@ -8,8 +7,10 @@ import { inMemoryVectorStoreRetrieverProvider } from 'koishi-plugin-chatluna/llm
 import { parseRawModelName } from 'koishi-plugin-chatluna/llm-core/utils/count_tokens'
 import { ChatLunaChatModel } from 'koishi-plugin-chatluna/llm-core/platform/model'
 import { ChatLunaSaveableVectorStore } from 'koishi-plugin-chatluna/llm-core/model/base'
+import { calculateSimilarity } from '../similarity'
 import crypto from 'crypto'
-import { calculateSimilarity } from '../../utils/similarity'
+import { Config as ChatLunaConfig } from 'koishi-plugin-chatluna'
+import { Config, logger } from '..'
 
 export function apply(ctx: Context, config: Config): void {
     if (!config.longMemory) {
@@ -28,7 +29,7 @@ export function apply(ctx: Context, config: Config): void {
             if (!retriever) {
                 retriever = await createVectorStoreRetriever(
                     ctx,
-                    config,
+                    ctx.chatluna.config,
                     chatInterface,
                     longMemoryId
                 )
@@ -258,7 +259,7 @@ function resolveLongMemoryId(message: HumanMessage, conversationId: string) {
 
 async function createVectorStoreRetriever(
     ctx: Context,
-    config: Config,
+    config: ChatLunaConfig,
     chatInterface: ChatInterface,
     longMemoryId: string
 ) {

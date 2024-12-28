@@ -14,12 +14,18 @@ const SIMILARITY_WEIGHTS = {
 } as const
 
 function validateAndAdjustWeights(weights: typeof SIMILARITY_WEIGHTS) {
-    const totalWeight = Object.values(weights).reduce((sum, weight) => sum + weight, 0)
+    const totalWeight = Object.values(weights).reduce(
+        (sum, weight) => sum + weight,
+        0
+    )
 
     if (Math.abs(totalWeight - 1) > 0.0001) {
         const adjustmentFactor = 1 / totalWeight
         return Object.fromEntries(
-            Object.entries(weights).map(([key, value]) => [key, value * adjustmentFactor])
+            Object.entries(weights).map(([key, value]) => [
+                key,
+                value * adjustmentFactor
+            ])
         ) as typeof SIMILARITY_WEIGHTS
     }
 
@@ -100,12 +106,14 @@ class TextTokenizer {
     }
 
     static removeStopwords(tokens: string[]): string[] {
-        return tokens.filter(token => {
+        return tokens.filter((token) => {
             if (!token || /^\d+$/.test(token)) return false
 
-            if (token.length === 1 &&
+            if (
+                token.length === 1 &&
                 !TextTokenizer.REGEX.chinese.test(token) &&
-                !TextTokenizer.REGEX.japanese.test(token)) {
+                !TextTokenizer.REGEX.japanese.test(token)
+            ) {
                 return false
             }
 
@@ -144,7 +152,7 @@ export class SimilarityCalculator {
         const words1 = new Set(TextTokenizer.tokenize(s1))
         const words2 = new Set(TextTokenizer.tokenize(s2))
 
-        const intersection = new Set([...words1].filter(x => words2.has(x)))
+        const intersection = new Set([...words1].filter((x) => words2.has(x)))
         const union = new Set([...words1, ...words2])
 
         return intersection.size / union.size
@@ -189,18 +197,23 @@ export class SimilarityCalculator {
         const avgDocLength = (tokens1.length + tokens2.length) / 2
 
         const termFrequencies = new Map<string, number>()
-        tokens1.forEach(token => {
+        tokens1.forEach((token) => {
             termFrequencies.set(token, (termFrequencies.get(token) || 0) + 1)
         })
 
         let score = 0
         for (const [term, tf] of termFrequencies) {
-            const termFreqInDoc2 = tokens2.filter(t => t === term).length
+            const termFreqInDoc2 = tokens2.filter((t) => t === term).length
             if (termFreqInDoc2 === 0) continue
 
-            const idf = Math.log(1 + Math.abs(tokens1.length - termFreqInDoc2 + 0.5) / (termFreqInDoc2 + 0.5))
+            const idf = Math.log(
+                1 +
+                    Math.abs(tokens1.length - termFreqInDoc2 + 0.5) /
+                        (termFreqInDoc2 + 0.5)
+            )
             const numerator = tf * (k1 + 1)
-            const denominator = tf + k1 * (1 - b + b * (docLength / avgDocLength))
+            const denominator =
+                tf + k1 * (1 - b + b * (docLength / avgDocLength))
 
             score += idf * (numerator / denominator)
         }
@@ -217,7 +230,10 @@ export class SimilarityCalculator {
         const text2 = TextTokenizer.normalize(str2)
 
         const cosine = SimilarityCalculator.cosineSimilarity(text1, text2)
-        const levenshtein = SimilarityCalculator.levenshteinDistance(text1, text2)
+        const levenshtein = SimilarityCalculator.levenshteinDistance(
+            text1,
+            text2
+        )
         const jaccard = SimilarityCalculator.jaccardSimilarity(text1, text2)
         const bm25 = SimilarityCalculator.calculateBM25Similarity(text1, text2)
 

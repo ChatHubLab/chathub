@@ -26,6 +26,10 @@ const paths = [
     {
         filePath: 'packages/search-service/src/plugin.ts',
         importFilesDir: 'packages/search-service/src/providers'
+    },
+    {
+        filePath: 'packages/long-memory/src/plugin.ts',
+        importFilesDir: 'packages/long-memory/src/plugins'
     }
 ]
 
