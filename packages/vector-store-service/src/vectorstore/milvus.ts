@@ -163,8 +163,7 @@ export async function apply(
                         document.metadata = {
                             source: 'unknown',
                             ...document.metadata,
-                            raw_id: id,
-                            langchain_primaryid: id
+                            raw_id: id
                         }
 
                         return id.replaceAll('-', '_')
