@@ -76,6 +76,9 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
 
             ctx.runtime.parent.scope.update(config, true)
 
+            // restart all
+            ctx.loader.fullReload(52)
+
             return ChainMiddlewareRunStatus.STOP
         })
         .before('black_list')
