@@ -16,6 +16,12 @@ export class ChatLunaSaveableVectorStore<T extends VectorStore = VectorStore>
         ...args: Parameters<T['addDocuments']>
     ) => Promise<void>
 
+    similaritySearchVectorWithScoreFunction?: (
+        query: number[],
+        k: number,
+        filter?: T['FilterType']
+    ) => Promise<[Document, number][]>
+
     constructor(
         private _store: T,
         input: ChatLunaSaveableVectorStoreInput<T>
@@ -24,6 +30,8 @@ export class ChatLunaSaveableVectorStore<T extends VectorStore = VectorStore>
         this.saveableFunction = input.saveableFunction ?? (async () => {})
         this.deletableFunction = input.deletableFunction
         this.addDocumentsFunction = input.addDocumentsFunction
+        this.similaritySearchVectorWithScoreFunction =
+            input.similaritySearchVectorWithScore
     }
 
     addVectors(...args: Parameters<typeof this._store.addVectors>) {
@@ -42,6 +50,13 @@ export class ChatLunaSaveableVectorStore<T extends VectorStore = VectorStore>
         k: number,
         filter?: T['FilterType']
     ) {
+        if (this.similaritySearchVectorWithScoreFunction) {
+            return this.similaritySearchVectorWithScoreFunction(
+                query,
+                k,
+                filter
+            )
+        }
         return this._store.similaritySearchVectorWithScore(query, k, filter)
     }
 
@@ -82,6 +97,11 @@ export interface ChatLunaSaveableVectorStoreInput<T extends VectorStore> {
         store: T,
         ...args: Parameters<T['addDocuments']>
     ) => Promise<void>
+    similaritySearchVectorWithScore?: (
+        query: number[],
+        k: number,
+        filter?: T['FilterType']
+    ) => Promise<[Document, number][]>
 }
 
 export interface ChatLunaSaveableVectorDelete
