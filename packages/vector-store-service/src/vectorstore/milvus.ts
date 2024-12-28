@@ -23,10 +23,11 @@ export async function apply(
     plugin.registerVectorStore('milvus', async (params) => {
         const embeddings = params.embeddings
 
+        const key = params.key ?? 'chatluna'
+
         const vectorStore = new MilvusClass(embeddings, {
             collectionName: 'chatluna_collection',
-            partitionName: params.key ?? 'chatluna',
-            partitionKey: `_${params.key ?? 'chatluna'}`,
+            partitionName: key,
             url: config.milvusUrl,
             autoId: false,
             username: config.milvusUsername,
@@ -34,7 +35,7 @@ export async function apply(
             textFieldMaxLength: 3000
         })
 
-        logger.debug(`Loading milvus store from %c`, params.key ?? 'chatluna')
+        logger.debug(`Loading milvus store from %c`, key)
 
         const testVector = await embeddings.embedDocuments(['test'])
 
@@ -56,7 +57,7 @@ export async function apply(
             try {
                 await vectorStore.client.releasePartitions({
                     collection_name: 'chatluna_collection',
-                    partition_names: [params.key ?? 'chatluna']
+                    partition_names: [key]
                 })
 
                 await vectorStore.client.releaseCollection({
@@ -65,7 +66,7 @@ export async function apply(
 
                 await vectorStore.client.dropPartition({
                     collection_name: 'chatluna_collection',
-                    partition_name: params.key ?? 'chatluna'
+                    partition_name: key
                 })
 
                 await vectorStore.client.dropCollection({
@@ -92,11 +93,12 @@ export async function apply(
         const wrapperStore = new ChatLunaSaveableVectorStore<Milvus>(
             vectorStore,
             {
+
                 async deletableFunction(store, options) {
                     if (options.deleteAll) {
                         await vectorStore.client.releasePartitions({
                             collection_name: 'chatluna_collection',
-                            partition_names: [params.key ?? 'chatluna']
+                            partition_names: [key]
                         })
 
                         await vectorStore.client.releaseCollection({
@@ -105,7 +107,7 @@ export async function apply(
 
                         await vectorStore.client.dropPartition({
                             collection_name: 'chatluna_collection',
-                            partition_name: params.key ?? 'chatluna'
+                            partition_name: key
                         })
 
                         await vectorStore.client.dropCollection({
@@ -145,7 +147,7 @@ export async function apply(
 
                     const deleteResp = await client.delete({
                         collection_name: store.collectionName,
-                        partition_name: params.key ?? 'chatluna',
+                        partition_name: key,
                         ids
                     })
 
@@ -195,3 +197,4 @@ async function importMilvus() {
         )
     }
 }
+
