@@ -1,7 +1,7 @@
 {
     "name": "koishi-plugin-chatluna-vector-store-service",
     "description": "vector store service for chatluna",
-    "version": "1.0.0-rc.2",
+    "version": "1.0.0-beta.39",
     "main": "lib/index.cjs",
     "module": "lib/index.mjs",
     "typings": "lib/index.d.ts",
