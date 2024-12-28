@@ -122,12 +122,14 @@ export function apply(ctx: Context, config: Config) {
 
             const vectorStore = retriever.vectorStore as VectorStore
 
-            if (config.longMemoryDuplicateThreshold < 1) {
+            if (
+                config.longMemoryDuplicateThreshold < 1 &&
+                config.longMemoryDuplicateCheck
+            ) {
                 resultArray = await filterSimilarMemory(
                     resultArray,
                     vectorStore,
-                    config.longMemoryDuplicateThreshold,
-                    config.longMemoryEnableDuplicateCheck
+                    config.longMemoryDuplicateThreshold
                 )
             }
 
@@ -192,13 +194,8 @@ function parseResultContent(content: string): string[] {
 async function filterSimilarMemory(
     memoryArray: string[],
     vectorStore: VectorStore,
-    similarityThreshold: number,
-    enableCheck: boolean
+    similarityThreshold: number
 ) {
-    if (similarityThreshold >= 1 || !enableCheck) {
-        return memoryArray
-    }
-
     const result: string[] = []
 
     for (const memory of memoryArray) {

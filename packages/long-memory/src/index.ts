@@ -29,7 +29,7 @@ export interface Config extends ChatLunaPlugin.Config {
     longMemory: boolean
     longMemorySimilarity: number
     longMemoryDuplicateThreshold: number
-    longMemoryEnableDuplicateCheck: boolean
+    longMemoryDuplicateCheck: boolean
     longMemoryInterval: number
     longMemoryExtractModel: string
 }
@@ -47,7 +47,7 @@ export const Config: Schema<Config> = Schema.intersect([
             .max(1)
             .step(0.01)
             .default(0.8),
-        longMemoryEnableDuplicateCheck: Schema.boolean().default(true),
+        longMemoryDuplicateCheck: Schema.boolean().default(true),
         longMemoryInterval: Schema.number().default(3).min(1).max(10),
         longMemoryExtractModel: Schema.dynamic('model').default('无')
     })

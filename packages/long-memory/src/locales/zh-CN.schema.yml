@@ -1,9 +1,9 @@
 $inner:
     - $desc: 长期记忆选项
       longMemory: 是否启用长期记忆功能。启用后，模型能够记住较久远的对话内容（需要使用向量数据库和 Embeddings 服务）。
-      longMemorySimilarity: 设置长期记忆的相似度阈值。
-      enableSimilarityCheck: 是否启用相似度检查。启用后，模型在添加记忆时会检查新记忆与已有记忆的相似度，如果相似度过高，则不会添加到长期记忆中。
-      longMemoryAddSimilarity: 设置长期记忆在添加前检索的相似度阈值。如果设置为 0，则进行最严格检查。基于添加前的记忆进行检索，如检索到的记忆超过此阈值，则不会添加到长期记忆中。
+      longMemorySimilarity: 设置长期记忆检索的相似度阈值。
+      longMemoryDuplicateCheck: 是否启用相似度检查。启用后，在添加记忆时会检查新记忆与已有记忆的相似度，如果相似度过高，则不会添加到长期记忆中。
+      longMemoryDuplicateThreshold: 设置长期记忆在添加前检索的相似度阈值，基于添加前的记忆进行检索，如检索到的记忆超过此阈值，则不会添加到长期记忆中。
       longMemoryInterval: 设置长期记忆调用的频率，即每隔多少轮对话调用一次长期记忆。
       longMemoryExtractModel: 设置长期记忆的提取模型。使用较快的模型可以提升提取的速度。
 

@@ -2,7 +2,7 @@ $inner:
     - $desc: Long-term Memory
       longMemory: Enable long-term memory feature (requires vector database and Embeddings service).
       longMemorySimilarity: Set long-term memory similarity threshold (0.0 to 1.0, where higher values require closer matches).
-      enableSimilarityCheck: Enable similarity check. If enabled, the model will check the similarity between new memory and existing memory before adding to long-term memory. If the similarity is too high, the new memory will not be added to long-term memory.
-      longMemoryAddSimilarity: Set similarity threshold for long-term memory retrieval before adding (0.0 to 1.0, where higher values require closer matches). If set to 0, the most strict check will be performed. If the retrieved memory exceeds this threshold, it will not be added to long-term memory.
+      longMemoryDuplicateCheck: Enable similarity check. If enabled, the model will check the similarity between new memory and existing memory before adding to long-term memory. If the similarity is too high, the new memory will not be added to long-term memory.
+      longMemoryDuplicateThreshold: Set similarity threshold for long-term memory retrieval before adding (0.0 to 1.0, where higher values require closer matches). If set to 0, the most strict check will be performed. If the retrieved memory exceeds this threshold, it will not be added to long-term memory.
       longMemoryInterval: Set long-term memory save frequency (number of conversation turns between memory lookups, e.g., 5 means save memory every 5 turns).
       longMemoryExtractModel: Specify the model for long-term memory extraction. Faster models improve extraction speed.
