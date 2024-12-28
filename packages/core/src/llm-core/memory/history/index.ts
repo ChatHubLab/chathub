@@ -122,12 +122,12 @@ export function apply(ctx: Context, config: Config): void {
 
             const vectorStore = retriever.vectorStore as VectorStore
 
-            if (config.longMemoryAddSimilarity < 1) {
+            if (config.longMemoryDuplicateThreshold < 1) {
                 resultArray = await filterSimilarMemory(
                     resultArray,
                     vectorStore,
-                    config.longMemoryAddSimilarity,
-                    config.enableSimilarityCheck
+                    config.longMemoryDuplicateThreshold,
+                    config.longMemoryEnableDuplicateCheck
                 )
             }
 
@@ -154,7 +154,7 @@ export function apply(ctx: Context, config: Config): void {
 
     ctx.on(
         'chatluna/clear-chat-history',
-        async (conversationId, chatInterface) => {
+        async (_conversationId, _chatInterface) => {
             // clear all
             longMemoryCache = {}
         }

@@ -46,7 +46,8 @@ export interface Config {
     voiceSpeakId: number
 
     longMemorySimilarity: number
-    longMemoryAddSimilarity: number
+    longMemoryDuplicateThreshold: number
+    longMemoryEnableDuplicateCheck: boolean
     longMemoryInterval: number
     longMemoryExtractModel: string
 
@@ -106,14 +107,19 @@ export const Config: Schema<Config> = Schema.intersect([
             .max(1)
             .step(0.01)
             .default(0.3),
-        longMemoryAddSimilarity: Schema.percent()
+        longMemoryDuplicateThreshold: Schema.percent()
             .min(0)
             .max(1)
             .step(0.01)
             .default(0.8),
-        enableSimilarityCheck: Schema.boolean().default(true),
-        longMemoryInterval: Schema.number().default(3).min(1).max(10),
-        longMemoryExtractModel: Schema.dynamic('model').default('无')
+        longMemoryEnableDuplicateCheck: Schema.boolean()
+            .default(true),
+        longMemoryInterval: Schema.number()
+            .default(3)
+            .min(1)
+            .max(10),
+        longMemoryExtractModel: Schema.dynamic('model')
+            .default('无')
     }),
 
     Schema.object({
