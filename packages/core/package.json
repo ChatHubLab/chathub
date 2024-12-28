@@ -239,7 +239,7 @@
         "atsc": "^2.1.0"
     },
     "peerDependencies": {
-        "koishi": "^4.18.1"
+        "koishi": "^4.18.4"
     },
     "resolutions": {
         "@langchain/core": "0.3.18",
