@@ -23,7 +23,7 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
 
             const embeddings = service.getAllModels(ModelType.embeddings)
 
-            const [platform, modelName] = parseRawModelName(setEmbeddings)
+            const [, modelName] = parseRawModelName(setEmbeddings)
 
             const targetEmbeddings = embeddings.filter((embeddingsName) => {
                 return embeddingsName.includes(modelName)
@@ -51,7 +51,7 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                 context.message = session.text('.model_not_found')
             }
 
-            const fullName = platform + '/' + targetEmbeddings[0]
+            const fullName = targetEmbeddings[0]
 
             await context.send(session.text('.success', [fullName]))
 
