@@ -179,7 +179,7 @@ export async function getTemplateConversationRoom(
             const models = ctx.chatluna.platform.getAllModels(ModelType.llm)
 
             const model =
-                models.find((model) => model.includes('3.5-turbo')) ?? models[0]
+                models.find((model) => model.includes('4o')) ?? models[0]
 
             config.defaultModel = model
         }
@@ -190,7 +190,8 @@ export async function getTemplateConversationRoom(
             config.defaultPreset = preset.triggerKeyword[0]
         }
 
-        ctx.runtime.parent.scope.update(config, true)
+        ctx.scope.parent.scope.update(config, true)
+
 
         // throw new ChatLunaError(ChatLunaErrorCode.INIT_ROOM)
     }

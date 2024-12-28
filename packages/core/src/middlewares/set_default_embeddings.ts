@@ -56,7 +56,9 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
             await context.send(session.text('.success', [fullName]))
 
             config.defaultEmbeddings = fullName
-            ctx.runtime.parent.scope.update(config, true)
+
+            ctx.scope.parent.scope.update(config, true)
+
 
             return ChainMiddlewareRunStatus.STOP
         })
