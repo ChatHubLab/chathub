@@ -202,11 +202,11 @@ export class SimilarityCalculator {
 
         const uniqueTerms = new Set([...tokens1, ...tokens2])
 
-        tokens1.forEach(token => {
+        tokens1.forEach((token) => {
             termFreqDoc1.set(token, (termFreqDoc1.get(token) || 0) + 1)
         })
 
-        tokens2.forEach(token => {
+        tokens2.forEach((token) => {
             termFreqDoc2.set(token, (termFreqDoc2.get(token) || 0) + 1)
         })
 
@@ -221,7 +221,8 @@ export class SimilarityCalculator {
 
             if (tf > 0) {
                 const numerator = tf * (k1 + 1)
-                const denominator = tf + k1 * (1 - b + b * (doc2Length / avgDocLength))
+                const denominator =
+                    tf + k1 * (1 - b + b * (doc2Length / avgDocLength))
                 score += idf * (numerator / denominator)
             }
         }
