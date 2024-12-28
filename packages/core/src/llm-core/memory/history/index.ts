@@ -9,7 +9,7 @@ import { parseRawModelName } from 'koishi-plugin-chatluna/llm-core/utils/count_t
 import { ChatLunaChatModel } from 'koishi-plugin-chatluna/llm-core/platform/model'
 import { ChatLunaSaveableVectorStore } from 'koishi-plugin-chatluna/llm-core/model/base'
 import crypto from 'crypto'
-import { calculateSimilarity } from './similarity'
+import { calculateSimilarity } from '../../utils/similarity'
 
 export function apply(ctx: Context, config: Config): void {
     if (!config.longMemory) {

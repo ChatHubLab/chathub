@@ -207,6 +207,7 @@
     ],
     "dependencies": {
         "@langchain/core": "^0.3.18",
+        "@node-rs/jieba": "^2.0.1",
         "decimal.js": "^10.4.3",
         "he": "^1.2.0",
         "https-proxy-agent": "^7.0.5",
@@ -218,6 +219,7 @@
         "md5": "^2.3.0",
         "socks": "^2.8.2",
         "socks-proxy-agent": "^8.0.4",
+        "tiny-segmenter": "^0.2.0",
         "undici": "^6.21.0",
         "uuid": "^9.0.1",
         "ws": "^8.18.0",
