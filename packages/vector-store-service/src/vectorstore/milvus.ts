@@ -26,7 +26,7 @@ export async function apply(
 
         const key = params.key ?? 'chatluna'
 
-        const vectorStore = new MilvusClass(embeddings, {
+        let vectorStore = new MilvusClass(embeddings, {
             collectionName: 'chatluna_collection',
             partitionName: key,
             url: config.milvusUrl,
@@ -266,6 +266,9 @@ export async function apply(
                     })
                     // console.log("Search result: " + JSON.stringify(results, null, 2));
                     return results
+                },
+                async freeFunction() {
+                    vectorStore = undefined
                 }
             }
         )

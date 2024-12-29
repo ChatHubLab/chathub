@@ -21,6 +21,10 @@ export class ChatLunaSaveableVectorStore<T extends VectorStore = VectorStore>
         ...args: Parameters<T['similaritySearchVectorWithScore']>
     ) => Promise<[Document, number][]>
 
+    freeFunction?: () => Promise<void>
+
+    private _isActive = true
+
     constructor(
         private _store: T,
         input: ChatLunaSaveableVectorStoreInput<T>
@@ -31,13 +35,16 @@ export class ChatLunaSaveableVectorStore<T extends VectorStore = VectorStore>
         this.addDocumentsFunction = input.addDocumentsFunction
         this.similaritySearchVectorWithScoreFunction =
             input.similaritySearchVectorWithScoreFunction
+        this.freeFunction = input.freeFunction
     }
 
     addVectors(...args: Parameters<typeof this._store.addVectors>) {
+        this._checkActive()
         return this._store.addVectors(...args)
     }
 
     addDocuments(...args: Parameters<T['addDocuments']>) {
+        this._checkActive()
         if (this.addDocumentsFunction) {
             return this.addDocumentsFunction(this._store, ...args)
         }
@@ -47,6 +54,7 @@ export class ChatLunaSaveableVectorStore<T extends VectorStore = VectorStore>
     similaritySearchVectorWithScore(
         ...args: Parameters<T['similaritySearchVectorWithScore']>
     ) {
+        this._checkActive()
         if (this.similaritySearchVectorWithScoreFunction) {
             return this.similaritySearchVectorWithScoreFunction(
                 this._store,
@@ -61,6 +69,8 @@ export class ChatLunaSaveableVectorStore<T extends VectorStore = VectorStore>
     }
 
     async editDocument(oldDocumentId: string, newDocument: Document) {
+        this._checkActive()
+
         // delete
         await this.delete({ ids: [oldDocumentId] })
 
@@ -71,11 +81,13 @@ export class ChatLunaSaveableVectorStore<T extends VectorStore = VectorStore>
     }
 
     save() {
+        this._checkActive()
         return this?.saveableFunction(this._store)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delete(input: ChatLunaSaveableVectorDelete) {
+        this._checkActive()
         return (
             this?.deletableFunction?.(this._store, input) ??
             this._store.delete(input)
@@ -84,6 +96,20 @@ export class ChatLunaSaveableVectorStore<T extends VectorStore = VectorStore>
 
     _vectorstoreType(): string {
         return this._store?._vectorstoreType() ?? '?'
+    }
+
+    private _checkActive() {
+        if (!this._isActive) {
+            throw new Error('VectorStore is not active')
+        }
+    }
+
+    async free() {
+        if (this.freeFunction) {
+            await this.freeFunction()
+        }
+        this._store = undefined
+        this._isActive = false
     }
 }
 
@@ -101,6 +127,7 @@ export interface ChatLunaSaveableVectorStoreInput<T extends VectorStore> {
         store: T,
         ...args: Parameters<T['similaritySearchVectorWithScore']>
     ) => Promise<[Document, number][]>
+    freeFunction?: () => Promise<void>
 }
 
 export interface ChatLunaSaveableVectorDelete

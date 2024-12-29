@@ -37,6 +37,7 @@ export interface RawPreset {
               recursiveScan?: boolean
               maxRecursionDepth?: number
               matchWholeWord?: boolean
+              constant?: boolean
               caseSensitive?: boolean
               enabled?: boolean
               order?: number

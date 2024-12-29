@@ -122,6 +122,9 @@ export async function apply(
                     await store.addDocuments(documents, {
                         ids
                     })
+                },
+                async freeFunction() {
+                    faissStore = undefined
                 }
             }
         )
