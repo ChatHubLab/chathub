@@ -1,16 +1,9 @@
-import type {
-    EmbeddedResource,
-    SearchResult,
-    Voy as VoyClient
-} from 'voy-search'
+import { LunaVDB as LunaDB } from '@chatluna/luna-vdb'
 import type { EmbeddingsInterface } from '@langchain/core/embeddings'
 import { SaveableVectorStore } from '@langchain/core/vectorstores'
 import { Document } from '@langchain/core/documents'
 import { SynchronousInMemoryDocstore } from '@langchain/community/stores/doc/in_memory'
 import crypto from 'crypto'
-import { createGzip } from 'zlib'
-import { pipeline } from 'stream'
-import { promisify } from 'util'
 import { Context, Logger } from 'koishi'
 import { ChatLunaSaveableVectorStore } from 'koishi-plugin-chatluna/llm-core/model/base'
 import path from 'path'
@@ -28,18 +21,16 @@ export async function apply(
 ) {
     logger = createLogger(ctx, 'chatluna-vector-store-service')
 
-    if (!config.vectorStore.includes('voy')) {
+    if (!config.vectorStore.includes('luna-vdb')) {
         return
     }
 
-    plugin.registerVectorStore('voy', async (params) => {
+    plugin.registerVectorStore('luna-vdb', async (params) => {
         const embeddings = params.embeddings
-        let voyStore: VoyVectorStore
-
-        const Voy = (await imoprtVoy()).Voy
+        let lunaDBStore: LunaDBVectorStore
 
         const directory = path.join(
-            'data/chathub/vector_store/voy',
+            'data/chathub/vector_store/luna_vdb',
             params.key ?? 'chatluna'
         )
 
@@ -51,36 +42,36 @@ export async function apply(
 
         const jsonFile = path.join(directory, 'docstore.index')
 
-        logger.debug(`Loading voy store from %c`, directory)
+        logger.debug(`Loading luna vdb store from %c`, directory)
 
         try {
             await fs.access(jsonFile)
-            voyStore = await VoyVectorStore.load(directory, embeddings)
+            lunaDBStore = await LunaDBVectorStore.load(directory, embeddings)
 
             // test the embeddings dimension
             const testEmbedding = await embeddings.embedQuery('test')
-            if (testEmbedding.length !== voyStore.numDimensions) {
+            if (testEmbedding.length !== lunaDBStore.numDimensions) {
                 logger.error(
-                    `embeddings dimension mismatch: ${testEmbedding.length} !== ${voyStore.numDimensions}. Please check the embeddings.`
+                    `embeddings dimension mismatch: ${testEmbedding.length} !== ${lunaDBStore.numDimensions}. Please check the embeddings.`
                 )
                 // voyStore = undefined
             }
         } catch (e) {
-            voyStore = new VoyVectorStore(new Voy(), embeddings)
+            lunaDBStore = new LunaDBVectorStore(new LunaDB(), embeddings)
 
             try {
-                await voyStore.save(directory)
+                await lunaDBStore.save(directory)
             } catch (e) {
                 logger.error(e)
             }
         }
 
-        if (voyStore == null) {
+        if (lunaDBStore == null) {
             throw new Error('failed to load voy store')
         }
 
-        const wrapperStore = new ChatLunaSaveableVectorStore<VoyVectorStore>(
-            voyStore,
+        const wrapperStore = new ChatLunaSaveableVectorStore<LunaDBVectorStore>(
+            lunaDBStore,
             {
                 async saveableFunction(store) {
                     await store.save(directory)
@@ -88,7 +79,7 @@ export async function apply(
                 async deletableFunction(store, options) {
                     if (options.deleteAll) {
                         await fs.rm(directory, { recursive: true })
-                        await voyStore.delete({ deleteAll: true })
+                        await lunaDBStore.delete({ deleteAll: true })
                         return
                     }
 
@@ -132,8 +123,8 @@ export async function apply(
                     })
                 },
                 async freeFunction() {
-                    voyStore.client.free()
-                    voyStore = undefined
+                    lunaDBStore.client.free()
+                    lunaDBStore = undefined
                 }
             }
         )
@@ -142,45 +133,37 @@ export async function apply(
     })
 }
 
-export interface VoyLibArgs {
+export interface LunaVDBLibArgs {
     docstore?: SynchronousInMemoryDocstore
-    mapping?: Record<string, EmbeddedResource>
 }
 
 /**
  * Class that extends `VectorStore`. It allows to perform similarity search using
  * Voi similarity search engine. The class requires passing Voy Client as an input parameter.
  */
-export class VoyVectorStore extends SaveableVectorStore {
-    client: VoyClient
+export class LunaDBVectorStore extends SaveableVectorStore {
+    client: LunaDB
 
     numDimensions: number | null = null
 
     docstore: SynchronousInMemoryDocstore
-
-    _mapping: Record<string, EmbeddedResource>
-
-    getMapping(): Record<string, EmbeddedResource> {
-        return this._mapping
-    }
 
     getDocstore(): SynchronousInMemoryDocstore {
         return this.docstore
     }
 
     _vectorstoreType(): string {
-        return 'voi'
+        return 'luna-db'
     }
 
     constructor(
-        client: VoyClient,
+        client: LunaDB,
         embeddings: EmbeddingsInterface,
-        args?: VoyLibArgs
+        args?: LunaVDBLibArgs
     ) {
         super(embeddings, {})
         this.client = client
         this.embeddings = embeddings
-        this._mapping = args?.mapping ?? {}
         this.docstore = args?.docstore ?? new SynchronousInMemoryDocstore()
     }
 
@@ -244,11 +227,8 @@ export class VoyVectorStore extends SaveableVectorStore {
         const embeddings = documentIds.map((documentId, idx) => {
             const resource = {
                 id: documentId,
-                embeddings: vectors[idx],
-                title: '',
-                url: ''
+                embeddings: vectors[idx]
             }
-            this._mapping[documentId] = resource
             this.docstore.add({ [documentId]: documents[idx] })
             return resource
         })
@@ -279,12 +259,12 @@ export class VoyVectorStore extends SaveableVectorStore {
                 `k (${k}) is greater than the number of elements in the index (${docStoreSize}), setting k to ${itemsToQuery}`
             )
         }
-        const results: SearchResult = this.client.search(
+        const results = this.client.search(
             new Float32Array(query),
             itemsToQuery
         )
-        return results.neighbors.map(({ id }, idx) => {
-            return [this.docstore.search(id), idx] as [Document, number]
+        return results.neighbors.map(({ id, distance }) => {
+            return [this.docstore.search(id), distance] as [Document, number]
         })
     }
 
@@ -310,12 +290,11 @@ export class VoyVectorStore extends SaveableVectorStore {
             throw new Error('No documentIds provided to delete.')
         }
 
-        const mappings = new Map(Object.entries(this._mapping))
+        const mappingIds = Array.from(this.docstore._docs.keys())
 
-        const missingIds = new Set(
-            documentIds.filter((id) => !mappings.has(id))
-        )
-        if (missingIds.size > 0) {
+        const missingIds = documentIds.filter((id) => !mappingIds.includes(id))
+
+        if (missingIds.length > 0) {
             throw new Error(
                 `Some specified documentIds do not exist in the current store. DocumentIds not found: ${Array.from(
                     missingIds
@@ -324,13 +303,11 @@ export class VoyVectorStore extends SaveableVectorStore {
         }
 
         const embeddings = documentIds.map((id) => {
-            const resource = mappings.get(id)
-            mappings.delete(id)
             this.docstore._docs.delete(id)
-            return resource
+            return id
         })
 
-        this.client.remove({ embeddings })
+        this.client.remove(embeddings)
     }
 
     /**
@@ -344,23 +321,22 @@ export class VoyVectorStore extends SaveableVectorStore {
         const path = await import('node:path')
         const readStore = (directory: string) =>
             fs
-                .readFile(path.join(directory, 'docstore.index'))
-                .then(decompressGzip)
-                .then(JSON.parse) as Promise<
-                [Map<string, Document>, Record<string, EmbeddedResource>]
-            >
+                .readFile(path.join(directory, 'docstore.index'), 'utf-8')
+                .then(JSON.parse) as Promise<Map<string, Document>>
 
         const readIndex = async (directory: string) => {
-            const data = await fs.readFile(path.join(directory, 'voy.index'))
-            const Voy = (await imoprtVoy()).Voy
-            return Voy.deserialize(await decompressGzip(data))
+            const data = await fs.readFile(
+                path.join(directory, 'luna_db.index')
+            )
+
+            return LunaDB.deserialize(data)
         }
-        const [[docstoreFiles, mapping], index] = await Promise.all([
+        const [docstoreFiles, index] = await Promise.all([
             readStore(directory),
             readIndex(directory)
         ])
-        const docstore = new SynchronousInMemoryDocstore(new Map(docstoreFiles))
-        return new this(index, embeddings, { docstore, mapping })
+        const docstore = new SynchronousInMemoryDocstore(docstoreFiles)
+        return new this(index, embeddings, { docstore })
     }
 
     /**
@@ -374,17 +350,12 @@ export class VoyVectorStore extends SaveableVectorStore {
         await fs.mkdir(directory, { recursive: true })
         await Promise.all([
             await fs.writeFile(
-                path.join(directory, 'voy.index'),
-                await compressGzip(this.client.serialize())
+                path.join(directory, 'luna_db.index'),
+                this.client.serialize()
             ),
             await fs.writeFile(
                 path.join(directory, 'docstore.index'),
-                await compressGzip(
-                    JSON.stringify([
-                        Array.from(this.docstore._docs.entries()),
-                        this._mapping
-                    ])
-                )
+                JSON.stringify(this.docstore._docs)
             )
         ])
     }
@@ -403,9 +374,9 @@ export class VoyVectorStore extends SaveableVectorStore {
         texts: string[],
         metadatas: object[] | object,
         embeddings: EmbeddingsInterface,
-        client: VoyClient,
-        options?: VoyLibArgs
-    ): Promise<VoyVectorStore> {
+        client: LunaDB,
+        options?: LunaVDBLibArgs
+    ): Promise<LunaDBVectorStore> {
         const docs: Document[] = []
         for (let i = 0; i < texts.length; i += 1) {
             const metadata = Array.isArray(metadatas) ? metadatas[i] : metadatas
@@ -415,7 +386,12 @@ export class VoyVectorStore extends SaveableVectorStore {
             })
             docs.push(newDoc)
         }
-        return VoyVectorStore.fromDocuments(docs, embeddings, client, options)
+        return LunaDBVectorStore.fromDocuments(
+            docs,
+            embeddings,
+            client,
+            options
+        )
     }
 
     /**
@@ -429,37 +405,11 @@ export class VoyVectorStore extends SaveableVectorStore {
     static async fromDocuments(
         docs: Document[],
         embeddings: EmbeddingsInterface,
-        client: VoyClient,
-        options?: VoyLibArgs
-    ): Promise<VoyVectorStore> {
-        const instance = new VoyVectorStore(client, embeddings, options)
+        client: LunaDB,
+        options?: LunaVDBLibArgs
+    ): Promise<LunaDBVectorStore> {
+        const instance = new LunaDBVectorStore(client, embeddings, options)
         await instance.addDocuments(docs)
         return instance
     }
-}
-
-async function compressGzip(str: string): Promise<Buffer> {
-    const gzip = createGzip()
-    const input = Buffer.from(str)
-    const output: Buffer[] = []
-
-    const pipelineAsync = promisify(pipeline)
-    await pipelineAsync(input, gzip, { end: true })
-
-    return Buffer.concat(output)
-}
-
-// 解压缩 Gzip 格式的字符串
-async function decompressGzip(buffer: Buffer): Promise<string> {
-    const gunzip = createGzip()
-    const output: Buffer[] = []
-
-    const pipelineAsync = promisify(pipeline)
-    await pipelineAsync(buffer, gunzip, { end: true })
-
-    return Buffer.concat(output).toString()
-}
-
-export async function imoprtVoy() {
-    return await import('voy-search')
 }
