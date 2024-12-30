@@ -61,14 +61,11 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                 )
 
                 const documents = await vectorStore
-                    .similaritySearch(query, 10000)
+                    .similaritySearchWithScore(query, 10000)
                     .then((value) =>
-                        value.sort((a, b) => {
-                            const aRawId = (a.metadata?.raw_id as string) ?? ''
-                            const bRawId = (b.metadata?.raw_id as string) ?? ''
-
-                            return aRawId.localeCompare(bRawId)
-                        })
+                        value
+                            .sort((a, b) => (a[1] > b[1] ? 1 : -1))
+                            .map((a) => a[0])
                     )
 
                 await pagination.push(documents)
