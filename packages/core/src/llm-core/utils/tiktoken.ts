@@ -5,36 +5,15 @@ import {
     TiktokenEncoding,
     TiktokenModel
 } from 'js-tiktoken/lite'
-import { chatLunaFetch } from 'koishi-plugin-chatluna/utils/request'
+import {
+    chatLunaFetch,
+    globalProxyAddress
+} from 'koishi-plugin-chatluna/utils/request'
 
 const cache: Record<string, TiktokenBPE> = {}
 
 export async function getEncoding(
     encoding: TiktokenEncoding,
-    options?: {
-        signal?: AbortSignal
-        extendedSpecialTokens?: Record<string, number>
-    }
-) {
-    if (!(encoding in cache)) {
-        cache[encoding] = await chatLunaFetch(
-            `https://tiktoken.pages.dev/js/${encoding}.json`,
-            {
-                signal: options?.signal
-            }
-        )
-            .then((res) => res.json() as unknown as TiktokenBPE)
-            .catch((e) => {
-                delete cache[encoding]
-                throw e
-            })
-    }
-
-    return new Tiktoken(cache[encoding], options?.extendedSpecialTokens)
-}
-
-export async function encodingForModel(
-    model: TiktokenModel,
     options?: {
         signal?: AbortSignal
         extendedSpecialTokens?: Record<string, number>
@@ -52,11 +31,37 @@ export async function encodingForModel(
         timeout = setTimeout(() => abortController.abort(), 1000 * 5)
     }
 
-    const result = await getEncoding(getEncodingNameForModel(model), options)
+    if (!(encoding in cache)) {
+        const url =
+            globalProxyAddress.length > 0
+                ? `https://tiktoken.pages.dev/js/${encoding}.json`
+                : `https://jsd.onmicrosoft.cn/npm/tiktoken@latest/encoders/${encoding}.json`
+
+        cache[encoding] = await chatLunaFetch(url, {
+            signal: options?.signal
+        })
+            .then((res) => res.json() as unknown as TiktokenBPE)
+            .catch((e) => {
+                delete cache[encoding]
+                throw e
+            })
+    }
 
     if (timeout != null) {
         clearTimeout(timeout)
     }
+
+    return new Tiktoken(cache[encoding], options?.extendedSpecialTokens)
+}
+
+export async function encodingForModel(
+    model: TiktokenModel,
+    options?: {
+        signal?: AbortSignal
+        extendedSpecialTokens?: Record<string, number>
+    }
+) {
+    const result = await getEncoding(getEncodingNameForModel(model), options)
 
     return result
 }
