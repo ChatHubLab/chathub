@@ -40,22 +40,13 @@ export async function apply(
             await fs.mkdir(directory, { recursive: true })
         }
 
-        const jsonFile = path.join(directory, 'docstore.index')
+        const jsonFile = path.join(directory, 'docstore.json')
 
         logger.debug(`Loading luna vdb store from %c`, directory)
 
         try {
             await fs.access(jsonFile)
             lunaDBStore = await LunaDBVectorStore.load(directory, embeddings)
-
-            // test the embeddings dimension
-            const testEmbedding = await embeddings.embedQuery('test')
-            if (testEmbedding.length !== lunaDBStore.numDimensions) {
-                logger.error(
-                    `embeddings dimension mismatch: ${testEmbedding.length} !== ${lunaDBStore.numDimensions}. Please check the embeddings.`
-                )
-                // voyStore = undefined
-            }
         } catch (e) {
             lunaDBStore = new LunaDBVectorStore(new LunaDB(), embeddings)
 
@@ -67,7 +58,7 @@ export async function apply(
         }
 
         if (lunaDBStore == null) {
-            throw new Error('failed to load voy store')
+            throw new Error('failed to load luna vdb store')
         }
 
         const wrapperStore = new ChatLunaSaveableVectorStore<LunaDBVectorStore>(
@@ -144,8 +135,6 @@ export interface LunaVDBLibArgs {
 export class LunaDBVectorStore extends SaveableVectorStore {
     client: LunaDB
 
-    numDimensions: number | null = null
-
     docstore: SynchronousInMemoryDocstore
 
     getDocstore(): SynchronousInMemoryDocstore {
@@ -180,18 +169,8 @@ export class LunaDBVectorStore extends SaveableVectorStore {
             return
         }
 
-        const firstVector = (
-            await this.embeddings.embedDocuments(texts.slice(0, 1))
-        )[0]
-        if (this.numDimensions === null) {
-            this.numDimensions = firstVector.length
-        } else if (this.numDimensions !== firstVector.length) {
-            throw new Error(
-                `Vectors must have the same length as the number of dimensions (${this.numDimensions})`
-            )
-        }
-        const restResults = await this.embeddings.embedDocuments(texts.slice(1))
-        await this.addVectors([firstVector, ...restResults], documents, options)
+        const restResults = await this.embeddings.embedDocuments(texts)
+        await this.addVectors(restResults, documents, options)
     }
 
     /**
@@ -208,17 +187,9 @@ export class LunaDBVectorStore extends SaveableVectorStore {
         if (vectors.length === 0) {
             return
         }
-        if (this.numDimensions === null) {
-            this.numDimensions = vectors[0].length
-        }
 
         if (vectors.length !== documents.length) {
             throw new Error(`Vectors and metadata must have the same length`)
-        }
-        if (!vectors.every((v) => v.length === this.numDimensions)) {
-            throw new Error(
-                `Vectors must have the same length as the number of dimensions (${this.numDimensions})`
-            )
         }
 
         const documentIds =
@@ -244,14 +215,6 @@ export class LunaDBVectorStore extends SaveableVectorStore {
      * @returns A promise that resolves with an array of tuples, each containing a `Document` instance and a similarity score.
      */
     async similaritySearchVectorWithScore(query: number[], k: number) {
-        if (this.numDimensions === null) {
-            throw new Error("There aren't any elements in the index yet.")
-        }
-        if (query.length !== this.numDimensions) {
-            throw new Error(
-                `Query vector must have the same length as the number of dimensions (${this.numDimensions})`
-            )
-        }
         const docStoreSize = this.docstore._docs.size
         const itemsToQuery = Math.min(docStoreSize, k)
         if (itemsToQuery > docStoreSize) {
@@ -321,8 +284,8 @@ export class LunaDBVectorStore extends SaveableVectorStore {
         const path = await import('node:path')
         const readStore = (directory: string) =>
             fs
-                .readFile(path.join(directory, 'docstore.index'), 'utf-8')
-                .then(JSON.parse) as Promise<Map<string, Document>>
+                .readFile(path.join(directory, 'docstore.json'), 'utf-8')
+                .then(JSON.parse) as Promise<[string, Document][]>
 
         const readIndex = async (directory: string) => {
             const data = await fs.readFile(
@@ -335,7 +298,7 @@ export class LunaDBVectorStore extends SaveableVectorStore {
             readStore(directory),
             readIndex(directory)
         ])
-        const docstore = new SynchronousInMemoryDocstore(docstoreFiles)
+        const docstore = new SynchronousInMemoryDocstore(new Map(docstoreFiles))
         return new this(index, embeddings, { docstore })
     }
 
@@ -354,8 +317,8 @@ export class LunaDBVectorStore extends SaveableVectorStore {
                 this.client.serialize()
             ),
             await fs.writeFile(
-                path.join(directory, 'docstore.index'),
-                JSON.stringify(this.docstore._docs)
+                path.join(directory, 'docstore.json'),
+                JSON.stringify(Array.from(this.docstore._docs.entries()))
             )
         ])
     }
