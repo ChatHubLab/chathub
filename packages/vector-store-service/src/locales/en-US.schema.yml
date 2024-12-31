@@ -7,3 +7,7 @@ $inner:
     milvusUrl: Milvus URL Address
     milvusUsername: Milvus Username
     milvusPassword: Milvus Password
+  - $desc: MongoDB Database Settings
+    mongodbUrl: MongoDB URL Address
+    mongodbDbName: MongoDB Database Name
+    mongodbCollectionName: MongoDB Collection Name
