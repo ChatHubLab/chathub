@@ -123,6 +123,11 @@ export function formatToolsToOpenAITools(
 export function formatToolToOpenAITool(
     tool: StructuredTool
 ): ChatCompletionTool {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const parameters = zodToJsonSchema(tool.schema as any)
+
+    delete parameters.$schema
+
     return {
         type: 'function',
         function: {
@@ -130,7 +135,7 @@ export function formatToolToOpenAITool(
             description: tool.description,
             // any?
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            parameters: zodToJsonSchema(tool.schema as any)
+            parameters
         }
     }
 }
