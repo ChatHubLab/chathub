@@ -7,7 +7,7 @@ $inner:
               - 智谱平台的 API Key
 
     - $desc: 模型配置
-      maxTokens: 回复的最大 Token 数（16~1024000，必须是 16 的倍数）。注意：仅当您使用的模型最大 Token 为 32k 及以上时，才建议设置超过 8000 token。
+      maxTokens: 输入的最大上下文 Token（16~1024000，必须是 16 的倍数）。注意：仅当您使用的模型最大 Token 为 32k 及以上时，才建议设置超过 8000 token。
       temperature: 回复的随机性程度，数值越高，回复越随机。
       webSearch: 是否启用 Web 搜索功能。
       retrieval:

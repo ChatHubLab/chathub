@@ -8,7 +8,7 @@ $inner:
       $desc: 'List of Claude API credentials'
 
   - $desc: 'Model Parameters'
-    maxTokens: 'Maximum response tokens (16-200000, multiple of 16). Note: >2000 recommended for 8k+ token models'
+    maxTokens: 'Maximum input tokens (16-200000, multiple of 16). Note: >2000 recommended for 8k+ token models'
     temperature: 'Sampling temperature (higher values increase randomness)'
     presencePenalty: 'Token presence penalty (-2 to 2, step 0.1, higher values discourage token repetition)'
     frequencyPenalty: 'Token frequency penalty (-2 to 2, step 0.1, higher values reduce repetition of frequent tokens)'

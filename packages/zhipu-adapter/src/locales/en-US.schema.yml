@@ -7,7 +7,7 @@ $inner:
               - 'API Key for Zhipu platform'
 
     - $desc: 'Model Parameters'
-      maxTokens: 'Max response tokens (16-1024000, multiple of 16). Note: >8000 for 32k+ token models'
+      maxTokens: 'Max input tokens (16-1024000, multiple of 16). Note: >8000 for 32k+ token models'
       temperature: 'Sampling temperature (higher values increase randomness)'
       webSearch: 'Enable Web search'
       retrieval:

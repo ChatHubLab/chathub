@@ -11,6 +11,6 @@ $inner:
               contextSize: 'Context size'
 
     - $desc: 'Model Parameters'
-      maxTokens: 'Max response tokens (16-128000, multiple of 16). Note: >2000 for 8k+ token models'
+      maxTokens: 'Max input tokens (16-128000, multiple of 16). Note: >2000 for 8k+ token models'
       temperature: 'Sampling temperature (higher values increase randomness)'
       enableSearch: 'Enable built-in Quark search'

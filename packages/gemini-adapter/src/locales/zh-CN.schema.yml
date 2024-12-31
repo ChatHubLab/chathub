@@ -8,7 +8,7 @@ $inner:
           $desc: 'Gemini 的 API Key 和请求地址列表。'
 
     - $desc: '模型配置'
-      maxTokens: '回复的最大 Token 数（16~2097000，必须是 16 的倍数）。注意：仅当您使用的模型最大 Token 为 8000 及以上时，才建议设置超过 2000 token。'
+      maxTokens: '输入的最大上下文 Token（16~2097000，必须是 16 的倍数）。注意：仅当您使用的模型最大 Token 为 8000 及以上时，才建议设置超过 2000 token。'
       temperature: '回复的随机性程度，数值越高，回复越随机（范围：0~2）。'
       googleSearch: '为模型启用谷歌搜索。'
       searchThreshold: '搜索的置信度阈值，范围：0~1，设置的数值越低，则越倾向于使用谷歌搜索。'
