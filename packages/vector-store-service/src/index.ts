@@ -26,6 +26,10 @@ export interface Config extends ChatLunaPlugin.Config {
     milvusUrl: string
     milvusUsername: string
     milvusPassword: string
+
+    mongodbUrl: string
+    mongodbDbName: string
+    mongodbCollectionName: string
 }
 
 export const Config: Schema<Config> = Schema.intersect([
@@ -35,7 +39,8 @@ export const Config: Schema<Config> = Schema.intersect([
                 Schema.const('faiss').description('Faiss'),
                 Schema.const('redis').description('Redis'),
                 Schema.const('milvus').description('Milvus'),
-                Schema.const('luna-vdb').description('lunavdb')
+                Schema.const('luna-vdb').description('lunavdb'),
+                Schema.const('mongodb').description('MongoDB Atlas')
             ])
         )
             .default(['luna-vdb'])
@@ -52,6 +57,14 @@ export const Config: Schema<Config> = Schema.intersect([
             .default('http://127.0.0.1:19530'),
         milvusUsername: Schema.string().default(''),
         milvusPassword: Schema.string().role('secret').default('')
+    }),
+
+    Schema.object({
+        mongodbUrl: Schema.string()
+            .role('url')
+            .default('mongodb://localhost:27017'),
+        mongodbDbName: Schema.string().default('chatluna'),
+        mongodbCollectionName: Schema.string().default('chatluna_collection')
     })
 ]).i18n({
     'zh-CN': require('./locales/zh-CN.schema.yml'),
@@ -69,6 +82,7 @@ export const usage = `
 
 要查看如何配置 Milvus 数据库，看[这里](https://js.langchain.com/docs/integrations/vectorstores/milvus/)
 
+要查看如何配置 MongoDB 数据库，看[这里](https://js.langchain.com/docs/integrations/vectorstores/mongodb_atlas/)
 
 目前配置 Faiss 数据库安装后可能会导致 koishi 环境不安全，如果安装完成后进行某些操作完成后出现了问题（如，升级 node 版本），开发者不对此负直接责任。
 `
