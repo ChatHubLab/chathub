@@ -207,6 +207,8 @@ async function setupAutoDelete(ctx: Context, config: Config) {
             return
         }
 
+        logger.info('auto delete task running')
+
         const success: ConversationRoom[] = []
 
         for (const room of rooms) {
@@ -228,7 +230,6 @@ async function setupAutoDelete(ctx: Context, config: Config) {
     await execute()
 
     ctx.setInterval(async () => {
-        logger.info('auto delete task running')
         await execute()
     }, Time.minute * 5)
 }
