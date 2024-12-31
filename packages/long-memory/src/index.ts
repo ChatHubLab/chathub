@@ -24,6 +24,7 @@ export function apply(ctx: Context, config: Config) {
 }
 
 export interface Config extends ChatLunaPlugin.Config {
+    longMemoryNewQuestionSearch: boolean
     longMemorySimilarity: number
     longMemoryDuplicateThreshold: number
     longMemoryDuplicateCheck: boolean
@@ -33,6 +34,7 @@ export interface Config extends ChatLunaPlugin.Config {
 
 export const Config: Schema<Config> = Schema.intersect([
     Schema.object({
+        longMemoryNewQuestionSearch: Schema.boolean().default(false),
         longMemorySimilarity: Schema.percent()
             .min(0)
             .max(1)

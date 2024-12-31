@@ -6,4 +6,5 @@ $inner:
       longMemoryDuplicateThreshold: 设置长期记忆在添加前检索的相似度阈值，基于添加前的记忆进行检索，如检索到的记忆超过此阈值，则不会添加到长期记忆中。
       longMemoryInterval: 设置长期记忆调用的频率，即每隔多少轮对话调用一次长期记忆。
       longMemoryExtractModel: 设置长期记忆的提取模型。使用较快的模型可以提升提取的速度。
+      longMemoryNewQuestionSearch: 是否启用新问题搜索。启用后，在长期记忆搜索时会先生成新问题，然后再进行搜索。
 

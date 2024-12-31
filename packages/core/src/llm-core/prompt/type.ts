@@ -50,6 +50,7 @@ export interface RawPreset {
         longMemoryPrompt?: string
         loreBooksPrompt?: string
         longMemoryExtractPrompt?: string
+        longMemoryNewQuestionPrompt?: string
         postHandler?: PostHandler
     }
 }
@@ -99,6 +100,7 @@ export interface PresetTemplate {
         longMemoryPrompt?: string
         loreBooksPrompt?: string
         longMemoryExtractPrompt?: string
+        longMemoryNewQuestionPrompt?: string
         postHandler?: PostHandler
     }
 }

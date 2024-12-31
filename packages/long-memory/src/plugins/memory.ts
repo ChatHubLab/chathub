@@ -10,6 +10,7 @@ import { ChatLunaSaveableVectorStore } from 'koishi-plugin-chatluna/llm-core/mod
 import { calculateSimilarity } from '../similarity'
 import crypto from 'crypto'
 import { Config, logger } from 'koishi-plugin-chatluna-long-memory'
+import { getMessageContent } from 'koishi-plugin-chatluna/utils/string'
 
 export function apply(ctx: Context, config: Config) {
     let longMemoryCache: Dict<VectorStoreRetriever> = {}
@@ -32,7 +33,31 @@ export function apply(ctx: Context, config: Config) {
                 longMemoryCache[longMemoryId] = retriever
             }
 
-            const memory = await retriever.invoke(message.content as string)
+            let searchContent = getMessageContent(message.content)
+
+            if (config.longMemoryNewQuestionSearch) {
+                const chatHistory = await selectChatHistory(
+                    await chatInterface.chatHistory.getMessages(),
+                    message.id,
+                    config.longMemoryInterval
+                )
+
+                searchContent = await generateNewQuestion(
+                    chatInterface,
+                    config,
+                    chatHistory,
+                    searchContent
+                )
+
+                if (searchContent === '[skip]') {
+                    logger?.debug("Don't search long memory")
+                    return
+                }
+            }
+
+            logger?.debug(`Long memory search: ${searchContent}`)
+
+            const memory = await retriever.invoke(searchContent)
 
             logger?.debug(`Long memory: ${JSON.stringify(memory)}`)
 
@@ -72,7 +97,7 @@ export function apply(ctx: Context, config: Config) {
             }
 
             const chatHistory = await selectChatHistory(
-                chatInterface,
+                await chatInterface.chatHistory.getMessages(),
                 sourceMessage.id ?? undefined,
                 config.longMemoryInterval
             )
@@ -301,14 +326,44 @@ async function createVectorStoreRetriever(
     return vectorStoreRetriever
 }
 
-async function selectChatHistory(
+async function generateNewQuestion(
     chatInterface: ChatInterface,
+    config: Config,
+    chatHistory: string,
+    question: string
+) {
+    const ctx = chatInterface.ctx
+    const [platform, modelName] = parseRawModelName(
+        config.longMemoryExtractModel
+    )
+
+    const model = (await ctx.chatluna.createChatModel(
+        platform,
+        modelName
+    )) as ChatLunaChatModel
+
+    const preset = await chatInterface.preset
+
+    const prompt = (
+        preset.config.longMemoryNewQuestionPrompt ??
+        LONG_MEMORY_NEW_QUESTION_PROMPT
+    )
+        .replaceAll('{history}', chatHistory)
+        .replaceAll('{question}', question)
+
+    const messages: BaseMessage[] = [new HumanMessage(prompt)]
+
+    const result = await model.invoke(messages)
+
+    return getMessageContent(result.content)
+}
+
+async function selectChatHistory(
+    chatHistory: BaseMessage[],
     id: string,
     count: number
 ) {
     const selectHistoryLength = Math.min(4, count * 2)
-
-    const chatHistory = await chatInterface.chatHistory.getMessages()
 
     const finalHistory: BaseMessage[] = []
 
@@ -365,3 +420,31 @@ Example output:
 ]
 
 JSON array output:`
+
+const LONG_MEMORY_NEW_QUESTION_PROMPT = `Generate a standalone, search-optimized question based on the conversation context.
+
+Key Requirements:
+1. MUST use the exact same language as input (no translations)
+2. Create a clear, self-contained question
+3. Optimize for vector similarity search:
+   - Include relevant keywords and context
+   - Use precise, specific terminology
+   - Keep semantic meaning intact
+4. Return [skip] if:
+   - Answer exists in model knowledge
+   - Question is opinion-based
+   - Simple calculation needed
+   - Answer found in chat history
+
+Format:
+Chat History: {chat_history}
+Follow-up: {question}
+Output: <standalone question or [skip]>
+
+Examples:
+- Input: "What's my favorite movie?"
+  Output: favorite movie
+- Input: "what's 2+2?"
+  Output: [skip]
+
+Your optimized question or [skip]:`

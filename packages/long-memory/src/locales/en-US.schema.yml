@@ -6,3 +6,4 @@ $inner:
       longMemoryDuplicateThreshold: Set similarity threshold for long-term memory retrieval before adding (0.0 to 1.0, where higher values require closer matches). If set to 0, the most strict check will be performed. If the retrieved memory exceeds this threshold, it will not be added to long-term memory.
       longMemoryInterval: Set long-term memory save frequency (number of conversation turns between memory lookups, e.g., 5 means save memory every 5 turns).
       longMemoryExtractModel: Specify the model for long-term memory extraction. Faster models improve extraction speed.
+      longMemoryNewQuestionSearch: Enable new question search. If enabled, the model will generate new questions before searching long-term memory.
