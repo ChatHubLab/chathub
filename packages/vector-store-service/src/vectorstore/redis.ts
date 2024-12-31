@@ -105,6 +105,9 @@ export async function apply(
                         batchSize: options?.batchSize
                     })
                 },
+                async freeFunction() {
+                    await client.disconnect()
+                },
                 async saveableFunction(store) {}
             }
         )
