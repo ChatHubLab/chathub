@@ -402,6 +402,10 @@ export class PlatformService {
     private _getClientConfigAsKey(config: ClientConfig) {
         return `${config.platform}/${config.apiKey}/${config.apiEndpoint}/${config.maxRetries}/${config.concurrentMaxSize}/${config.timeout}`
     }
+
+    dispose() {
+        this._tmpVectorStores.clear()
+    }
 }
 
 declare module 'koishi' {

@@ -303,6 +303,7 @@ export class ChatLunaService extends Service {
             this.unregisterPlugin(plugin, false)
         }
         this._chatInterfaceWrapper?.dispose()
+        this._platformService.dispose()
     }
 
     private _createTempDir() {
