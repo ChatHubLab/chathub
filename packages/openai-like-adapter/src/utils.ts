@@ -126,7 +126,8 @@ export function formatToolToOpenAITool(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const parameters = zodToJsonSchema(tool.schema as any)
 
-    delete parameters.$schema
+    delete parameters['$schema']
+    delete parameters['additionalProperties']
 
     return {
         type: 'function',
