@@ -7,3 +7,7 @@ $inner:
     milvusUrl: Milvus url 地址
     milvusUsername: Milvus 用户名
     milvusPassword: Milvus 密码
+  - $desc: MongoDB 数据库设置
+    mongodbUrl: MongoDB url 地址
+    mongodbDbName: MongoDB 数据库名
+    mongodbCollectionName: MongoDB 集合名
