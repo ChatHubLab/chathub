@@ -467,7 +467,11 @@ Your goal is to craft a response that intelligently incorporates relevant knowle
             formatDocuments.length > 0
                 ? await this.conversationSummaryPrompt.format({
                       long_history: formatDocuments
-                          .map((document) => document.pageContent)
+                          .map(
+                              (document) =>
+                                  document.pageContent +
+                                  `metadata: ${JSON.stringify(document.metadata)}`
+                          )
                           .join('\n'),
                       chat_history: chatHistory
                   })
