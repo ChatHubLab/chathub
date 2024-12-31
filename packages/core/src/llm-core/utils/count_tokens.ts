@@ -107,7 +107,8 @@ export const getModelNameForTiktoken = (modelName: string): TiktokenModel => {
         return modelName as TiktokenModel
     }
 
-    return 'gpt-3.5-turbo'
+    // most model the context size is larger than gpt-3.5-turbo
+    return 'o1-mini'
 }
 
 export const getEmbeddingContextSize = (modelName?: string): number => {

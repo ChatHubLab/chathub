@@ -1,7 +1,7 @@
 {
     "name": "koishi-plugin-chatluna-vector-store-service",
     "description": "vector store service for chatluna",
-    "version": "1.0.0-beta.40",
+    "version": "1.0.0-beta.42",
     "main": "lib/index.cjs",
     "module": "lib/index.mjs",
     "typings": "lib/index.d.ts",
@@ -58,6 +58,7 @@
         }
     },
     "dependencies": {
+        "@chatluna/luna-vdb": "^0.0.6",
         "@langchain/community": "^0.3.15",
         "@langchain/core": "^0.3.18",
         "@langchain/redis": "^0.1.0",
@@ -75,7 +76,7 @@
         "@zilliz/milvus2-sdk-node": "^2.4.9",
         "faiss-node": "^0.5.1",
         "koishi": "^4.18.4",
-        "koishi-plugin-chatluna": "^1.0.0-beta.144"
+        "koishi-plugin-chatluna": "^1.0.0-beta.148"
     },
     "peerDependenciesMeta": {
         "@zilliz/milvus2-sdk-node": {

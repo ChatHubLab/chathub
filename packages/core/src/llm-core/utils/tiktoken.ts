@@ -1,3 +1,4 @@
+import path from 'path'
 import {
     getEncodingNameForModel,
     Tiktoken,
@@ -5,7 +6,12 @@ import {
     TiktokenEncoding,
     TiktokenModel
 } from 'js-tiktoken/lite'
-import { chatLunaFetch } from 'koishi-plugin-chatluna/utils/request'
+import {
+    chatLunaFetch,
+    globalProxyAddress
+} from 'koishi-plugin-chatluna/utils/request'
+import os from 'os'
+import fs from 'fs/promises'
 
 const cache: Record<string, TiktokenBPE> = {}
 
@@ -16,19 +22,39 @@ export async function getEncoding(
         extendedSpecialTokens?: Record<string, number>
     }
 ) {
-    if (!(encoding in cache)) {
-        cache[encoding] = await chatLunaFetch(
-            `https://tiktoken.pages.dev/js/${encoding}.json`,
-            {
-                signal: options?.signal
-            }
-        )
-            .then((res) => res.json() as unknown as TiktokenBPE)
-            .catch((e) => {
-                delete cache[encoding]
-                throw e
-            })
+    options = options ?? {}
+
+    // pwd + data/chathub/tmps
+    const cacheDir = path.resolve(os.tmpdir(), 'chatluna', 'tiktoken')
+    const cachePath = path.join(cacheDir, `${encoding}.json`)
+
+    if (cache[encoding]) {
+        return new Tiktoken(cache[encoding], options?.extendedSpecialTokens)
     }
+
+    await fs.mkdir(cacheDir, { recursive: true })
+
+    try {
+        const cacheContent = await fs.readFile(cachePath, 'utf-8')
+        cache[encoding] = JSON.parse(cacheContent)
+        return new Tiktoken(cache[encoding], options?.extendedSpecialTokens)
+    } catch (e) {
+        // ignore
+    }
+
+    const url =
+        globalProxyAddress.length > 0
+            ? `https://tiktoken.pages.dev/js/${encoding}.json`
+            : `https://jsd.onmicrosoft.cn/npm/tiktoken@latest/encoders/${encoding}.json`
+
+    cache[encoding] = await chatLunaFetch(url)
+        .then((res) => res.json() as unknown as TiktokenBPE)
+        .catch((e) => {
+            delete cache[encoding]
+            throw e
+        })
+
+    await fs.writeFile(cachePath, JSON.stringify(cache[encoding]))
 
     return new Tiktoken(cache[encoding], options?.extendedSpecialTokens)
 }
@@ -40,23 +66,7 @@ export async function encodingForModel(
         extendedSpecialTokens?: Record<string, number>
     }
 ) {
-    options = options ?? {}
-
-    let timeout: NodeJS.Timeout
-
-    if (options.signal == null) {
-        const abortController = new AbortController()
-
-        options.signal = abortController.signal
-
-        timeout = setTimeout(() => abortController.abort(), 1000 * 5)
-    }
-
     const result = await getEncoding(getEncodingNameForModel(model), options)
-
-    if (timeout != null) {
-        clearTimeout(timeout)
-    }
 
     return result
 }

@@ -34,10 +34,11 @@ export const Config: Schema<Config> = Schema.intersect([
             Schema.union([
                 Schema.const('faiss').description('Faiss'),
                 Schema.const('redis').description('Redis'),
-                Schema.const('milvus').description('Milvus')
+                Schema.const('milvus').description('Milvus'),
+                Schema.const('luna-vdb').description('lunavdb')
             ])
         )
-            .default([])
+            .default(['luna-vdb'])
             .role('select')
     }),
 
