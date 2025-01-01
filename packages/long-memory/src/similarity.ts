@@ -6,9 +6,9 @@ const segmenter = new TinySegmenter()
 
 const SIMILARITY_WEIGHTS = {
     cosine: 0.35,
-    levenshtein: 0.15,
-    jaccard: 0.15,
-    bm25: 0.35
+    levenshtein: 0.05,
+    jaccard: 0.10,
+    bm25: 0.50
 } as const
 
 function validateAndAdjustWeights(weights: typeof SIMILARITY_WEIGHTS) {
