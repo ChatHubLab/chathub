@@ -216,7 +216,8 @@ export class SimilarityCalculator {
             const tf = termFreqDoc1.get(term) || 0
             const docFreq = (termFreqDoc2.get(term) || 0) > 0 ? 1 : 0
 
-            const idf = Math.log((2 - docFreq + epsilon) / (docFreq + epsilon) + 1)
+            const idf = Math.log(
+                (2 - docFreq + epsilon) / (docFreq + epsilon) + 1)
 
             if (tf > 0) {
                 const numerator = tf * (k1 + 1)
