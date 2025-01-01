@@ -470,7 +470,7 @@ Your goal is to craft a response that intelligently incorporates relevant knowle
                           .map(
                               (document) =>
                                   document.pageContent +
-                                  `metadata: ${JSON.stringify(document.metadata)}`
+                                  ` metadata: ${JSON.stringify(document.metadata)}`
                           )
                           .join('\n'),
                       chat_history: chatHistory
