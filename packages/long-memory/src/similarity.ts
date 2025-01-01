@@ -193,13 +193,16 @@ export class SimilarityCalculator {
         const tokens1 = TextTokenizer.tokenize(s1)
         const tokens2 = TextTokenizer.tokenize(s2)
 
+        if (tokens1.length === 0 || tokens2.length === 0) {
+            return 0
+        }
+
         const doc1Length = tokens1.length
         const doc2Length = tokens2.length
         const avgDocLength = (doc1Length + doc2Length) / 2
 
         const termFreqDoc1 = new Map<string, number>()
         const termFreqDoc2 = new Map<string, number>()
-
         const uniqueTerms = new Set([...tokens1, ...tokens2])
 
         tokens1.forEach((token) => {
@@ -210,26 +213,48 @@ export class SimilarityCalculator {
             termFreqDoc2.set(token, (termFreqDoc2.get(token) || 0) + 1)
         })
 
-        let score = 0
+        // 计算双向 BM25 得分
+        let score1to2 = 0
+        let score2to1 = 0
+        let maxScore1to2 = 0
+        let maxScore2to1 = 0
 
         for (const term of uniqueTerms) {
-            const tf = termFreqDoc1.get(term) || 0
-            const docFreq = (termFreqDoc2.get(term) || 0) > 0 ? 1 : 0
+            // 计算 doc1 -> doc2 的方向
+            const tf1 = termFreqDoc1.get(term) || 0
+            const docFreq1 = (termFreqDoc2.get(term) || 0) > 0 ? 1 : 0
+            if (tf1 > 0) {
+                const idf1 = Math.log((2 - docFreq1 + epsilon) / (docFreq1 + epsilon) + 1)
+                const numerator1 = tf1 * (k1 + 1)
+                const denominator1 = tf1 + k1 * (1 - b + b * (doc1Length / avgDocLength))
+                score1to2 += idf1 * (numerator1 / denominator1)
 
-            const idf = Math.log(
-                (2 - docFreq + epsilon) / (docFreq + epsilon) + 1
-            )
+                const maxTf1 = Math.max(tf1, termFreqDoc2.get(term) || 0)
+                const maxNumerator1 = maxTf1 * (k1 + 1)
+                const maxDenominator1 = maxTf1 + k1 * (1 - b + b * (doc1Length / avgDocLength))
+                maxScore1to2 += idf1 * (maxNumerator1 / maxDenominator1)
+            }
 
-            if (tf > 0) {
-                const numerator = tf * (k1 + 1)
-                const denominator =
-                    tf + k1 * (1 - b + b * (doc1Length / avgDocLength))
-                score += idf * (numerator / denominator)
+            // 计算 doc2 -> doc1 的方向
+            const tf2 = termFreqDoc2.get(term) || 0
+            const docFreq2 = (termFreqDoc1.get(term) || 0) > 0 ? 1 : 0
+            if (tf2 > 0) {
+                const idf2 = Math.log((2 - docFreq2 + epsilon) / (docFreq2 + epsilon) + 1)
+                const numerator2 = tf2 * (k1 + 1)
+                const denominator2 = tf2 + k1 * (1 - b + b * (doc2Length / avgDocLength))
+                score2to1 += idf2 * (numerator2 / denominator2)
+
+                const maxTf2 = Math.max(tf2, termFreqDoc1.get(term) || 0)
+                const maxNumerator2 = maxTf2 * (k1 + 1)
+                const maxDenominator2 = maxTf2 + k1 * (1 - b + b * (doc2Length / avgDocLength))
+                maxScore2to1 += idf2 * (maxNumerator2 / maxDenominator2)
             }
         }
 
-        const normalizationFactor = doc1Length + doc2Length
-        return score / normalizationFactor
+        const normalizedScore1 = maxScore1to2 > 0 ? score1to2 / maxScore1to2 : 0
+        const normalizedScore2 = maxScore2to1 > 0 ? score2to1 / maxScore2to1 : 0
+
+        return (normalizedScore1 + normalizedScore2) / 2
     }
 
     public static calculate(str1: string, str2: string): SimilarityResult {
