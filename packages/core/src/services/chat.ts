@@ -882,9 +882,7 @@ class ChatInterfaceWrapper {
                 chatInterface
             )
 
-            this._conversations.delete(conversationId)
-
-            return true
+            return this._conversations.delete(conversationId)
         } finally {
             await this._conversationQueue.remove(conversationId, requestId)
         }
