@@ -197,6 +197,7 @@ export class OpenAIRequester
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             return (<Record<string, any>[]>data.data).map((model) => model.id)
         } catch (e) {
+            logger.error(e)
             const error = new Error(
                 'error when listing openai models, Result: ' +
                     JSON.stringify(data)
