@@ -5,10 +5,10 @@ import stopwords from 'stopwords-iso'
 const segmenter = new TinySegmenter()
 
 const SIMILARITY_WEIGHTS = {
-    cosine: 0.3,
-    levenshtein: 0.2,
-    jaccard: 0.2,
-    bm25: 0.3
+    cosine: 0.35,
+    levenshtein: 0.15,
+    jaccard: 0.15,
+    bm25: 0.35
 } as const
 
 function validateAndAdjustWeights(weights: typeof SIMILARITY_WEIGHTS) {
