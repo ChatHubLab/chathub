@@ -7,8 +7,8 @@ const segmenter = new TinySegmenter()
 const SIMILARITY_WEIGHTS = {
     cosine: 0.35,
     levenshtein: 0.05,
-    jaccard: 0.10,
-    bm25: 0.50
+    jaccard: 0.1,
+    bm25: 0.5
 } as const
 
 function validateAndAdjustWeights(weights: typeof SIMILARITY_WEIGHTS) {
@@ -224,14 +224,18 @@ export class SimilarityCalculator {
             const tf1 = termFreqDoc1.get(term) || 0
             const docFreq1 = (termFreqDoc2.get(term) || 0) > 0 ? 1 : 0
             if (tf1 > 0) {
-                const idf1 = Math.log((2 - docFreq1 + epsilon) / (docFreq1 + epsilon) + 1)
+                const idf1 = Math.log(
+                    (2 - docFreq1 + epsilon) / (docFreq1 + epsilon) + 1
+                )
                 const numerator1 = tf1 * (k1 + 1)
-                const denominator1 = tf1 + k1 * (1 - b + b * (doc1Length / avgDocLength))
+                const denominator1 =
+                    tf1 + k1 * (1 - b + b * (doc1Length / avgDocLength))
                 score1to2 += idf1 * (numerator1 / denominator1)
 
                 const maxTf1 = Math.max(tf1, termFreqDoc2.get(term) || 0)
                 const maxNumerator1 = maxTf1 * (k1 + 1)
-                const maxDenominator1 = maxTf1 + k1 * (1 - b + b * (doc1Length / avgDocLength))
+                const maxDenominator1 =
+                    maxTf1 + k1 * (1 - b + b * (doc1Length / avgDocLength))
                 maxScore1to2 += idf1 * (maxNumerator1 / maxDenominator1)
             }
 
@@ -239,14 +243,18 @@ export class SimilarityCalculator {
             const tf2 = termFreqDoc2.get(term) || 0
             const docFreq2 = (termFreqDoc1.get(term) || 0) > 0 ? 1 : 0
             if (tf2 > 0) {
-                const idf2 = Math.log((2 - docFreq2 + epsilon) / (docFreq2 + epsilon) + 1)
+                const idf2 = Math.log(
+                    (2 - docFreq2 + epsilon) / (docFreq2 + epsilon) + 1
+                )
                 const numerator2 = tf2 * (k1 + 1)
-                const denominator2 = tf2 + k1 * (1 - b + b * (doc2Length / avgDocLength))
+                const denominator2 =
+                    tf2 + k1 * (1 - b + b * (doc2Length / avgDocLength))
                 score2to1 += idf2 * (numerator2 / denominator2)
 
                 const maxTf2 = Math.max(tf2, termFreqDoc1.get(term) || 0)
                 const maxNumerator2 = maxTf2 * (k1 + 1)
-                const maxDenominator2 = maxTf2 + k1 * (1 - b + b * (doc2Length / avgDocLength))
+                const maxDenominator2 =
+                    maxTf2 + k1 * (1 - b + b * (doc2Length / avgDocLength))
                 maxScore2to1 += idf2 * (maxNumerator2 / maxDenominator2)
             }
         }
