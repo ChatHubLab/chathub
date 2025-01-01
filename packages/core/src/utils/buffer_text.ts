@@ -22,7 +22,7 @@ export class BufferText {
             return
         }
 
-        const id = await this.lock.lock()
+        const unlock = await this.lock.lock()
 
         if (this.isStreaming) {
             this.queue.push(...text.split(''))
@@ -36,7 +36,7 @@ export class BufferText {
 
         this.currentText = text
 
-        await this.lock.unlock(id)
+        unlock()
     }
 
     private async *getText() {
@@ -59,11 +59,11 @@ export class BufferText {
             return undefined
         }
 
-        const id = await this.lock.lock()
+        const unlock = await this.lock.lock()
 
         const text = this.queue.shift()
 
-        await this.lock.unlock(id)
+        unlock()
 
         if (!this.isEnd) {
             await sleep(this.sleepTime)

@@ -29,7 +29,7 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
             const lock = queueLock[room.conversationId] || new ObjectLock()
             queueLock[room.conversationId] = lock
 
-            const lockNumber = await lock.lock()
+            const unlock = await lock.lock()
             messages[room.conversationId] = messages[room.conversationId] || []
             messages[room.conversationId].push(inputMessage)
 
@@ -38,10 +38,10 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                 logger.debug(`trigger message delay, stop the chain`)
                 clearTimeout(timeout)
                 resetTimeout(room.conversationId, config.messageDelay)
-                await lock.unlock(lockNumber)
+                unlock()
                 return ChainMiddlewareRunStatus.STOP
             }
-            await lock.unlock(lockNumber)
+            unlock()
 
             const { promise, resolve } = withResolver<Message[]>()
             promises[room.conversationId] = resolve
