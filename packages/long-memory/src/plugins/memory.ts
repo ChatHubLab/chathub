@@ -156,6 +156,8 @@ export function apply(ctx: Context, config: Config) {
 
             logger?.debug(`Long memory extract: ${JSON.stringify(resultArray)}`)
 
+            if (resultArray.length === 0) return
+
             await vectorStore.addDocuments(
                 resultArray.map((value) => ({
                     pageContent: value,
