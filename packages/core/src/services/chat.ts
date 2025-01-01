@@ -133,21 +133,19 @@ export class ChatLunaService extends Service {
         return promise
     }
 
-    unregisterPlugin(
-        plugin: ChatLunaPlugin | string,
-        withError: boolean = true
-    ) {
+    unregisterPlugin(plugin: ChatLunaPlugin | string) {
         const platformName =
             typeof plugin === 'string' ? plugin : plugin.platformName
 
         const targetPlugin = this._plugins[platformName]
 
-        if (!targetPlugin && withError) {
+        // If not found the plugin, return directly
+        /* if (!targetPlugin && withError) {
             throw new ChatLunaError(
                 ChatLunaErrorCode.PLUGIN_NOT_FOUND,
                 new Error(`Plugin ${platformName} not found`)
             )
-        } else if (!targetPlugin) {
+        } else */ if (!targetPlugin) {
             return
         }
 
@@ -300,7 +298,7 @@ export class ChatLunaService extends Service {
 
     protected async stop(): Promise<void> {
         for (const plugin of Object.values(this._plugins)) {
-            this.unregisterPlugin(plugin, false)
+            this.unregisterPlugin(plugin)
         }
         this._chatInterfaceWrapper?.dispose()
         this._platformService.dispose()
@@ -539,7 +537,7 @@ export class ChatLunaPlugin<
         createConfigPool: boolean = true
     ) {
         ctx.once('dispose', async () => {
-            ctx.chatluna.unregisterPlugin(this, false)
+            ctx.chatluna.unregisterPlugin(this)
         })
 
         if (createConfigPool) {
