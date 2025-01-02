@@ -11,6 +11,7 @@ import { calculateSimilarity } from '../similarity'
 import crypto from 'crypto'
 import { Config, logger } from 'koishi-plugin-chatluna-long-memory'
 import { getMessageContent } from 'koishi-plugin-chatluna/utils/string'
+import { Document } from '@langchain/core/documents'
 
 export function apply(ctx: Context, config: Config) {
     let longMemoryCache: Dict<VectorStoreRetriever> = {}
@@ -57,7 +58,15 @@ export function apply(ctx: Context, config: Config) {
 
             logger?.debug(`Long memory search: ${searchContent}`)
 
-            const memory = await retriever.invoke(searchContent)
+            let memory = await retriever.invoke(searchContent)
+
+            if (config.longMemoryTFIDFThreshold > 0) {
+                memory = filterMemory(
+                    memory,
+                    searchContent,
+                    config.longMemoryTFIDFThreshold
+                )
+            }
 
             logger?.debug(`Long memory: ${JSON.stringify(memory)}`)
 
@@ -257,6 +266,26 @@ async function filterSimilarMemory(
     return result
 }
 
+function filterMemory(
+    memory: Document[],
+    searchContent: string,
+    threshold: number
+) {
+    const result: Document[] = []
+
+    for (const doc of memory) {
+        const similarityResult = calculateSimilarity(
+            searchContent,
+            doc.pageContent
+        )
+        if (similarityResult.score > threshold) {
+            result.push(doc)
+        }
+    }
+
+    return result
+}
+
 function resolveLongMemoryId(message: HumanMessage, conversationId: string) {
     const preset = message.additional_kwargs?.preset as string
 
@@ -316,8 +345,11 @@ async function createVectorStoreRetriever(
     }) */
 
         const retriever = ScoreThresholdRetriever.fromVectorStore(store, {
-            minSimilarityScore: config.longMemorySimilarity, // Finds results with at least this similarity score
-            maxK: 30, // The maximum K value to use. Use it based to your chunk size to make sure you don't run out of tokens
+            minSimilarityScore: Math.min(
+                0.1,
+                config.longMemorySimilarity - 0.3
+            ), // Finds results with at least this similarity score
+            maxK: 50, // The maximum K value to use. Use it based to your chunk size to make sure you don't run out of tokens
             kIncrement: 2, // How much to increase K by each time. It'll fetch N results, then N + kIncrement, then N + kIncrement * 2, etc.,
             searchType: 'mmr'
         })
