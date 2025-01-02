@@ -1,5 +1,6 @@
 import { HttpsProxyAgent } from 'https-proxy-agent'
 import { logger } from 'koishi-plugin-chatluna'
+import { lookup } from 'node:dns/promises'
 import {
     ChatLunaError,
     ChatLunaErrorCode
@@ -9,7 +10,7 @@ import unidci, { Agent, buildConnector, FormData, ProxyAgent } from 'undici'
 import * as fetchType from 'undici/types/fetch'
 import { ClientRequestArgs } from 'http'
 import { ClientOptions, WebSocket } from 'ws'
-import { SocksClient, SocksProxy } from 'socks'
+import { SocksClient, SocksClientOptions, SocksProxy } from 'socks'
 import Connector = buildConnector.connector
 import TLSOptions = buildConnector.BuildOptions
 
@@ -35,13 +36,8 @@ function createProxyAgentForFetch(
         throw e
     }
 
-    if (proxyAddress.startsWith('socks://')) {
-        init.dispatcher = socksDispatcher({
-            type: 5,
-            host: proxyAddressURL.hostname,
-            port: proxyAddressURL.port ? parseInt(proxyAddressURL.port) : 1080
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        }) as any
+    if (proxyAddress.startsWith('socks')) {
+        init.dispatcher = socksDispatcher(proxyAddressURL)
         // match http/https
     } else if (proxyAddress.match(/^https?:\/\//)) {
         init.dispatcher = new ProxyAgent({
@@ -65,7 +61,8 @@ function createProxyAgentForFetch(
 function createProxyAgent(
     proxyAddress: string
 ): HttpsProxyAgent<string> | SocksProxyAgent {
-    if (proxyAddress.startsWith('socks://')) {
+    // sock[4/5]
+    if (proxyAddress.match(/^socks/)) {
         return new SocksProxyAgent(proxyAddress)
     } else if (proxyAddress.match(/^https?:\/\//)) {
         return new HttpsProxyAgent(proxyAddress)
@@ -80,7 +77,7 @@ function createProxyAgent(
 export let globalProxyAddress: string | null = global['globalProxyAddress']
 
 export function setGlobalProxyAddress(address: string) {
-    if (address.startsWith('socks://') || address.match(/^https?:\/\//)) {
+    if (address.match(/^socks/) || address.match(/^https?:\/\//)) {
         globalProxyAddress = address
         global['globalProxyAddress'] = address
     } else {
@@ -177,9 +174,75 @@ export function randomUA() {
     return `Mozilla/5.0 (Windows NT ${osVersion}; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) ${browser}/${version}.0.0.0 Safari/537.36`
 }
 
+// See https://github.com/TooTallNate/proxy-agents/blob/main/packages/socks-proxy-agent/src/index.ts
+
+function parseSocksURL(url: URL): { shouldLookup: boolean; proxy: SocksProxy } {
+    let lookup = false
+    let type: SocksProxy['type'] = 5
+    const host = url.hostname
+
+    // From RFC 1928, Section 3: https://tools.ietf.org/html/rfc1928#section-3
+    // "The SOCKS service is conventionally located on TCP port 1080"
+    const port = parseInt(url.port, 10) || 1080
+
+    // figure out if we want socks v4 or v5, based on the "protocol" used.
+    // Defaults to 5.
+    switch (url.protocol.replace(':', '')) {
+        case 'socks4':
+            lookup = true
+            type = 4
+            break
+        // pass through
+        case 'socks4a':
+            type = 4
+            break
+        case 'socks5':
+            lookup = true
+            type = 5
+            break
+        // pass through
+        case 'socks': // no version specified, default to 5h
+            type = 5
+            break
+        case 'socks5h':
+            type = 5
+            break
+        default:
+            throw new TypeError(
+                `A "socks" protocol must be specified! Got: ${String(
+                    url.protocol
+                )}`
+            )
+    }
+
+    const proxy: SocksProxy = {
+        host,
+        port,
+        type
+    }
+
+    if (url.username) {
+        Object.defineProperty(proxy, 'userId', {
+            value: decodeURIComponent(url.username),
+            enumerable: false
+        })
+    }
+
+    if (url.password != null) {
+        Object.defineProperty(proxy, 'password', {
+            value: decodeURIComponent(url.password),
+            enumerable: false
+        })
+    }
+
+    console.log(proxy)
+
+    return { shouldLookup: lookup, proxy }
+}
+
 // see https://github.com/Kaciras/fetch-socks/blob/master/index.ts
 
-export type SocksProxies = SocksProxy | SocksProxy[]
+export type SocksProxies = URL
 
 /**
  * Since socks does not guess HTTP ports, we need to do that.
@@ -199,45 +262,37 @@ function resolvePort(protocol: string, port: string) {
  * @param proxies The proxy server to use or the list of proxy servers to chain.
  * @param tlsOpts TLS upgrade options.
  */
-export function socksConnector(
-    proxies: SocksProxies,
-    tlsOpts: TLSOptions = {}
-): Connector {
-    const chain = Array.isArray(proxies) ? proxies : [proxies]
+export function socksConnector(url: URL, tlsOpts: TLSOptions = {}): Connector {
     const { timeout = 1e4 } = tlsOpts
     const undiciConnect = buildConnector(tlsOpts)
 
     return async (options, callback) => {
         let { protocol, hostname, port, httpSocket } = options
 
-        for (let i = 0; i < chain.length; i++) {
-            const next = chain[i + 1]
+        const { proxy, shouldLookup } = parseSocksURL(url)
 
-            const destination =
-                i === chain.length - 1
-                    ? {
-                          host: hostname,
-                          port: resolvePort(protocol, port)
-                      }
-                    : {
-                          port: next.port,
-                          host: next.host ?? next.ipaddress!
-                      }
+        if (shouldLookup) {
+            hostname = (await lookup(hostname)).address
+        }
 
-            const socksOpts = {
-                command: 'connect' as const,
-                proxy: chain[i],
-                timeout,
-                destination,
-                existing_socket: httpSocket
-            }
+        const destination = {
+            host: hostname,
+            port: resolvePort(protocol, port)
+        }
 
-            try {
-                const r = await SocksClient.createConnection(socksOpts)
-                httpSocket = r.socket
-            } catch (error) {
-                return callback(error, null)
-            }
+        const socksOpts: SocksClientOptions = {
+            proxy,
+            destination,
+            command: 'connect',
+            timeout,
+            existing_socket: httpSocket
+        }
+
+        try {
+            const r = await SocksClient.createConnection(socksOpts)
+            httpSocket = r.socket
+        } catch (error) {
+            return callback(error, null)
         }
 
         // httpSocket may not exist when the chain is empty.
