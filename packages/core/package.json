@@ -219,7 +219,7 @@
         "socks": "^2.8.2",
         "socks-proxy-agent": "^8.0.4",
         "undici": "^6.21.0",
-        "uuid": "^9.0.1",
+        "uuid": "^11.0.4",
         "ws": "^8.18.0",
         "zod": "^3.24.0-canary.20241107T043915",
         "zod-to-json-schema": "^3.23.5"
