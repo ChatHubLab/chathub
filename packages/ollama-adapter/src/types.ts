@@ -6,6 +6,7 @@ export interface OllamaRequest {
         top_p: number
         stop: string
     }
+    keep_alive?: number
     messages: OllamaMessage[]
     stream: boolean
 }

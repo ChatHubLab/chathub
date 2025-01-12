@@ -38,6 +38,7 @@ export interface Config extends ChatLunaPlugin.Config {
     presencePenalty: number
     frequencyPenalty: number
     supportImage: boolean
+    keepAlive: boolean
 }
 
 export const Config: Schema<Config> = Schema.intersect([
@@ -46,7 +47,8 @@ export const Config: Schema<Config> = Schema.intersect([
         apiEndpoints: Schema.array(Schema.string()).default([
             'http://127.0.0.1:11434'
         ]),
-        supportImage: Schema.boolean().default(true)
+        supportImage: Schema.boolean().default(true),
+        keepAlive: Schema.boolean().default(true)
     }),
     Schema.object({
         maxTokens: Schema.number().min(16).max(4096).step(16).default(1024),

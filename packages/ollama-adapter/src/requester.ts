@@ -46,6 +46,7 @@ export class OllamaRequester
                         params.input,
                         this._plugin.config.supportImage
                     ),
+                    keep_alive: this._plugin.config.keepAlive ? -1 : undefined,
                     options: {
                         temperature: params.temperature,
                         // top_k: params.n,
