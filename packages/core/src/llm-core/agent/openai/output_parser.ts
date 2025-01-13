@@ -91,9 +91,12 @@ export class OpenAIFunctionsAgentOutputParser extends AgentActionOutputParser {
                 return {
                     tool: function_call.name as string,
                     toolInput,
-                    log: `Invoking "${function_call.name}" with ${
-                        function_call.arguments ?? '{}'
-                    }\n${message.content}`,
+                    log:
+                        message.content?.length > 0
+                            ? (message.content as string)
+                            : `Invoking "${function_call.name}" with ${
+                                  function_call.arguments ?? '{}'
+                              }`,
                     messageLog: [message]
                 }
             } catch (error) {
