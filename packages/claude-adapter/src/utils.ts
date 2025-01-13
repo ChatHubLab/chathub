@@ -84,8 +84,6 @@ export function langchainMessageToClaudeMessage(
         return result
     })
 
-    console.log(JSON.stringify(mappedMessages))
-
     for (let i = 0; i < mappedMessages.length; i++) {
         const message = mappedMessages[i]
 

@@ -118,7 +118,6 @@ export function createOpenAIAgent({
         prompt,
         llmWithTools,
         RunnableLambda.from((input: BaseMessage) => {
-            console.log(input)
             if (
                 (input?.additional_kwargs?.tool_calls ||
                     ((input instanceof AIMessageChunk ||

@@ -271,8 +271,6 @@ export class ChatLunaPluginChain
 
         await events?.['llm-used-token-count']?.(usedToken)
 
-        console.log(response)
-
         const responseString = response.output
 
         response.message = new AIMessage(responseString)
