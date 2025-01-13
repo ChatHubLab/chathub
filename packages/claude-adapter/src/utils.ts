@@ -54,10 +54,14 @@ export function langchainMessageToClaudeMessage(
         ) {
             result.content = []
 
-            result.content.push({
-                type: 'text',
-                text: rawMessage.content as string
-            })
+            const thinkContent = rawMessage.content as string
+
+            if ((thinkContent?.length ?? 0) > 0) {
+                result.content.push({
+                    type: 'text',
+                    text: thinkContent
+                })
+            }
 
             const mapToolCalls = rawMessage.tool_calls.map((toolCall) => ({
                 type: 'tool_use' as const,
@@ -111,7 +115,7 @@ export function langchainMessageToClaudeMessage(
         }
     }
 
-    if (result[result.length - 1].role === 'model') {
+    if (result[result.length - 1].role === 'assistant') {
         result.push({
             role: 'user',
             content:

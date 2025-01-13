@@ -181,9 +181,12 @@ export class OpenAIToolsAgentOutputParser extends AgentMultiActionOutputParser {
                         tool: toolCall.function.name as string,
                         toolInput,
                         toolCallId: toolCall.id,
-                        log: `Invoking "${toolCall.function.name}" with ${
-                            toolCall.function.arguments ?? '{}'
-                        }\n${message.content}`,
+                        log:
+                            message.content?.length > 0
+                                ? (message.content as string)
+                                : `Invoking "${toolCall.function.name}" with ${
+                                      toolCall.function.arguments ?? '{}'
+                                  }`,
                         messageLog
                     }
                 })
@@ -216,9 +219,12 @@ export class OpenAIToolsAgentOutputParser extends AgentMultiActionOutputParser {
                         tool: toolCall.name as string,
                         toolInput,
                         toolCallId: toolCall.id,
-                        log: `Invoking "${toolCall.name}" with ${
-                            JSON.stringify(toolCall.args) ?? '{}'
-                        }\n${message.content}`,
+                        log:
+                            message.content?.length > 0
+                                ? (message.content as string)
+                                : `Invoking "${toolCall.name}" with ${
+                                      JSON.stringify(toolCall.args) ?? '{}'
+                                  }`,
                         messageLog
                     }
                 })

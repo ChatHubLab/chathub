@@ -11,7 +11,8 @@ export interface ChatEvents {
     'llm-new-token'?: (token: string) => Promise<void>
     'llm-queue-waiting'?: (size: number) => Promise<void>
     'llm-used-token-count'?: (token: number) => Promise<void>
-    'llm-call-tool'?: (tool: string, args: string) => Promise<void>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    'llm-call-tool'?: (tool: string, args: any, log: string) => Promise<void>
 }
 
 declare module 'koishi' {

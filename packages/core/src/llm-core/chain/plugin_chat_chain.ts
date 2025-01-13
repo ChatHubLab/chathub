@@ -240,6 +240,7 @@ export class ChatLunaPluginChain
                             handleAgentAction(action) {
                                 events?.['llm-call-tool'](
                                     action.tool,
+                                    action.toolInput,
                                     action.log
                                 )
                             },
@@ -269,6 +270,8 @@ export class ChatLunaPluginChain
         }
 
         await events?.['llm-used-token-count']?.(usedToken)
+
+        console.log(response)
 
         const responseString = response.output
 

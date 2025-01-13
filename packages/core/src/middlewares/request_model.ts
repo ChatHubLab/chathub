@@ -118,12 +118,12 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                             context.options.queueCount = count
                         },
                         // eslint-disable-next-line @typescript-eslint/naming-convention
-                        'llm-call-tool': async (tool, arg) => {
+                        'llm-call-tool': async (tool, arg, log) => {
                             if (!config.showThoughtMessage) {
                                 return
                             }
 
-                            context.send(formatToolCall(tool, arg))
+                            context.send(formatToolCall(tool, arg, log))
                         },
                         // eslint-disable-next-line @typescript-eslint/naming-convention
                         'llm-used-token-count': async (tokens) => {
@@ -333,10 +333,20 @@ export function createRequestId(session: Session, room: ConversationRoom) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function formatToolCall(tool: string, arg: string) {
+function formatToolCall(tool: string, arg: any, log: string) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
 
-    return `{\n  tool: '${tool}',\n  log: '${arg}'\n}`
+    let rawArg = arg
+
+    if (rawArg.input && Object.keys(rawArg).length === 1) {
+        rawArg = rawArg.input
+    }
+
+    if (typeof rawArg !== 'string') {
+        rawArg = JSON.stringify(rawArg, null, 2) || ''
+    }
+
+    return `{\n  tool: '${tool}',\n  arg: '${rawArg}',\n  log: '${log}'\n}`
 }
 
 function formatUserPromptString(
