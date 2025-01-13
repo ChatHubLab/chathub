@@ -333,18 +333,10 @@ export function createRequestId(session: Session, room: ConversationRoom) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function formatToolCall(tool: string, arg: any) {
+function formatToolCall(tool: string, arg: string) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let rawArg = arg
 
-    if (rawArg.input && Object.keys(rawArg).length === 1) {
-        rawArg = rawArg.input
-    }
-
-    if (typeof rawArg !== 'string') {
-        rawArg = JSON.stringify(rawArg, null, 2) || ''
-    }
-    return `{\n  tool: '${tool}',\n  arg: '${rawArg}'\n}`
+    return `{\n  tool: '${tool}',\n  log: '${arg}'\n}`
 }
 
 function formatUserPromptString(

@@ -1,4 +1,9 @@
-import { BaseMessage, isBaseMessage } from '@langchain/core/messages'
+import {
+    AIMessage,
+    AIMessageChunk,
+    BaseMessage,
+    isBaseMessage
+} from '@langchain/core/messages'
 import { ChatGeneration } from '@langchain/core/outputs'
 import { AgentAction, AgentFinish, AgentStep } from '@langchain/core/agents'
 import {
@@ -162,6 +167,7 @@ export class OpenAIToolsAgentOutputParser extends AgentMultiActionOutputParser {
                 'This agent cannot parse non-string model responses.'
             )
         }
+
         if (message.additional_kwargs.tool_calls) {
             const toolCalls: ChatCompletionMessageToolCall[] = message
                 .additional_kwargs.tool_calls as ChatCompletionMessageToolCall[]
@@ -177,6 +183,41 @@ export class OpenAIToolsAgentOutputParser extends AgentMultiActionOutputParser {
                         toolCallId: toolCall.id,
                         log: `Invoking "${toolCall.function.name}" with ${
                             toolCall.function.arguments ?? '{}'
+                        }\n${message.content}`,
+                        messageLog
+                    }
+                })
+            } catch (error) {
+                throw new OutputParserException(
+                    `Failed to parse tool arguments from chat model response. Text: "${JSON.stringify(
+                        toolCalls
+                    )}". ${error}`
+                )
+            }
+        } else if (
+            (message instanceof AIMessageChunk ||
+                message instanceof AIMessage) &&
+            message.tool_calls != null
+        ) {
+            const toolCalls = message.tool_calls
+
+            if (toolCalls.length < 1) {
+                return {
+                    returnValues: { output: message.content },
+                    log: message.content as string
+                }
+            }
+
+            try {
+                return toolCalls.map((toolCall, i) => {
+                    const toolInput = toolCall.args
+                    const messageLog = i === 0 ? [message] : []
+                    return {
+                        tool: toolCall.name as string,
+                        toolInput,
+                        toolCallId: toolCall.id,
+                        log: `Invoking "${toolCall.name}" with ${
+                            JSON.stringify(toolCall.args) ?? '{}'
                         }\n${message.content}`,
                         messageLog
                     }

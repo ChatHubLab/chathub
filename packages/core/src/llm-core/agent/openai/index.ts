@@ -1,5 +1,6 @@
 import {
     AIMessage,
+    AIMessageChunk,
     BaseMessage,
     FunctionMessage,
     ToolMessage
@@ -100,7 +101,7 @@ export function createOpenAIAgent({
 
     let outputParser: BaseOutputParser<
         AgentAction[] | AgentFinish | AgentAction
-    > = new OpenAIFunctionsAgentOutputParser()
+    > = new OpenAIToolsAgentOutputParser()
 
     const agent = RunnableSequence.from([
         RunnablePassthrough.assign({
@@ -114,8 +115,12 @@ export function createOpenAIAgent({
         prompt,
         llmWithTools,
         RunnableLambda.from((input: BaseMessage) => {
+            console.log(input)
             if (
-                input?.additional_kwargs?.tool_calls &&
+                (input?.additional_kwargs?.tool_calls ||
+                    ((input instanceof AIMessageChunk ||
+                        input instanceof AIMessage) &&
+                        input.tool_calls)) &&
                 outputParser instanceof OpenAIFunctionsAgentOutputParser
             ) {
                 outputParser = new OpenAIToolsAgentOutputParser()
