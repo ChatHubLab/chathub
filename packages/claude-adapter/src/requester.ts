@@ -1,4 +1,3 @@
-import { AIMessageChunk } from '@langchain/core/messages'
 import * as fetchType from 'undici/types/fetch'
 import {
     ModelRequester,
@@ -14,7 +13,11 @@ import { Context } from 'koishi'
 import { sseIterable } from 'koishi-plugin-chatluna/utils/sse'
 import { Config } from '.'
 import { ClaudeDeltaResponse, ClaudeRequest } from './types'
-import { langchainMessageToClaudeMessage } from './utils'
+import {
+    convertDeltaToMessageChunk,
+    formatToolsToClaudeTools,
+    langchainMessageToClaudeMessage
+} from './utils'
 import { ChatLunaPlugin } from 'koishi-plugin-chatluna/services/chat'
 
 export class ClaudeRequester extends ModelRequester {
@@ -41,10 +44,16 @@ export class ClaudeRequester extends ModelRequester {
             messages: langchainMessageToClaudeMessage(
                 params.input,
                 params.model
-            )
+            ),
+            tools:
+                params.tools != null
+                    ? formatToolsToClaudeTools(params.tools)
+                    : undefined
         } satisfies ClaudeRequest)
 
         const iterator = sseIterable(response)
+
+        const findTools = params.tools != null
 
         let content = ''
 
@@ -58,7 +67,7 @@ export class ClaudeRequester extends ModelRequester {
                 )
             }
 
-            if (event.event === 'message_stop') return
+            if (event.event === 'message_delta') return
 
             const chunk = event.data
 
@@ -66,18 +75,21 @@ export class ClaudeRequester extends ModelRequester {
                 return
             }
 
-            if (
-                event.event !== 'content_block_delta' &&
-                event.event !== 'completion'
-            )
-                continue
+            const parsedRawChunk = JSON.parse(chunk) as ClaudeDeltaResponse
 
-            const parsedChunk = JSON.parse(chunk) as ClaudeDeltaResponse
+            const parsedChunk = convertDeltaToMessageChunk(parsedRawChunk)
 
-            content += parsedChunk.delta.text
+            // console.log(findTools, parsedRawChunk, parsedChunk)
+
+            if (parsedChunk == null) continue
+
+            if (!findTools) {
+                parsedChunk.content = content + (parsedChunk.content ?? '')
+                content = parsedChunk.content
+            }
 
             yield new ChatGenerationChunk({
-                message: new AIMessageChunk(content),
+                message: parsedChunk,
                 text: content
             })
         }

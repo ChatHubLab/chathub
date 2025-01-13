@@ -66,6 +66,7 @@ export class ClaudeClient extends PlatformModelClient {
                     model.includes('2.0') || model.includes('1.2')
                         ? 1000000
                         : 2000000,
+                supportMode: ['all'],
                 functionCall: model.includes('claude-3'),
                 type: ModelType.llm
             }
