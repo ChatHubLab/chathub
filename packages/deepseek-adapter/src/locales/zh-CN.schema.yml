@@ -1,0 +1,14 @@
+$inner:
+    - {}
+    - $desc: 请求选项
+      apiKeys:
+          $inner:
+              - OpenAI 的 API Key
+              - OpenAI API 的请求地址
+          $desc: OpenAI 的 API Key 和请求地址列表。
+
+    - $desc: 模型配置
+      maxTokens: 输入的最大上下文 Token（16~128000，必须是 16 的倍数）。注意：仅当您使用的模型最大 Token 为 8000 及以上时，才建议设置超过 2000 token。
+      temperature: 回复的随机性程度，数值越高，回复越随机。
+      presencePenalty: 重复惩罚系数，数值越高，越不易重复出现已出现过至少一次的 Token（范围：-2~2，步长：0.1）。
+      frequencyPenalty: 频率惩罚系数，数值越高，越不易重复出现次数较多的 Token（范围：-2~2，步长：0.1）。

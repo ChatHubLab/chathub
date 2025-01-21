@@ -1,0 +1,14 @@
+$inner:
+  - {}
+  - $desc: 'API Configuration'
+    apiKeys:
+      $inner:
+        - 'OpenAI API Key'
+        - 'OpenAI API Endpoint'
+      $desc: 'OpenAI API credentials'
+
+  - $desc: 'Model Parameters'
+    maxTokens: 'Max input tokens (16-128000, multiple of 16). Note: >2000 for 8k+ token models'
+    temperature: 'Sampling temperature (higher values increase randomness)'
+    presencePenalty: 'Token presence penalty (-2 to 2, step 0.1, discourages token repetition)'
+    frequencyPenalty: 'Token frequency penalty (-2 to 2, step 0.1, reduces frequent token repetition)'
