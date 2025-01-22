@@ -89,41 +89,58 @@ export function langchainMessageToDeepseekMessage(
         return mappedMessage
     }
 
+    if (!model.includes('reasoner')) {
+        return mappedMessage
+    }
+
     const result: ChatCompletionResponseMessage[] = []
 
     for (let i = 0; i < mappedMessage.length; i++) {
         const message = mappedMessage[i]
 
-        if (message.role !== 'system') {
+        // 检查 result 的最后一个消息的角色
+        if (
+            result.length > 0 &&
+            result[result.length - 1].role === 'assistant' &&
+            message.role === 'assistant'
+        ) {
+            // 如果最后一个消息是 assistant，且当前消息也是 assistant，插入一个 user 消息
+            result.push({
+                role: 'user',
+                content: message.content
+            })
+
+            result.push({
+                role: 'assistant',
+                content: 'Okay, what do I need to do?'
+            })
+
+            result.push({
+                role: 'user',
+                content:
+                    'Continue what I said to you last time. Follow these instructions.'
+            })
+        } else if (message.role !== 'system') {
+            // 如果当前消息不是 system，直接添加到 result
             result.push(message)
-            continue
-        }
+        } else {
+            // 处理 system 消息
+            result.push({
+                role: 'user',
+                content: message.content
+            })
 
-        result.push({
-            role: 'user',
-            content: message.content
-        })
+            result.push({
+                role: 'assistant',
+                content: 'Okay, what do I need to do?'
+            })
 
-        result.push({
-            role: 'assistant',
-            content: 'Okay, what do I need to do?'
-        })
-
-        if (mappedMessage?.[i + 1]?.role === 'assistant') {
             result.push({
                 role: 'user',
                 content:
                     'Continue what I said to you last time. Follow these instructions.'
             })
         }
-    }
-
-    if (mappedMessage[mappedMessage.length - 1].role === 'assistant') {
-        result.push({
-            role: 'user',
-            content:
-                'Continue what I said to you last time. Follow these instructions.'
-        })
     }
 
     return result
