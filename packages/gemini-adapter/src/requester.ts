@@ -70,6 +70,10 @@ export class GeminiRequester
                         {
                             category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
                             threshold: 'BLOCK_NONE'
+                        },
+                        {
+                            category: 'HARM_CATEGORY_CIVIC_INTEGRITY',
+                            threshold: 'BLOCK_NONE'
                         }
                     ],
                     generationConfig: {
@@ -79,7 +83,9 @@ export class GeminiRequester
                             ? undefined
                             : params.maxTokens,
                         topP: params.topP
+                        // thinkingConfig: { includeThoughts: true }
                     },
+
                     tools:
                         params.tools != null || this._pluginConfig.googleSearch
                             ? formatToolsToGeminiAITools(
@@ -113,8 +119,11 @@ export class GeminiRequester
             jsonParser.onValue = async ({ value }) => {
                 const transformValue = value as unknown as ChatResponse
 
-                if (transformValue.candidates && transformValue.candidates[0]) {
-                    const parts = transformValue.candidates[0]?.content?.parts
+                if (!transformValue.candidates) {
+                    return
+                }
+                for (const candidate of transformValue.candidates) {
+                    const parts = candidate.content?.parts
 
                     if (parts == null || parts.length < 1) {
                         throw new Error(JSON.stringify(value))
@@ -137,6 +146,7 @@ export class GeminiRequester
 
             let content = ''
 
+            let reasoningContent = ''
             let isOldVisionModel = params.model.includes('vision')
 
             const functionCall: ChatCompletionMessageFunctionCall & {
@@ -154,6 +164,10 @@ export class GeminiRequester
                     partAsType<ChatFunctionCallingPart>(chunk)
 
                 if (messagePart.text) {
+                    if (messagePart.thought) {
+                        reasoningContent += messagePart.text
+                        continue
+                    }
                     if (params.tools != null) {
                         content = messagePart.text
                     } else {
@@ -232,6 +246,10 @@ export class GeminiRequester
                         continue
                     }
                 }
+            }
+
+            if (reasoningContent.length > 0) {
+                logger.debug(`reasoning content: ${reasoningContent}`)
             }
         } catch (e) {
             if (e instanceof ChatLunaError) {

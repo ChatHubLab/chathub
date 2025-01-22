@@ -11,6 +11,7 @@ export type ChatPart =
 
 export type ChatMessagePart = {
     text: string
+    thought?: boolean
 }
 
 export type ChatUploadDataPart = {
