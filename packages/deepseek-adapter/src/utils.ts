@@ -120,7 +120,7 @@ export function langchainMessageToDeepseekMessage(
             ) {
                 result.push({
                     role: 'user',
-                    content: 'Continue'
+                    content: 'Continue output'
                 })
             }
         }
@@ -140,6 +140,15 @@ export function langchainMessageToDeepseekMessage(
             // 直接添加非 system 消息
             result.push(message)
         }
+    }
+
+    const lastMessage = result[result.length - 1]
+
+    if (lastMessage.role === 'assistant') {
+        result.push({
+            role: 'user',
+            content: 'Continue output'
+        })
     }
 
     return result
