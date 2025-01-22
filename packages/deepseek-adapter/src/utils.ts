@@ -120,7 +120,7 @@ export function langchainMessageToDeepseekMessage(
             ) {
                 result.push({
                     role: 'user',
-                    content: 'Continue your output'
+                    content: 'Continue'
                 })
             }
         }
@@ -135,12 +135,6 @@ export function langchainMessageToDeepseekMessage(
             result.push({
                 role: 'assistant',
                 content: 'Okay, what do I need to do?'
-            })
-
-            result.push({
-                role: 'user',
-                content:
-                    'Continue what I said to you last time. Follow these instructions.'
             })
         } else {
             // 直接添加非 system 消息
