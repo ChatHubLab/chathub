@@ -128,6 +128,9 @@ export class DeepseekRequester
                             reasoningContent = (reasoningContent +
                                 delta.reasoning_content) as string
                         }
+
+                        messageChunk.additional_kwargs['reasoning_content'] =
+                            reasoningContent
                     }
 
                     defaultRole = (delta.role ??

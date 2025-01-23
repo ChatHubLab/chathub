@@ -120,7 +120,7 @@ export function langchainMessageToDeepseekMessage(
             ) {
                 result.push({
                     role: 'user',
-                    content: 'Ok'
+                    content: 'noop'
                 })
             }
         }
@@ -140,7 +140,7 @@ export function langchainMessageToDeepseekMessage(
             result.push({
                 role: 'user',
                 content:
-                    'Continue what I said to you last message. Follow these instructions.'
+                    'Continue what I said to you last user message. Follow these instructions.'
             })
         } else {
             // 直接添加非 system 消息
@@ -153,7 +153,7 @@ export function langchainMessageToDeepseekMessage(
     if (lastMessage.role === 'assistant') {
         result.push({
             role: 'user',
-            content: 'Continue output'
+            content: 'Continue what I said to you last user message.'
         })
     }
 
