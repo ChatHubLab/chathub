@@ -194,6 +194,8 @@ export class QWenRequester
 
         const body = JSON.stringify(data)
 
+        console.log('QWen Request', body)
+
         return this._plugin.fetch(requestUrl, {
             body,
             headers: this._buildHeaders(!url.includes('text-embedding')),
