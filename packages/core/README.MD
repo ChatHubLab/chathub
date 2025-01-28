@@ -12,7 +12,7 @@ _A bot plugin for LLM chat services with multi-model integration, extensibility,
 
 [![Telegram](https://img.shields.io/badge/Join-Telegram_Group-blue)](https://t.me/koishi_chatluna) [![QQ](https://img.shields.io/badge/Join-QQ_Group-ff69b4)](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=eEBVq6GK7HYX2y61x55WD6hnXTIRop-0&authKey=i4pG5%2BJ%2FY8auWprBubhremTkn3vroPigQq5m9RENGBLrLmlj%2BSu3G%2BqllK7Wts2M&noverify=0&group_code=282381753) [![doc](https://img.shields.io/badge/See-Document(WIP)-green)](https://chatluna.chat/)
 
-**Project Status: Steadily iterating towards the official 1.0 release (currently in Release Candidate stage)**
+**Project Status: 1.0 Official Release (Slow development, preparing for v2 version)**
 
 </div>
 
@@ -28,7 +28,7 @@ _A bot plugin for LLM chat services with multi-model integration, extensibility,
 - 🎭 Custom conversation presets
 - 🛡️ Rate limiting & blacklist system
 - 🎨 Multi-format output (text, voice, image, mixed)
-- 🧠 Context-aware with long-term memory
+- 🧠 Context-aware with [long-term memory](./packages/long-memory/README.md)
 - 🔀 Three modes: chat, browsing, plugin
 - 🔒 Content moderation via [Koishi censor](https://censor.koishi.chat/)
 
@@ -57,6 +57,7 @@ Install the plugin in Koishi for basic functionality. For detailed setup, see ou
 | [Azure OpenAI](./packages/azure-openai-adapter/README.md) | Official API | Similar to OpenAI | Paid API |
 | [Google Gemini](./packages/gemini-adapter/README.md) | Official API | Fast, outperforms GPT-3.5 | Requires account, may be charged |
 | [Claude API](./packages/claude-adapter) | Official API | Large context, often beats GPT-3.5 | Paid, no Function Call |
+| [Deepseek](./packages/deepseek-adapter/) | Official API | Domestic renowned model | Performance close to or exceeding GPT-4o |
 | [Tongyi Qianwen](./packages/qwen-adapter/README.md) | Official API | Free quota available | Slightly better than Zhipu |
 | [Zhipu](./packages/zhipu-adapter/README.md) | Official API | Free tokens for new users | Better than Xunfei Spark |
 | [Xunfei Spark](./packages/spark-adapter/README.md) | Official API | Free quota for new users | Similar to GPT-3.5 |

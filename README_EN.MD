@@ -12,7 +12,7 @@ _A bot plugin for LLM chat services with multi-model integration, extensibility,
 
 [![Telegram](https://img.shields.io/badge/Join-Telegram_Group-blue)](https://t.me/koishi_chatluna) [![QQ](https://img.shields.io/badge/Join-QQ_Group-ff69b4)](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=eEBVq6GK7HYX2y61x55WD6hnXTIRop-0&authKey=i4pG5%2BJ%2FY8auWprBubhremTkn3vroPigQq5m9RENGBLrLmlj%2BSu3G%2BqllK7Wts2M&noverify=0&group_code=282381753) [![doc](https://img.shields.io/badge/See-Document(WIP)-green)](https://chatluna.chat/)
 
-**Project Status: Steadily iterating towards the official 1.0 release (currently in Release Candidate stage)**
+**Project Status: 1.0 Official Release (Slow development, preparing for v2 version)**
 
 </div>
 

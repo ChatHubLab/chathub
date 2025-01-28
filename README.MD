@@ -12,7 +12,7 @@ _多平台模型接入，可扩展，多种输出格式，提供大语言模型�
 
 [![Telegram](https://img.shields.io/badge/Join-Telegram_Group-blue)](https://t.me/koishi_chatluna) [![QQ](https://img.shields.io/badge/Join-QQ_Group-ff69b4)](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=eEBVq6GK7HYX2y61x55WD6hnXTIRop-0&authKey=i4pG5%2BJ%2FY8auWprBubhremTkn3vroPigQq5m9RENGBLrLmlj%2BSu3G%2BqllK7Wts2M&noverify=0&group_code=282381753) [![doc](https://img.shields.io/badge/See-Document(WIP)-green)](https://chatluna.chat/)
 
-**项目状态：稳步迭代到 1.0 正式版（目前已进入 Release Candidate 阶段）**
+**项目状态：1.0 正式版（缓慢开发，准备 v2 版本）**
 
 </div>
 
