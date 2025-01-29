@@ -47,6 +47,11 @@
             "import": "./lib/llm-core/chain/prompt.mjs",
             "require": "./lib/llm-core/chain/prompt.cjs"
         },
+        "./llm-core/agent": {
+            "types": "./lib/llm-core/agent/index.d.ts",
+            "import": "./lib/llm-core/agent/index.mjs",
+            "require": "./lib/llm-core/agent/index.cjs"
+        },
         "./llm-core/platform/api": {
             "types": "./lib/llm-core/platform/api.d.ts",
             "import": "./lib/llm-core/platform/api.mjs",

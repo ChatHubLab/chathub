@@ -14,7 +14,7 @@ import {
 import { StructuredTool } from '@langchain/core/tools'
 import { AgentAction, AgentFinish, AgentStep } from '@langchain/core/agents'
 import { ChatLunaChatPrompt } from 'koishi-plugin-chatluna/llm-core/chain/prompt'
-import { ChatLunaChatModel } from '../../platform/model'
+import type { ChatLunaChatModel } from '../../platform/model'
 import {
     FunctionsAgentAction,
     OpenAIFunctionsAgentOutputParser,

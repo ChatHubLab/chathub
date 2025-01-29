@@ -12,9 +12,11 @@ import {
     ChatLunaChatModel
 } from 'koishi-plugin-chatluna/llm-core/platform/model'
 import { ChatLunaTool } from 'koishi-plugin-chatluna/llm-core/platform/types'
-import { AgentExecutor } from '../agent/executor'
+import {
+    AgentExecutor,
+    createOpenAIAgent
+} from 'koishi-plugin-chatluna/llm-core/agent'
 import { BufferMemory } from 'koishi-plugin-chatluna/llm-core/memory/langchain'
-import { createOpenAIAgent } from '../agent/openai'
 import { logger } from '../..'
 import {
     ChatLunaError,
