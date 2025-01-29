@@ -1,81 +1,81 @@
 {
-    "name": "koishi-plugin-chatluna-image-renderer",
-    "description": "image renderer for chatluna",
-    "version": "1.0.0",
-    "main": "lib/index.cjs",
-    "module": "lib/index.mjs",
-    "typings": "lib/index.d.ts",
-    "files": [
-        "lib",
-        "dist",
-        "resources"
-    ],
-    "exports": {
-        ".": {
-            "types": "./lib/index.d.ts",
-            "import": "./lib/index.mjs",
-            "require": "./lib/index.cjs"
-        },
-        "./package.json": "./package.json"
+  "name": "koishi-plugin-chatluna-image-renderer",
+  "description": "image renderer for chatluna",
+  "version": "1.0.0",
+  "main": "lib/index.cjs",
+  "module": "lib/index.mjs",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist",
+    "resources"
+  ],
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "import": "./lib/index.mjs",
+      "require": "./lib/index.cjs"
     },
-    "type": "module",
-    "author": "dingyi222666 <dingyi222666@foxmail.com>",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/ChatLunaLab/chatluna.git",
-        "directory": "packages/image-renderer"
+    "./package.json": "./package.json"
+  },
+  "type": "module",
+  "author": "dingyi222666 <dingyi222666@foxmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ChatLunaLab/chatluna.git",
+    "directory": "packages/image-renderer"
+  },
+  "license": "AGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/ChatLunaLab/chatluna/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "homepage": "https://github.com/ChatLunaLab/chatluna/tree/v1-dev/packages/image-renderer#readme",
+  "scripts": {
+    "build": "atsc -b"
+  },
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin",
+    "service",
+    "chatgpt",
+    "gpt",
+    "openai",
+    "chatluna",
+    "search"
+  ],
+  "dependencies": {
+    "highlight.js": "^11.10.0",
+    "katex": "^0.16.11",
+    "marked": "^15.0.1",
+    "marked-highlight": "^2.2.1",
+    "marked-katex-extension": "^5.1.3",
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "@types/jsdom": "^21.1.7",
+    "@types/uuid": "^10.0.0",
+    "atsc": "^2.1.0",
+    "koishi": "^4.18.4",
+    "koishi-plugin-puppeteer": "^3.9.0"
+  },
+  "peerDependencies": {
+    "koishi": "^4.18.4",
+    "koishi-plugin-chatluna": "^1.0.1-alpha.1"
+  },
+  "koishi": {
+    "description": {
+      "zh": "ChatLuna 的图像渲染插件",
+      "en": "Image renderer plugin for ChatLuna"
     },
-    "license": "AGPL-3.0",
-    "bugs": {
-        "url": "https://github.com/ChatLunaLab/chatluna/issues"
-    },
-    "engines": {
-        "node": ">=18.0.0"
-    },
-    "homepage": "https://github.com/ChatLunaLab/chatluna/tree/v1-dev/packages/image-renderer#readme",
-    "scripts": {
-        "build": "atsc -b"
-    },
-    "keywords": [
-        "chatbot",
-        "koishi",
-        "plugin",
-        "service",
-        "chatgpt",
-        "gpt",
-        "openai",
+    "service": {
+      "required": [
         "chatluna",
-        "search"
-    ],
-    "dependencies": {
-        "highlight.js": "^11.10.0",
-        "katex": "^0.16.11",
-        "marked": "^15.0.1",
-        "marked-highlight": "^2.2.1",
-        "marked-katex-extension": "^5.1.3",
-        "qrcode": "^1.5.4"
-    },
-    "devDependencies": {
-        "@types/jsdom": "^21.1.7",
-        "@types/uuid": "^10.0.0",
-        "atsc": "^2.1.0",
-        "koishi": "^4.18.4",
-        "koishi-plugin-puppeteer": "^3.9.0"
-    },
-    "peerDependencies": {
-        "koishi": "^4.18.4",
-        "koishi-plugin-chatluna": "^1.0.0"
-    },
-    "koishi": {
-        "description": {
-            "zh": "ChatLuna 的图像渲染插件",
-            "en": "Image renderer plugin for ChatLuna"
-        },
-        "service": {
-            "required": [
-                "chatluna",
-                "puppeteer"
-            ]
-        }
+        "puppeteer"
+      ]
     }
+  }
 }

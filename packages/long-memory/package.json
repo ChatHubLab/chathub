@@ -1,91 +1,91 @@
 {
-    "name": "koishi-plugin-chatluna-long-memory",
-    "description": "long memory for chatluna",
-    "version": "1.0.0",
-    "main": "lib/index.cjs",
-    "module": "lib/index.mjs",
-    "typings": "lib/index.d.ts",
-    "files": [
-        "lib",
-        "dist",
-        "resources"
-    ],
-    "exports": {
-        ".": {
-            "types": "./lib/index.d.ts",
-            "import": "./lib/index.mjs",
-            "require": "./lib/index.cjs"
-        },
-        "./package.json": "./package.json"
+  "name": "koishi-plugin-chatluna-long-memory",
+  "description": "long memory for chatluna",
+  "version": "1.0.0",
+  "main": "lib/index.cjs",
+  "module": "lib/index.mjs",
+  "typings": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "dist",
+    "resources"
+  ],
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "import": "./lib/index.mjs",
+      "require": "./lib/index.cjs"
     },
-    "type": "module",
-    "author": "dingyi222666 <dingyi222666@foxmail.com>",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/ChatLunaLab/chatluna.git",
-        "directory": "packages/long-memory"
-    },
-    "license": "AGPL-3.0",
-    "bugs": {
-        "url": "https://github.com/ChatLunaLab/chatluna/issues"
-    },
-    "engines": {
-        "node": ">=18.0.0"
-    },
-    "homepage": "https://github.com/ChatLunaLab/chatluna/tree/v1-dev/packages/long-memory#readme",
-    "scripts": {
-        "build": "atsc -b"
-    },
-    "keywords": [
-        "chatbot",
-        "koishi",
-        "plugin",
-        "service",
-        "chatgpt",
-        "gpt",
-        "openai",
-        "chatluna",
-        "search"
-    ],
-    "dependencies": {
-        "@langchain/core": "^0.3.18",
-        "jieba-wasm": "^2.2.0",
-        "stopwords-iso": "^1.1.0",
-        "tiny-segmenter": "^0.2.0"
-    },
-    "devDependencies": {
-        "@types/jsdom": "^21.1.7",
-        "@types/uuid": "^10.0.0",
-        "atsc": "^2.1.0",
-        "koishi": "^4.18.1"
-    },
-    "peerDependencies": {
-        "koishi": "^4.18.1",
-        "koishi-plugin-chatluna": "^1.0.0"
-    },
-    "resolutions": {
-        "@langchain/core": "0.3.18",
-        "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
-    },
+    "./package.json": "./package.json"
+  },
+  "type": "module",
+  "author": "dingyi222666 <dingyi222666@foxmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ChatLunaLab/chatluna.git",
+    "directory": "packages/long-memory"
+  },
+  "license": "AGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/ChatLunaLab/chatluna/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "homepage": "https://github.com/ChatLunaLab/chatluna/tree/v1-dev/packages/long-memory#readme",
+  "scripts": {
+    "build": "atsc -b"
+  },
+  "keywords": [
+    "chatbot",
+    "koishi",
+    "plugin",
+    "service",
+    "chatgpt",
+    "gpt",
+    "openai",
+    "chatluna",
+    "search"
+  ],
+  "dependencies": {
+    "@langchain/core": "^0.3.18",
+    "jieba-wasm": "^2.2.0",
+    "stopwords-iso": "^1.1.0",
+    "tiny-segmenter": "^0.2.0"
+  },
+  "devDependencies": {
+    "@types/jsdom": "^21.1.7",
+    "@types/uuid": "^10.0.0",
+    "atsc": "^2.1.0",
+    "koishi": "^4.18.1"
+  },
+  "peerDependencies": {
+    "koishi": "^4.18.1",
+    "koishi-plugin-chatluna": "^1.0.1-alpha.1"
+  },
+  "resolutions": {
+    "@langchain/core": "0.3.18",
+    "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
+  },
+  "overrides": {
+    "@langchain/core": "0.3.18",
+    "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
+  },
+  "pnpm": {
     "overrides": {
-        "@langchain/core": "0.3.18",
-        "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
-    },
-    "pnpm": {
-        "overrides": {
-            "@langchain/core": "0.3.18",
-            "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
-        }
-    },
-    "koishi": {
-        "description": {
-            "zh": "ChatLuna 长期记忆支持",
-            "en": "long memory support for ChatLuna"
-        },
-        "service": {
-            "required": [
-                "chatluna"
-            ]
-        }
+      "@langchain/core": "0.3.18",
+      "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
     }
+  },
+  "koishi": {
+    "description": {
+      "zh": "ChatLuna 长期记忆支持",
+      "en": "long memory support for ChatLuna"
+    },
+    "service": {
+      "required": [
+        "chatluna"
+      ]
+    }
+  }
 }

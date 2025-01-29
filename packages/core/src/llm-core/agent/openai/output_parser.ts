@@ -8,13 +8,11 @@ import { ChatGeneration } from '@langchain/core/outputs'
 import { AgentAction, AgentFinish, AgentStep } from '@langchain/core/agents'
 import { OutputParserException } from '@langchain/core/output_parsers'
 import {
+    AgentActionOutputParser,
+    AgentMultiActionOutputParser,
     ChatCompletionMessageFunctionCall,
     ChatCompletionMessageToolCall
 } from '../types'
-import {
-    AgentActionOutputParser,
-    AgentMultiActionOutputParser
-} from 'koishi-plugin-chatluna/llm-core/agent'
 
 /**
  * Type that represents an agent action with an optional message log.
