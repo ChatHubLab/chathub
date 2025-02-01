@@ -62,13 +62,6 @@ jobs:
               run: yarn build --clean
             - name: Build
               run: yarn build
-            - name: Upload Packages
-              uses: actions/upload-artifact@v3
-              with:
-                  name: packages
-                  path: |
-                      packages
-                      plugins
 
     lint:
         # if: ${{  github.event_name == 'pull_request' }}
