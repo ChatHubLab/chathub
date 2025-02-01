@@ -1,89 +1,89 @@
 {
-  "name": "koishi-plugin-chatluna-google-gemini-adapter",
-  "description": "google-gemini adapter for chatluna",
-  "version": "1.0.0",
-  "main": "lib/index.cjs",
-  "module": "lib/index.mjs",
-  "typings": "lib/index.d.ts",
-  "files": [
-    "lib",
-    "dist"
-  ],
-  "exports": {
-    ".": {
-      "types": "./lib/index.d.ts",
-      "import": "./lib/index.mjs",
-      "require": "./lib/index.cjs"
+    "name": "koishi-plugin-chatluna-google-gemini-adapter",
+    "description": "google-gemini adapter for chatluna",
+    "version": "1.0.0",
+    "main": "lib/index.cjs",
+    "module": "lib/index.mjs",
+    "typings": "lib/index.d.ts",
+    "files": [
+        "lib",
+        "dist"
+    ],
+    "exports": {
+        ".": {
+            "types": "./lib/index.d.ts",
+            "import": "./lib/index.mjs",
+            "require": "./lib/index.cjs"
+        },
+        "./package.json": "./package.json"
     },
-    "./package.json": "./package.json"
-  },
-  "type": "module",
-  "author": "dingyi222666 <dingyi222666@foxmail.com>",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ChatLunaLab/chatluna.git",
-    "directory": "packages/google-gemini-adapter"
-  },
-  "license": "AGPL-3.0",
-  "bugs": {
-    "url": "https://github.com/ChatLunaLab/chatluna/issues"
-  },
-  "homepage": "https://github.com/ChatLunaLab/chatluna/tree/v1-dev/packages/google-gemini-adapter#readme",
-  "scripts": {
-    "build": "atsc -b"
-  },
-  "resolutions": {
-    "@langchain/core": "0.3.18",
-    "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
-  },
-  "overrides": {
-    "@langchain/core": "0.3.18",
-    "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
-  },
-  "pnpm": {
+    "type": "module",
+    "author": "dingyi222666 <dingyi222666@foxmail.com>",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/ChatLunaLab/chatluna.git",
+        "directory": "packages/google-gemini-adapter"
+    },
+    "license": "AGPL-3.0",
+    "bugs": {
+        "url": "https://github.com/ChatLunaLab/chatluna/issues"
+    },
+    "homepage": "https://github.com/ChatLunaLab/chatluna/tree/v1-dev/packages/google-gemini-adapter#readme",
+    "scripts": {
+        "build": "atsc -b"
+    },
+    "resolutions": {
+        "@langchain/core": "0.3.18",
+        "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
+    },
     "overrides": {
-      "@langchain/core": "0.3.18",
-      "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
-    }
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "keywords": [
-    "chatbot",
-    "koishi",
-    "plugin",
-    "service",
-    "chatgpt",
-    "gpt",
-    "google",
-    "gemini",
-    "chatluna",
-    "adapter"
-  ],
-  "dependencies": {
-    "@langchain/core": "^0.3.18",
-    "@streamparser/json": "^0.0.21",
-    "zod": "^3.24.0-canary.20241107T043915",
-    "zod-to-json-schema": "^3.23.5"
-  },
-  "devDependencies": {
-    "atsc": "^2.1.0",
-    "koishi": "^4.18.4"
-  },
-  "peerDependencies": {
-    "koishi": "^4.18.4",
-    "koishi-plugin-chatluna": "^1.0.1-alpha.1"
-  },
-  "koishi": {
-    "description": {
-      "zh": "ChatLuna 的 Google Gemini 适配器",
-      "en": "Google Gemini adapter for ChatLuna"
+        "@langchain/core": "0.3.18",
+        "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
     },
-    "service": {
-      "required": [
-        "chatluna"
-      ]
+    "pnpm": {
+        "overrides": {
+            "@langchain/core": "0.3.18",
+            "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
+        }
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    },
+    "keywords": [
+        "chatbot",
+        "koishi",
+        "plugin",
+        "service",
+        "chatgpt",
+        "gpt",
+        "google",
+        "gemini",
+        "chatluna",
+        "adapter"
+    ],
+    "dependencies": {
+        "@langchain/core": "^0.3.18",
+        "@streamparser/json": "^0.0.21",
+        "zod": "^3.24.0-canary.20241107T043915",
+        "zod-to-json-schema": "^3.23.5"
+    },
+    "devDependencies": {
+        "atsc": "^2.1.0",
+        "koishi": "^4.18.4"
+    },
+    "peerDependencies": {
+        "koishi": "^4.18.4",
+        "koishi-plugin-chatluna": "^1.0.1"
+    },
+    "koishi": {
+        "description": {
+            "zh": "ChatLuna 的 Google Gemini 适配器",
+            "en": "Google Gemini adapter for ChatLuna"
+        },
+        "service": {
+            "required": [
+                "chatluna"
+            ]
+        }
     }
-  }
 }

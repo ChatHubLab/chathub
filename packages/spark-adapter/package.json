@@ -1,87 +1,87 @@
 {
-  "name": "koishi-plugin-chatluna-spark-adapter",
-  "description": "spark adapter for chatluna",
-  "version": "1.0.0",
-  "main": "lib/index.cjs",
-  "module": "lib/index.mjs",
-  "typings": "lib/index.d.ts",
-  "files": [
-    "lib",
-    "dist"
-  ],
-  "exports": {
-    ".": {
-      "types": "./lib/index.d.ts",
-      "import": "./lib/index.mjs",
-      "require": "./lib/index.cjs"
+    "name": "koishi-plugin-chatluna-spark-adapter",
+    "description": "spark adapter for chatluna",
+    "version": "1.0.0",
+    "main": "lib/index.cjs",
+    "module": "lib/index.mjs",
+    "typings": "lib/index.d.ts",
+    "files": [
+        "lib",
+        "dist"
+    ],
+    "exports": {
+        ".": {
+            "types": "./lib/index.d.ts",
+            "import": "./lib/index.mjs",
+            "require": "./lib/index.cjs"
+        },
+        "./package.json": "./package.json"
     },
-    "./package.json": "./package.json"
-  },
-  "type": "module",
-  "author": "dingyi222666 <dingyi222666@foxmail.com>",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ChatLunaLab/chatluna.git",
-    "directory": "packages/spark-adapter"
-  },
-  "license": "AGPL-3.0",
-  "bugs": {
-    "url": "https://github.com/ChatLunaLab/chatluna/issues"
-  },
-  "homepage": "https://github.com/ChatLunaLab/chatluna/tree/v1-dev/packages/spark-adapter#readme",
-  "scripts": {
-    "build": "atsc -b"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "resolutions": {
-    "@langchain/core": "0.3.18",
-    "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
-  },
-  "overrides": {
-    "@langchain/core": "0.3.18",
-    "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
-  },
-  "pnpm": {
+    "type": "module",
+    "author": "dingyi222666 <dingyi222666@foxmail.com>",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/ChatLunaLab/chatluna.git",
+        "directory": "packages/spark-adapter"
+    },
+    "license": "AGPL-3.0",
+    "bugs": {
+        "url": "https://github.com/ChatLunaLab/chatluna/issues"
+    },
+    "homepage": "https://github.com/ChatLunaLab/chatluna/tree/v1-dev/packages/spark-adapter#readme",
+    "scripts": {
+        "build": "atsc -b"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    },
+    "resolutions": {
+        "@langchain/core": "0.3.18",
+        "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
+    },
     "overrides": {
-      "@langchain/core": "0.3.18",
-      "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
-    }
-  },
-  "keywords": [
-    "chatbot",
-    "koishi",
-    "plugin",
-    "service",
-    "chatgpt",
-    "gpt",
-    "spark",
-    "chatluna",
-    "adapter"
-  ],
-  "dependencies": {
-    "@langchain/core": "^0.3.18",
-    "zod": "^3.24.0-canary.20241107T043915",
-    "zod-to-json-schema": "^3.23.5"
-  },
-  "devDependencies": {
-    "atsc": "^2.1.0",
-    "koishi": "^4.18.4"
-  },
-  "peerDependencies": {
-    "koishi": "^4.18.4",
-    "koishi-plugin-chatluna": "^1.0.1-alpha.1"
-  },
-  "koishi": {
-    "description": {
-      "zh": "ChatLuna 的讯飞星火 API 适配器",
-      "en": "iFLYTEK Spark API adapter for ChatLuna"
+        "@langchain/core": "0.3.18",
+        "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
     },
-    "service": {
-      "required": [
-        "chatluna"
-      ]
+    "pnpm": {
+        "overrides": {
+            "@langchain/core": "0.3.18",
+            "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
+        }
+    },
+    "keywords": [
+        "chatbot",
+        "koishi",
+        "plugin",
+        "service",
+        "chatgpt",
+        "gpt",
+        "spark",
+        "chatluna",
+        "adapter"
+    ],
+    "dependencies": {
+        "@langchain/core": "^0.3.18",
+        "zod": "^3.24.0-canary.20241107T043915",
+        "zod-to-json-schema": "^3.23.5"
+    },
+    "devDependencies": {
+        "atsc": "^2.1.0",
+        "koishi": "^4.18.4"
+    },
+    "peerDependencies": {
+        "koishi": "^4.18.4",
+        "koishi-plugin-chatluna": "^1.0.1"
+    },
+    "koishi": {
+        "description": {
+            "zh": "ChatLuna 的讯飞星火 API 适配器",
+            "en": "iFLYTEK Spark API adapter for ChatLuna"
+        },
+        "service": {
+            "required": [
+                "chatluna"
+            ]
+        }
     }
-  }
 }

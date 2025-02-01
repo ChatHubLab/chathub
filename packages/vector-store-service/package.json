@@ -1,110 +1,110 @@
 {
-  "name": "koishi-plugin-chatluna-vector-store-service",
-  "description": "vector store service for chatluna",
-  "version": "1.0.0",
-  "main": "lib/index.cjs",
-  "module": "lib/index.mjs",
-  "typings": "lib/index.d.ts",
-  "files": [
-    "lib",
-    "dist"
-  ],
-  "exports": {
-    ".": {
-      "types": "./lib/index.d.ts",
-      "import": "./lib/index.mjs",
-      "require": "./lib/index.cjs"
+    "name": "koishi-plugin-chatluna-vector-store-service",
+    "description": "vector store service for chatluna",
+    "version": "1.0.0",
+    "main": "lib/index.cjs",
+    "module": "lib/index.mjs",
+    "typings": "lib/index.d.ts",
+    "files": [
+        "lib",
+        "dist"
+    ],
+    "exports": {
+        ".": {
+            "types": "./lib/index.d.ts",
+            "import": "./lib/index.mjs",
+            "require": "./lib/index.cjs"
+        },
+        "./package.json": "./package.json"
     },
-    "./package.json": "./package.json"
-  },
-  "type": "module",
-  "author": "dingyi222666 <dingyi222666@foxmail.com>",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ChatLunaLab/chatluna.git",
-    "directory": "packages/vector-store-service"
-  },
-  "license": "AGPL-3.0",
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "bugs": {
-    "url": "https://github.com/ChatLunaLab/chatluna/issues"
-  },
-  "homepage": "https://github.com/ChatLunaLab/chatluna/tree/v1-dev/packages/vector-store-service#readme",
-  "scripts": {
-    "build": "atsc -b"
-  },
-  "keywords": [
-    "chatbot",
-    "koishi",
-    "plugin",
-    "service",
-    "chatluna",
-    "vectorstore"
-  ],
-  "resolutions": {
-    "@langchain/core": "0.3.18",
-    "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
-  },
-  "overrides": {
-    "@langchain/core": "0.3.18",
-    "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
-  },
-  "pnpm": {
+    "type": "module",
+    "author": "dingyi222666 <dingyi222666@foxmail.com>",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/ChatLunaLab/chatluna.git",
+        "directory": "packages/vector-store-service"
+    },
+    "license": "AGPL-3.0",
+    "engines": {
+        "node": ">=18.0.0"
+    },
+    "bugs": {
+        "url": "https://github.com/ChatLunaLab/chatluna/issues"
+    },
+    "homepage": "https://github.com/ChatLunaLab/chatluna/tree/v1-dev/packages/vector-store-service#readme",
+    "scripts": {
+        "build": "atsc -b"
+    },
+    "keywords": [
+        "chatbot",
+        "koishi",
+        "plugin",
+        "service",
+        "chatluna",
+        "vectorstore"
+    ],
+    "resolutions": {
+        "@langchain/core": "0.3.18",
+        "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
+    },
     "overrides": {
-      "@langchain/core": "0.3.18",
-      "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
+        "@langchain/core": "0.3.18",
+        "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
+    },
+    "pnpm": {
+        "overrides": {
+            "@langchain/core": "0.3.18",
+            "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
+        }
+    },
+    "dependencies": {
+        "@chatluna/luna-vdb": "^0.0.9",
+        "@langchain/community": "^0.3.15",
+        "@langchain/core": "^0.3.18",
+        "@langchain/redis": "^0.1.0",
+        "redis": "^4.7.0",
+        "zod-to-json-schema": "3.23.5"
+    },
+    "devDependencies": {
+        "@langchain/mongodb": "^0.1.0",
+        "@types/uuid": "^10.0.0",
+        "@zilliz/milvus2-sdk-node": "^2.4.9",
+        "atsc": "^2.1.0",
+        "faiss-node": "^0.5.1",
+        "koishi": "^4.18.4",
+        "mongodb": "^6.12.0"
+    },
+    "peerDependencies": {
+        "@langchain/mongodb": "^0.1.0",
+        "@zilliz/milvus2-sdk-node": "^2.4.9",
+        "faiss-node": "^0.5.1",
+        "koishi": "^4.18.4",
+        "koishi-plugin-chatluna": "^1.0.1",
+        "mongodb": "^6.12.0"
+    },
+    "peerDependenciesMeta": {
+        "@langchain/mongodb": {
+            "optional": true
+        },
+        "@zilliz/milvus2-sdk-node": {
+            "optional": true
+        },
+        "faiss-node": {
+            "optional": true
+        },
+        "mongodb": {
+            "optional": true
+        }
+    },
+    "koishi": {
+        "description": {
+            "zh": "ChatLuna 的向量存储服务",
+            "en": "Vector storage service for ChatLuna"
+        },
+        "service": {
+            "required": [
+                "chatluna"
+            ]
+        }
     }
-  },
-  "dependencies": {
-    "@chatluna/luna-vdb": "^0.0.9",
-    "@langchain/community": "^0.3.15",
-    "@langchain/core": "^0.3.18",
-    "@langchain/redis": "^0.1.0",
-    "redis": "^4.7.0",
-    "zod-to-json-schema": "3.23.5"
-  },
-  "devDependencies": {
-    "@langchain/mongodb": "^0.1.0",
-    "@types/uuid": "^10.0.0",
-    "@zilliz/milvus2-sdk-node": "^2.4.9",
-    "atsc": "^2.1.0",
-    "faiss-node": "^0.5.1",
-    "koishi": "^4.18.4",
-    "mongodb": "^6.12.0"
-  },
-  "peerDependencies": {
-    "@langchain/mongodb": "^0.1.0",
-    "@zilliz/milvus2-sdk-node": "^2.4.9",
-    "faiss-node": "^0.5.1",
-    "koishi": "^4.18.4",
-    "koishi-plugin-chatluna": "^1.0.1-alpha.1",
-    "mongodb": "^6.12.0"
-  },
-  "peerDependenciesMeta": {
-    "@langchain/mongodb": {
-      "optional": true
-    },
-    "@zilliz/milvus2-sdk-node": {
-      "optional": true
-    },
-    "faiss-node": {
-      "optional": true
-    },
-    "mongodb": {
-      "optional": true
-    }
-  },
-  "koishi": {
-    "description": {
-      "zh": "ChatLuna 的向量存储服务",
-      "en": "Vector storage service for ChatLuna"
-    },
-    "service": {
-      "required": [
-        "chatluna"
-      ]
-    }
-  }
 }

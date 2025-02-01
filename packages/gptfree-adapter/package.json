@@ -1,84 +1,84 @@
 {
-  "name": "koishi-plugin-chatluna-gptfree-adapter",
-  "description": "gptfree adapter for chatluna",
-  "version": "1.0.0",
-  "main": "lib/index.cjs",
-  "module": "lib/index.mjs",
-  "typings": "lib/index.d.ts",
-  "files": [
-    "lib",
-    "dist"
-  ],
-  "exports": {
-    ".": {
-      "types": "./lib/index.d.ts",
-      "import": "./lib/index.mjs",
-      "require": "./lib/index.cjs"
+    "name": "koishi-plugin-chatluna-gptfree-adapter",
+    "description": "gptfree adapter for chatluna",
+    "version": "1.0.0",
+    "main": "lib/index.cjs",
+    "module": "lib/index.mjs",
+    "typings": "lib/index.d.ts",
+    "files": [
+        "lib",
+        "dist"
+    ],
+    "exports": {
+        ".": {
+            "types": "./lib/index.d.ts",
+            "import": "./lib/index.mjs",
+            "require": "./lib/index.cjs"
+        },
+        "./package.json": "./package.json"
     },
-    "./package.json": "./package.json"
-  },
-  "resolutions": {
-    "@langchain/core": "0.3.18",
-    "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
-  },
-  "overrides": {
-    "@langchain/core": "0.3.18",
-    "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
-  },
-  "pnpm": {
+    "resolutions": {
+        "@langchain/core": "0.3.18",
+        "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
+    },
     "overrides": {
-      "@langchain/core": "0.3.18",
-      "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
-    }
-  },
-  "type": "module",
-  "author": "dingyi222666 <dingyi222666@foxmail.com>",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ChatLunaLab/chatluna.git",
-    "directory": "packages/gptfree-adapter"
-  },
-  "license": "AGPL-3.0",
-  "bugs": {
-    "url": "https://github.com/ChatLunaLab/chatluna/issues"
-  },
-  "homepage": "https://github.com/ChatLunaLab/chatluna/tree/v1-dev/packages/gptfree-adapter#readme",
-  "scripts": {
-    "build": "atsc -b"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "keywords": [
-    "chatbot",
-    "koishi",
-    "plugin",
-    "service",
-    "gptfree",
-    "chatluna",
-    "adapter"
-  ],
-  "dependencies": {
-    "@langchain/core": "^0.3.18"
-  },
-  "devDependencies": {
-    "@types/uuid": "^10.0.0",
-    "atsc": "^2.1.0",
-    "koishi": "^4.18.4"
-  },
-  "peerDependencies": {
-    "koishi": "^4.18.4",
-    "koishi-plugin-chatluna": "^1.0.1-alpha.1"
-  },
-  "koishi": {
-    "description": {
-      "zh": "ChatLuna 的 GPTFree.ts 适配器（需要后端服务）",
-      "en": "GPTFree.ts adapter for ChatLuna (backend server required)"
+        "@langchain/core": "0.3.18",
+        "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
     },
-    "service": {
-      "required": [
-        "chatluna"
-      ]
+    "pnpm": {
+        "overrides": {
+            "@langchain/core": "0.3.18",
+            "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
+        }
+    },
+    "type": "module",
+    "author": "dingyi222666 <dingyi222666@foxmail.com>",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/ChatLunaLab/chatluna.git",
+        "directory": "packages/gptfree-adapter"
+    },
+    "license": "AGPL-3.0",
+    "bugs": {
+        "url": "https://github.com/ChatLunaLab/chatluna/issues"
+    },
+    "homepage": "https://github.com/ChatLunaLab/chatluna/tree/v1-dev/packages/gptfree-adapter#readme",
+    "scripts": {
+        "build": "atsc -b"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    },
+    "keywords": [
+        "chatbot",
+        "koishi",
+        "plugin",
+        "service",
+        "gptfree",
+        "chatluna",
+        "adapter"
+    ],
+    "dependencies": {
+        "@langchain/core": "^0.3.18"
+    },
+    "devDependencies": {
+        "@types/uuid": "^10.0.0",
+        "atsc": "^2.1.0",
+        "koishi": "^4.18.4"
+    },
+    "peerDependencies": {
+        "koishi": "^4.18.4",
+        "koishi-plugin-chatluna": "^1.0.1"
+    },
+    "koishi": {
+        "description": {
+            "zh": "ChatLuna 的 GPTFree.ts 适配器（需要后端服务）",
+            "en": "GPTFree.ts adapter for ChatLuna (backend server required)"
+        },
+        "service": {
+            "required": [
+                "chatluna"
+            ]
+        }
     }
-  }
 }

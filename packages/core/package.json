@@ -1,282 +1,282 @@
 {
-  "name": "koishi-plugin-chatluna",
-  "description": "chatluna for koishi",
-  "version": "1.0.1-alpha.1",
-  "main": "lib/index.cjs",
-  "module": "lib/index.mjs",
-  "typings": "lib/index.d.ts",
-  "files": [
-    "lib",
-    "dist",
-    "resources"
-  ],
-  "type": "module",
-  "exports": {
-    ".": {
-      "types": "./lib/index.d.ts",
-      "require": "./lib/index.cjs",
-      "import": "./lib/index.mjs"
+    "name": "koishi-plugin-chatluna",
+    "description": "chatluna for koishi",
+    "version": "1.0.1",
+    "main": "lib/index.cjs",
+    "module": "lib/index.mjs",
+    "typings": "lib/index.d.ts",
+    "files": [
+        "lib",
+        "dist",
+        "resources"
+    ],
+    "type": "module",
+    "exports": {
+        ".": {
+            "types": "./lib/index.d.ts",
+            "require": "./lib/index.cjs",
+            "import": "./lib/index.mjs"
+        },
+        "./preset": {
+            "types": "./lib/preset.d.ts",
+            "import": "./lib/preset.mjs",
+            "require": "./lib/preset.cjs"
+        },
+        "./chains": {
+            "types": "./lib/chains/index.d.ts",
+            "import": "./lib/chains/index.mjs",
+            "require": "./lib/chains/index.cjs"
+        },
+        "./services/chat": {
+            "types": "./lib/services/chat.d.ts",
+            "import": "./lib/services/chat.mjs",
+            "require": "./lib/services/chat.cjs"
+        },
+        "./llm-core/prompt": {
+            "types": "./lib/llm-core/prompt/index.d.ts",
+            "import": "./lib/llm-core/prompt/index.mjs",
+            "require": "./lib/llm-core/prompt/index.cjs"
+        },
+        "./llm-core/memory/langchain": {
+            "types": "./lib/llm-core/memory/langchain/index.d.ts",
+            "import": "./lib/llm-core/memory/langchain/index.mjs",
+            "require": "./lib/llm-core/memory/langchain/index.cjs"
+        },
+        "./llm-core/chain/prompt": {
+            "types": "./lib/llm-core/chain/prompt.d.ts",
+            "import": "./lib/llm-core/chain/prompt.mjs",
+            "require": "./lib/llm-core/chain/prompt.cjs"
+        },
+        "./llm-core/agent": {
+            "types": "./lib/llm-core/agent/index.d.ts",
+            "import": "./lib/llm-core/agent/index.mjs",
+            "require": "./lib/llm-core/agent/index.cjs"
+        },
+        "./llm-core/platform/api": {
+            "types": "./lib/llm-core/platform/api.d.ts",
+            "import": "./lib/llm-core/platform/api.mjs",
+            "require": "./lib/llm-core/platform/api.cjs"
+        },
+        "./llm-core/platform/client": {
+            "types": "./lib/llm-core/platform/client.d.ts",
+            "import": "./lib/llm-core/platform/client.mjs",
+            "require": "./lib/llm-core/platform/client.cjs"
+        },
+        "./llm-core/platform/config": {
+            "types": "./lib/llm-core/platform/config.d.ts",
+            "import": "./lib/llm-core/platform/config.mjs",
+            "require": "./lib/llm-core/platform/config.cjs"
+        },
+        "./llm-core/platform/model": {
+            "types": "./lib/llm-core/platform/model.d.ts",
+            "import": "./lib/llm-core/platform/model.mjs",
+            "require": "./lib/llm-core/platform/model.cjs"
+        },
+        "./llm-core/platform/service": {
+            "types": "./lib/llm-core/platform/service.d.ts",
+            "import": "./lib/llm-core/platform/service.mjs",
+            "require": "./lib/llm-core/platform/service.cjs"
+        },
+        "./llm-core/platform/types": {
+            "types": "./lib/llm-core/platform/types.d.ts",
+            "import": "./lib/llm-core/platform/types.mjs",
+            "require": "./lib/llm-core/platform/types.cjs"
+        },
+        "./llm-core/vectorstores": {
+            "types": "./lib/llm-core/vectorstores/index.d.ts",
+            "import": "./lib/llm-core/vectorstores/index.mjs",
+            "require": "./lib/llm-core/vectorstores/index.cjs"
+        },
+        "./llm-core/memory/message": {
+            "types": "./lib/llm-core/memory/message/index.d.ts",
+            "import": "./lib/llm-core/memory/message/index.mjs",
+            "require": "./lib/llm-core/memory/message/index.cjs"
+        },
+        "./llm-core/retrievers": {
+            "types": "./lib/llm-core/retrievers/index.d.ts",
+            "import": "./lib/llm-core/retrievers/index.mjs",
+            "require": "./lib/llm-core/retrievers/index.cjs"
+        },
+        "./utils/string": {
+            "types": "./lib/utils/string.d.ts",
+            "import": "./lib/utils/string.mjs",
+            "require": "./lib/utils/string.cjs"
+        },
+        "./utils/error": {
+            "types": "./lib/utils/error.d.ts",
+            "import": "./lib/utils/error.mjs",
+            "require": "./lib/utils/error.cjs"
+        },
+        "./utils/logger": {
+            "types": "./lib/utils/logger.d.ts",
+            "import": "./lib/utils/logger.mjs",
+            "require": "./lib/utils/logger.cjs"
+        },
+        "./utils/request": {
+            "types": "./lib/utils/request.d.ts",
+            "import": "./lib/utils/request.mjs",
+            "require": "./lib/utils/request.cjs"
+        },
+        "./utils/sse": {
+            "types": "./lib/utils/sse.d.ts",
+            "import": "./lib/utils/sse.mjs",
+            "require": "./lib/utils/sse.cjs"
+        },
+        "./utils/koishi": {
+            "types": "./lib/utils/koishi.d.ts",
+            "import": "./lib/utils/koishi.mjs",
+            "require": "./lib/utils/koishi.cjs"
+        },
+        "./utils/types": {
+            "types": "./lib/utils/types.d.ts",
+            "import": "./lib/utils/types.mjs",
+            "require": "./lib/utils/types.cjs"
+        },
+        "./utils/lock": {
+            "types": "./lib/utils/lock.d.ts",
+            "import": "./lib/utils/lock.mjs",
+            "require": "./lib/utils/lock.cjs"
+        },
+        "./utils/queue": {
+            "types": "./lib/utils/queue.d.ts",
+            "import": "./lib/utils/queue.mjs",
+            "require": "./lib/utils/queue.cjs"
+        },
+        "./utils/stream": {
+            "types": "./lib/utils/stream.d.ts",
+            "import": "./lib/utils/stream.mjs",
+            "require": "./lib/utils/stream.cjs"
+        },
+        "./utils/pagination": {
+            "types": "./lib/utils/pagination.d.ts",
+            "import": "./lib/utils/pagination.mjs",
+            "require": "./lib/utils/pagination.cjs"
+        },
+        "./llm-core/model/in_memory": {
+            "types": "./lib/llm-core/model/in_memory.d.ts",
+            "import": "./lib/llm-core/model/in_memory.mjs",
+            "require": "./lib/llm-core/model/in_memory.cjs"
+        },
+        "./llm-core/utils/count_tokens": {
+            "types": "./lib/llm-core/utils/count_tokens.d.ts",
+            "import": "./lib/llm-core/utils/count_tokens.mjs",
+            "require": "./lib/llm-core/utils/count_tokens.cjs"
+        },
+        "./llm-core/chain/base": {
+            "types": "./lib/llm-core/chain/base.d.ts",
+            "import": "./lib/llm-core/chain/base.mjs",
+            "require": "./lib/llm-core/chain/base.cjs"
+        },
+        "./llm-core/chat/app": {
+            "types": "./lib/llm-core/chat/app.d.ts",
+            "import": "./lib/llm-core/chat/app.mjs",
+            "require": "./lib/llm-core/chat/app.cjs"
+        },
+        "./llm-core/model/base": {
+            "types": "./lib/llm-core/model/base.d.ts",
+            "import": "./lib/llm-core/model/base.mjs",
+            "require": "./lib/llm-core/model/base.cjs"
+        },
+        "./utils/promise": {
+            "types": "./lib/utils/promise.d.ts",
+            "import": "./lib/utils/promise.mjs",
+            "require": "./lib/utils/promise.cjs"
+        },
+        "./package.json": "./package.json"
     },
-    "./preset": {
-      "types": "./lib/preset.d.ts",
-      "import": "./lib/preset.mjs",
-      "require": "./lib/preset.cjs"
+    "author": "dingyi222666 <dingyi222666@foxmail.com>",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/ChatLunaLab/chatluna.git",
+        "directory": "packages/core"
     },
-    "./chains": {
-      "types": "./lib/chains/index.d.ts",
-      "import": "./lib/chains/index.mjs",
-      "require": "./lib/chains/index.cjs"
+    "license": "AGPL-3.0",
+    "bugs": {
+        "url": "https://github.com/ChatLunaLab/chatluna/issues"
     },
-    "./services/chat": {
-      "types": "./lib/services/chat.d.ts",
-      "import": "./lib/services/chat.mjs",
-      "require": "./lib/services/chat.cjs"
+    "scripts": {
+        "build": "atsc -b"
     },
-    "./llm-core/prompt": {
-      "types": "./lib/llm-core/prompt/index.d.ts",
-      "import": "./lib/llm-core/prompt/index.mjs",
-      "require": "./lib/llm-core/prompt/index.cjs"
+    "engines": {
+        "node": ">=18.0.0"
     },
-    "./llm-core/memory/langchain": {
-      "types": "./lib/llm-core/memory/langchain/index.d.ts",
-      "import": "./lib/llm-core/memory/langchain/index.mjs",
-      "require": "./lib/llm-core/memory/langchain/index.cjs"
+    "homepage": "https://github.com/ChatLunaLab/chatluna#readme",
+    "keywords": [
+        "chatbot",
+        "koishi",
+        "chatgpt",
+        "gpt",
+        "chatluna",
+        "ai",
+        "langchain"
+    ],
+    "dependencies": {
+        "@langchain/core": "^0.3.18",
+        "decimal.js": "^10.4.3",
+        "he": "^1.2.0",
+        "https-proxy-agent": "^7.0.5",
+        "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15",
+        "js-yaml": "^4.1.0",
+        "koishi-plugin-markdown": "^1.1.1",
+        "lru-cache": "^11.0.2",
+        "marked": "^15.0.1",
+        "md5": "^2.3.0",
+        "socks": "^2.8.2",
+        "socks-proxy-agent": "^8.0.4",
+        "undici": "^6.21.0",
+        "uuid": "^9.0.1",
+        "ws": "^8.18.0",
+        "zod": "^3.24.0-canary.20241107T043915",
+        "zod-to-json-schema": "^3.23.5"
     },
-    "./llm-core/chain/prompt": {
-      "types": "./lib/llm-core/chain/prompt.d.ts",
-      "import": "./lib/llm-core/chain/prompt.mjs",
-      "require": "./lib/llm-core/chain/prompt.cjs"
+    "devDependencies": {
+        "@initencounter/sst": "^0.0.1",
+        "@initencounter/vits": "^0.0.3",
+        "@koishijs/cache": "^2.1.0",
+        "@koishijs/censor": "^1.1.0",
+        "@types/he": "^1.2.3",
+        "@types/js-yaml": "^4.0.9",
+        "@types/katex": "^0",
+        "@types/md5": "^2.3.5",
+        "@types/qrcode": "^1.5.5",
+        "@types/useragent": "^2",
+        "@types/uuid": "^10.0.0",
+        "atsc": "^2.1.0"
     },
-    "./llm-core/agent": {
-      "types": "./lib/llm-core/agent/index.d.ts",
-      "import": "./lib/llm-core/agent/index.mjs",
-      "require": "./lib/llm-core/agent/index.cjs"
+    "peerDependencies": {
+        "koishi": "^4.18.4"
     },
-    "./llm-core/platform/api": {
-      "types": "./lib/llm-core/platform/api.d.ts",
-      "import": "./lib/llm-core/platform/api.mjs",
-      "require": "./lib/llm-core/platform/api.cjs"
+    "resolutions": {
+        "@langchain/core": "0.3.18",
+        "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
     },
-    "./llm-core/platform/client": {
-      "types": "./lib/llm-core/platform/client.d.ts",
-      "import": "./lib/llm-core/platform/client.mjs",
-      "require": "./lib/llm-core/platform/client.cjs"
-    },
-    "./llm-core/platform/config": {
-      "types": "./lib/llm-core/platform/config.d.ts",
-      "import": "./lib/llm-core/platform/config.mjs",
-      "require": "./lib/llm-core/platform/config.cjs"
-    },
-    "./llm-core/platform/model": {
-      "types": "./lib/llm-core/platform/model.d.ts",
-      "import": "./lib/llm-core/platform/model.mjs",
-      "require": "./lib/llm-core/platform/model.cjs"
-    },
-    "./llm-core/platform/service": {
-      "types": "./lib/llm-core/platform/service.d.ts",
-      "import": "./lib/llm-core/platform/service.mjs",
-      "require": "./lib/llm-core/platform/service.cjs"
-    },
-    "./llm-core/platform/types": {
-      "types": "./lib/llm-core/platform/types.d.ts",
-      "import": "./lib/llm-core/platform/types.mjs",
-      "require": "./lib/llm-core/platform/types.cjs"
-    },
-    "./llm-core/vectorstores": {
-      "types": "./lib/llm-core/vectorstores/index.d.ts",
-      "import": "./lib/llm-core/vectorstores/index.mjs",
-      "require": "./lib/llm-core/vectorstores/index.cjs"
-    },
-    "./llm-core/memory/message": {
-      "types": "./lib/llm-core/memory/message/index.d.ts",
-      "import": "./lib/llm-core/memory/message/index.mjs",
-      "require": "./lib/llm-core/memory/message/index.cjs"
-    },
-    "./llm-core/retrievers": {
-      "types": "./lib/llm-core/retrievers/index.d.ts",
-      "import": "./lib/llm-core/retrievers/index.mjs",
-      "require": "./lib/llm-core/retrievers/index.cjs"
-    },
-    "./utils/string": {
-      "types": "./lib/utils/string.d.ts",
-      "import": "./lib/utils/string.mjs",
-      "require": "./lib/utils/string.cjs"
-    },
-    "./utils/error": {
-      "types": "./lib/utils/error.d.ts",
-      "import": "./lib/utils/error.mjs",
-      "require": "./lib/utils/error.cjs"
-    },
-    "./utils/logger": {
-      "types": "./lib/utils/logger.d.ts",
-      "import": "./lib/utils/logger.mjs",
-      "require": "./lib/utils/logger.cjs"
-    },
-    "./utils/request": {
-      "types": "./lib/utils/request.d.ts",
-      "import": "./lib/utils/request.mjs",
-      "require": "./lib/utils/request.cjs"
-    },
-    "./utils/sse": {
-      "types": "./lib/utils/sse.d.ts",
-      "import": "./lib/utils/sse.mjs",
-      "require": "./lib/utils/sse.cjs"
-    },
-    "./utils/koishi": {
-      "types": "./lib/utils/koishi.d.ts",
-      "import": "./lib/utils/koishi.mjs",
-      "require": "./lib/utils/koishi.cjs"
-    },
-    "./utils/types": {
-      "types": "./lib/utils/types.d.ts",
-      "import": "./lib/utils/types.mjs",
-      "require": "./lib/utils/types.cjs"
-    },
-    "./utils/lock": {
-      "types": "./lib/utils/lock.d.ts",
-      "import": "./lib/utils/lock.mjs",
-      "require": "./lib/utils/lock.cjs"
-    },
-    "./utils/queue": {
-      "types": "./lib/utils/queue.d.ts",
-      "import": "./lib/utils/queue.mjs",
-      "require": "./lib/utils/queue.cjs"
-    },
-    "./utils/stream": {
-      "types": "./lib/utils/stream.d.ts",
-      "import": "./lib/utils/stream.mjs",
-      "require": "./lib/utils/stream.cjs"
-    },
-    "./utils/pagination": {
-      "types": "./lib/utils/pagination.d.ts",
-      "import": "./lib/utils/pagination.mjs",
-      "require": "./lib/utils/pagination.cjs"
-    },
-    "./llm-core/model/in_memory": {
-      "types": "./lib/llm-core/model/in_memory.d.ts",
-      "import": "./lib/llm-core/model/in_memory.mjs",
-      "require": "./lib/llm-core/model/in_memory.cjs"
-    },
-    "./llm-core/utils/count_tokens": {
-      "types": "./lib/llm-core/utils/count_tokens.d.ts",
-      "import": "./lib/llm-core/utils/count_tokens.mjs",
-      "require": "./lib/llm-core/utils/count_tokens.cjs"
-    },
-    "./llm-core/chain/base": {
-      "types": "./lib/llm-core/chain/base.d.ts",
-      "import": "./lib/llm-core/chain/base.mjs",
-      "require": "./lib/llm-core/chain/base.cjs"
-    },
-    "./llm-core/chat/app": {
-      "types": "./lib/llm-core/chat/app.d.ts",
-      "import": "./lib/llm-core/chat/app.mjs",
-      "require": "./lib/llm-core/chat/app.cjs"
-    },
-    "./llm-core/model/base": {
-      "types": "./lib/llm-core/model/base.d.ts",
-      "import": "./lib/llm-core/model/base.mjs",
-      "require": "./lib/llm-core/model/base.cjs"
-    },
-    "./utils/promise": {
-      "types": "./lib/utils/promise.d.ts",
-      "import": "./lib/utils/promise.mjs",
-      "require": "./lib/utils/promise.cjs"
-    },
-    "./package.json": "./package.json"
-  },
-  "author": "dingyi222666 <dingyi222666@foxmail.com>",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ChatLunaLab/chatluna.git",
-    "directory": "packages/core"
-  },
-  "license": "AGPL-3.0",
-  "bugs": {
-    "url": "https://github.com/ChatLunaLab/chatluna/issues"
-  },
-  "scripts": {
-    "build": "atsc -b"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "homepage": "https://github.com/ChatLunaLab/chatluna#readme",
-  "keywords": [
-    "chatbot",
-    "koishi",
-    "chatgpt",
-    "gpt",
-    "chatluna",
-    "ai",
-    "langchain"
-  ],
-  "dependencies": {
-    "@langchain/core": "^0.3.18",
-    "decimal.js": "^10.4.3",
-    "he": "^1.2.0",
-    "https-proxy-agent": "^7.0.5",
-    "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15",
-    "js-yaml": "^4.1.0",
-    "koishi-plugin-markdown": "^1.1.1",
-    "lru-cache": "^11.0.2",
-    "marked": "^15.0.1",
-    "md5": "^2.3.0",
-    "socks": "^2.8.2",
-    "socks-proxy-agent": "^8.0.4",
-    "undici": "^6.21.0",
-    "uuid": "^9.0.1",
-    "ws": "^8.18.0",
-    "zod": "^3.24.0-canary.20241107T043915",
-    "zod-to-json-schema": "^3.23.5"
-  },
-  "devDependencies": {
-    "@initencounter/sst": "^0.0.1",
-    "@initencounter/vits": "^0.0.3",
-    "@koishijs/cache": "^2.1.0",
-    "@koishijs/censor": "^1.1.0",
-    "@types/he": "^1.2.3",
-    "@types/js-yaml": "^4.0.9",
-    "@types/katex": "^0",
-    "@types/md5": "^2.3.5",
-    "@types/qrcode": "^1.5.5",
-    "@types/useragent": "^2",
-    "@types/uuid": "^10.0.0",
-    "atsc": "^2.1.0"
-  },
-  "peerDependencies": {
-    "koishi": "^4.18.4"
-  },
-  "resolutions": {
-    "@langchain/core": "0.3.18",
-    "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
-  },
-  "overrides": {
-    "@langchain/core": "0.3.18",
-    "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
-  },
-  "pnpm": {
     "overrides": {
-      "@langchain/core": "0.3.18",
-      "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
-    }
-  },
-  "koishi": {
-    "description": {
-      "zh": "多平台大语言模型聊天插件，支持多种模型和输出格式",
-      "en": "A bot plugin for LLM chat services with multi-model integration, extensibility, and various output formats"
+        "@langchain/core": "0.3.18",
+        "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
     },
-    "service": {
-      "implements": [
-        "chatluna"
-      ],
-      "required": [
-        "database"
-      ],
-      "optional": [
-        "censor",
-        "vits",
-        "sst"
-      ]
+    "pnpm": {
+        "overrides": {
+            "@langchain/core": "0.3.18",
+            "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
+        }
+    },
+    "koishi": {
+        "description": {
+            "zh": "多平台大语言模型聊天插件，支持多种模型和输出格式",
+            "en": "A bot plugin for LLM chat services with multi-model integration, extensibility, and various output formats"
+        },
+        "service": {
+            "implements": [
+                "chatluna"
+            ],
+            "required": [
+                "database"
+            ],
+            "optional": [
+                "censor",
+                "vits",
+                "sst"
+            ]
+        }
     }
-  }
 }

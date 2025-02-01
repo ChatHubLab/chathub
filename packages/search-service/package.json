@@ -1,92 +1,92 @@
 {
-  "name": "koishi-plugin-chatluna-search-service",
-  "description": "search support for chatluna",
-  "version": "1.0.0",
-  "main": "lib/index.cjs",
-  "module": "lib/index.mjs",
-  "typings": "lib/index.d.ts",
-  "files": [
-    "lib",
-    "dist"
-  ],
-  "exports": {
-    ".": {
-      "types": "./lib/index.d.ts",
-      "import": "./lib/index.mjs",
-      "require": "./lib/index.cjs"
+    "name": "koishi-plugin-chatluna-search-service",
+    "description": "search support for chatluna",
+    "version": "1.0.0",
+    "main": "lib/index.cjs",
+    "module": "lib/index.mjs",
+    "typings": "lib/index.d.ts",
+    "files": [
+        "lib",
+        "dist"
+    ],
+    "exports": {
+        ".": {
+            "types": "./lib/index.d.ts",
+            "import": "./lib/index.mjs",
+            "require": "./lib/index.cjs"
+        },
+        "./package.json": "./package.json"
     },
-    "./package.json": "./package.json"
-  },
-  "type": "module",
-  "author": "dingyi222666 <dingyi222666@foxmail.com>",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ChatLunaLab/chatluna.git",
-    "directory": "packages/search-service"
-  },
-  "license": "AGPL-3.0",
-  "bugs": {
-    "url": "https://github.com/ChatLunaLab/chatluna/issues"
-  },
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "homepage": "https://github.com/ChatLunaLab/chatluna/tree/v1-dev/packages/search-service#readme",
-  "scripts": {
-    "build": "atsc -b"
-  },
-  "resolutions": {
-    "@langchain/core": "0.3.18",
-    "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
-  },
-  "overrides": {
-    "@langchain/core": "0.3.18",
-    "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
-  },
-  "pnpm": {
+    "type": "module",
+    "author": "dingyi222666 <dingyi222666@foxmail.com>",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/ChatLunaLab/chatluna.git",
+        "directory": "packages/search-service"
+    },
+    "license": "AGPL-3.0",
+    "bugs": {
+        "url": "https://github.com/ChatLunaLab/chatluna/issues"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    },
+    "homepage": "https://github.com/ChatLunaLab/chatluna/tree/v1-dev/packages/search-service#readme",
+    "scripts": {
+        "build": "atsc -b"
+    },
+    "resolutions": {
+        "@langchain/core": "0.3.18",
+        "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
+    },
     "overrides": {
-      "@langchain/core": "0.3.18",
-      "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
-    }
-  },
-  "keywords": [
-    "chatbot",
-    "koishi",
-    "plugin",
-    "service",
-    "chatgpt",
-    "gpt",
-    "openai",
-    "chatluna",
-    "search"
-  ],
-  "dependencies": {
-    "@langchain/core": "^0.3.18",
-    "@langchain/textsplitters": "^0.1.0",
-    "lru-cache": "^11.0.2",
-    "zod": "^3.24.0-canary.20241107T043915"
-  },
-  "devDependencies": {
-    "@types/jsdom": "^21.1.7",
-    "@types/uuid": "^10.0.0",
-    "atsc": "^2.1.0",
-    "koishi": "^4.18.4",
-    "koishi-plugin-puppeteer": "^3.9.0"
-  },
-  "peerDependencies": {
-    "koishi": "^4.18.4",
-    "koishi-plugin-chatluna": "^1.0.1-alpha.1"
-  },
-  "koishi": {
-    "description": {
-      "zh": "ChatLuna 的网络搜索服务插件，支持多源聚合搜索，包括 `Bing` | `Google` | `DuckDuckGo` | `Serper` | `Tavily` | `MediaWiki`",
-      "en": "Web search service plugin for ChatLuna. Support multi-source aggregation search, including `Bing` | `Google` | `DuckDuckGo` | `Serper` | `Tavily` | `MediaWiki`"
+        "@langchain/core": "0.3.18",
+        "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
     },
-    "service": {
-      "required": [
+    "pnpm": {
+        "overrides": {
+            "@langchain/core": "0.3.18",
+            "js-tiktoken": "npm:@dingyi222666/js-tiktoken@^1.0.15"
+        }
+    },
+    "keywords": [
+        "chatbot",
+        "koishi",
+        "plugin",
+        "service",
+        "chatgpt",
+        "gpt",
+        "openai",
         "chatluna",
-        "puppeteer"
-      ]
+        "search"
+    ],
+    "dependencies": {
+        "@langchain/core": "^0.3.18",
+        "@langchain/textsplitters": "^0.1.0",
+        "lru-cache": "^11.0.2",
+        "zod": "^3.24.0-canary.20241107T043915"
+    },
+    "devDependencies": {
+        "@types/jsdom": "^21.1.7",
+        "@types/uuid": "^10.0.0",
+        "atsc": "^2.1.0",
+        "koishi": "^4.18.4",
+        "koishi-plugin-puppeteer": "^3.9.0"
+    },
+    "peerDependencies": {
+        "koishi": "^4.18.4",
+        "koishi-plugin-chatluna": "^1.0.1"
+    },
+    "koishi": {
+        "description": {
+            "zh": "ChatLuna 的网络搜索服务插件，支持多源聚合搜索，包括 `Bing` | `Google` | `DuckDuckGo` | `Serper` | `Tavily` | `MediaWiki`",
+            "en": "Web search service plugin for ChatLuna. Support multi-source aggregation search, including `Bing` | `Google` | `DuckDuckGo` | `Serper` | `Tavily` | `MediaWiki`"
+        },
+        "service": {
+            "required": [
+                "chatluna",
+                "puppeteer"
+            ]
+        }
     }
-  }
 }
