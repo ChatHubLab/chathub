@@ -1,6 +1,6 @@
 import { BaseMessage } from '@langchain/core/messages'
 import type { HandlerResult, PostHandler } from './types'
-import { Context, Session } from 'koishi'
+import { Context, h, Session } from 'koishi'
 import type {} from '@koishijs/censor'
 import { Config } from 'koishi-plugin-chatluna'
 
@@ -111,7 +111,6 @@ export class PresetPostHandler implements PostHandler {
     prefix: string
     postfix: string
     variables: Record<string, string>
-    bodyRegex?: RegExp
     censor?: boolean
 
     compiledVariables: Record<string, RegExp>
@@ -147,7 +146,11 @@ export class PresetPostHandler implements PostHandler {
         const censor = this.ctx.censor
 
         if (censor && (this.config.censor || this.censor)) {
-            content = await censor.transform(content, session)
+            // See https://github.com/koishijs/censor/blob/2e3cd521bf35cb724bf464d9dd8269e4d9da53a2/packages/core/src/index.ts#L21
+            // Parse the content to text
+            content = await censor
+                .transform([h.text(content)], session)
+                .then((element) => element.join(''))
         }
 
         let displayContent = content
