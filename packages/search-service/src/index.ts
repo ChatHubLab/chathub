@@ -28,11 +28,6 @@ export function apply(ctx: Context, config: Config) {
     ctx.on('ready', async () => {
         plugin.registerToService()
 
-        const summaryModel =
-            config.summaryType === SummaryType.Quality
-                ? await createModel(ctx, config.summaryModel)
-                : undefined
-
         const searchManager = new SearchManager(ctx, config)
 
         providerPlugin(ctx, config, plugin, searchManager)
@@ -41,6 +36,12 @@ export function apply(ctx: Context, config: Config) {
             async createTool(params, session) {
                 const summaryType: SummaryType =
                     params['summaryType'] ?? config.summaryType
+
+                const summaryModel =
+                    config.summaryType === SummaryType.Quality
+                        ? await createModel(ctx, config.summaryModel)
+                        : undefined
+
                 const model = summaryModel ?? params.model
                 const browserTool = new PuppeteerBrowserTool(
                     ctx,
@@ -73,6 +74,11 @@ export function apply(ctx: Context, config: Config) {
 
         plugin.registerTool('web-browser', {
             async createTool(params, session) {
+                const summaryModel =
+                    config.summaryType === SummaryType.Quality
+                        ? await createModel(ctx, config.summaryModel)
+                        : undefined
+
                 return new PuppeteerBrowserTool(
                     ctx,
                     summaryModel ?? params.model,
@@ -99,6 +105,11 @@ export function apply(ctx: Context, config: Config) {
                         name === 'puppeteer_browser'
                 )
 
+                const keywordExtractModel =
+                    (config.keywordExtractModel?.length ?? 0) > 0
+                        ? await createModel(ctx, config.keywordExtractModel)
+                        : undefined
+
                 const model = params.model
                 const options = {
                     preset: params.preset,
@@ -106,7 +117,7 @@ export function apply(ctx: Context, config: Config) {
                     embeddings: params.embeddings,
                     historyMemory: params.historyMemory,
                     summaryType: config.summaryType,
-                    summaryModel: summaryModel ?? params.model,
+                    summaryModel: keywordExtractModel ?? params.model,
                     thoughtMessage: ctx.chatluna.config.showThoughtMessage,
                     searchPrompt: config.searchPrompt,
                     newQuestionPrompt: config.newQuestionPrompt
@@ -151,6 +162,7 @@ export interface Config extends ChatLunaPlugin.Config {
     topK: number
     summaryType: SummaryType
     summaryModel: string
+    keywordExtractModel: string
     mulitSourceMode: 'average' | 'total'
 
     serperApiKey: string
@@ -210,6 +222,7 @@ export const Config: Schema<Config> = Schema.intersect([
             Schema.const('total')
         ]).default('average') as Schema<Config['mulitSourceMode']>,
         summaryModel: Schema.dynamic('model'),
+        keywordExtractModel: Schema.dynamic('model'),
         searchThreshold: Schema.percent().step(0.01).default(0.25)
     }),
 
