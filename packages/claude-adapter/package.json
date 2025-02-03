@@ -54,7 +54,7 @@
     "devDependencies": {
         "atsc": "^2.1.0",
         "koishi": "^4.18.4",
-        "undici": "^6.21.0"
+        "undici": "^7.3.0"
     },
     "peerDependencies": {
         "koishi": "^4.18.4",
