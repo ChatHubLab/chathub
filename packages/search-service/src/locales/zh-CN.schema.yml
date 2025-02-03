@@ -9,6 +9,7 @@ $inner:
       puppeteerTimeout: Puppeteer 操作超时时间（毫秒）。
       puppeteerIdleTimeout: Puppeteer 空闲超时时间（毫秒）。
       summaryModel: 处理摘要的模型。选择较小并且速度较快的模型可以获得更快的响应速度。
+      keywordExtractModel: 处理关键词的模型。选择较小并且速度较快的模型可以获得更快的响应速度。
       searchConfidenceThreshold: 搜索决策的置信阈值。较高的值意味着更可能进行搜索。
       summaryType:
            $desc: 摘要模式。不同的摘要模式可以提高信息的质量。

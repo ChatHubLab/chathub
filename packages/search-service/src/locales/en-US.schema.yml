@@ -9,6 +9,7 @@ $inner:
       puppeteerTimeout: 'Puppeteer operation timeout (ms)'
       puppeteerIdleTimeout: 'Puppeteer idle timeout (ms)'
       summaryModel: 'Model used for generating summaries. Opting for a smaller and faster model can yield quicker responses.'
+      keywordExtractModel: 'Model used for generating keywords. Opting for a smaller and faster model can yield quicker responses.'
       summaryType:
           $desc: 'Summary mode. Different summary modes can improve the quality of information.'
           $inner:
