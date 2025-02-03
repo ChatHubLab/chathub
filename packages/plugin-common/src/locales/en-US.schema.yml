@@ -46,5 +46,6 @@ $inner:
             $inner:
                 name: 'Tool name. Please use English names only.'
                 description: 'Tool description'
+                headers: Request headers
                 openAPISpec: 'OpenAPI specification content'
                 selector: 'Keywords to trigger the tool'

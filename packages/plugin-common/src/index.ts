@@ -1,10 +1,13 @@
 /* eslint-disable max-len */
 import { ChatLunaPlugin } from 'koishi-plugin-chatluna/services/chat'
-import { Context, Schema } from 'koishi'
+import { Context, Logger, Schema } from 'koishi'
 import { plugin as plugins } from './plugin'
+import { createLogger } from 'koishi-plugin-chatluna/utils/logger'
 
+export let logger: Logger
 export function apply(ctx: Context, config: Config) {
     const plugin = new ChatLunaPlugin(ctx, config, 'plugin-common', false)
+    logger = createLogger(ctx, 'chatluna-plugin-common')
 
     ctx.on('ready', async () => {
         plugin.registerToService()
@@ -46,6 +49,7 @@ export interface Config extends ChatLunaPlugin.Config {
         name: string
         description: string
         openAPISpec: string
+        headers: Record<string, string>
         selector: string[]
     }[]
 }
@@ -139,10 +143,13 @@ export const Config: Schema<Config> = Schema.intersect([
                 Schema.object({
                     name: Schema.string(),
                     description: Schema.string(),
-                    openAPISpec: Schema.string().role('textarea'),
-                    selector: Schema.array(Schema.string()).role('table')
+                    headers: Schema.dict(String).default({}).role('table'),
+                    selector: Schema.array(Schema.string())
+                        .default([])
+                        .role('table'),
+                    openAPISpec: Schema.string().role('textarea')
                 })
-            )
+            ).role('table')
         }),
         Schema.object({})
     ])

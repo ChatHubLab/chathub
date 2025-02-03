@@ -51,5 +51,6 @@ $inner:
             $inner:
                 name: 工具名称。请使用纯英文的名称。
                 description: 工具描述。
+                headers: 工具请求头。
                 openAPISpec: OpenAPI 规范文件内容。
                 selector: 触发工具的关键词。

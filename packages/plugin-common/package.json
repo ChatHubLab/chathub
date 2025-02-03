@@ -57,9 +57,11 @@
     "dependencies": {
         "@e2b/code-interpreter": "^1.0.4",
         "@langchain/core": "^0.3.18",
+        "js-yaml": "^4.1.0",
         "zod": "^3.24.0-canary.20241107T043915"
     },
     "devDependencies": {
+        "@types/json-schema": "^7.0.15",
         "@types/uuid": "^10.0.0",
         "atsc": "^2.1.0",
         "koishi": "^4.18.4",
