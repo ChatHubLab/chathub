@@ -667,7 +667,7 @@ class DefaultChatChainSender {
             session.isDirect === false &&
             session.messageId
 
-        const messageContent = this.convertMessageToArray(message)
+        let messageContent = this.convertMessageToArray(message)
 
         if (!shouldAddQuote) {
             return messageContent
@@ -678,6 +678,17 @@ class DefaultChatChainSender {
         const hasIncompatibleType = messageContent.some(
             (element) => element.type === 'audio' || element.type === 'message'
         )
+
+        // make first p children into the frist
+        if (!hasIncompatibleType && messageContent[0]?.type === 'p') {
+            const pContent = messageContent[0]['content'] ?? ''
+
+            messageContent = [
+                h.text(pContent),
+                ...(messageContent[0].children || []),
+                ...messageContent.slice(1)
+            ]
+        }
 
         return hasIncompatibleType ? messageContent : [quote, ...messageContent]
     }
