@@ -8,6 +8,7 @@ import { Message, RenderMessage, RenderOptions, RenderType } from './types'
 import { TextRenderer } from './renders/text'
 import { VoiceRenderer } from './renders/voice'
 import { RawRenderer } from './renders/raw'
+import { KoishiElementRenderer } from './renders/koishi-element'
 import { MixedVoiceRenderer } from './renders/mixed-voice'
 import { Renderer } from './renders/default'
 
@@ -35,6 +36,10 @@ export class DefaultRenderer {
 
             this.addRenderer('raw', () => new RawRenderer(ctx))
             this.addRenderer('mixed-voice', () => new MixedVoiceRenderer(ctx))
+            this.addRenderer(
+                'koishi-element',
+                () => new KoishiElementRenderer(ctx)
+            )
         })
     }
 
@@ -99,6 +104,10 @@ export class DefaultRenderer {
 
     private _getAllRendererScheme(): Schema[] {
         return Object.values(this.renderers).map((key) => key.schema)
+    }
+
+    get rendererTypeList() {
+        return Object.keys(this.renderers)
     }
 }
 
