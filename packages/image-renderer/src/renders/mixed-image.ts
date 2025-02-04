@@ -20,7 +20,7 @@ import {
 import type {} from 'koishi-plugin-puppeteer'
 import { Config } from '..'
 import path from 'path'
-import { randomArrayItem, renderTemplate } from './image'
+import { escapeBrackets, randomArrayItem, renderTemplate } from './image'
 import fs from 'fs/promises'
 
 let logger: Logger
@@ -254,7 +254,7 @@ export class MixedImageRenderer extends Renderer {
     }
 
     private async _renderMarkdownToHtml(text: string) {
-        return await this._marked.parse(text, {
+        return await this._marked.parse(escapeBrackets(text), {
             gfm: true
         })
     }

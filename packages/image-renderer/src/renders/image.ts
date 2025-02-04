@@ -41,6 +41,12 @@ export class ImageRenderer extends Renderer {
                 throwOnError: false,
                 displayMode: false,
                 nonStandard: true,
+                macros: {
+                    '\\ge': '\\geqslant',
+                    '\\le': '\\leqslant',
+                    '\\geq': '\\geqslant',
+                    '\\leq': '\\leqslant'
+                },
                 output: 'html'
             }),
             markedHighlight({
@@ -143,7 +149,7 @@ export class ImageRenderer extends Renderer {
     }
 
     private async _renderMarkdownToHtml(text: string) {
-        return await this._marked.parse(text, {
+        return await this._marked.parse(escapeBrackets(text), {
             gfm: true
         })
     }
@@ -191,4 +197,26 @@ export function renderTemplate(template: string, data: Record<string, string>) {
 
 export function randomArrayItem<T>(array: T[]): T {
     return array[Math.floor(Math.random() * array.length)]
+}
+
+export function escapeBrackets(text: string) {
+    // 正则表达式匹配 LaTeX 的行内公式 \(...\) 和块级公式 \[...\]
+
+    const pattern = /\\\[([\s\S]*?[^\\])\\\]|\\\((.*?)\\\)/gm
+
+    const result = text.replace(
+        pattern,
+        (match: string, squareContent: string, roundContent: string) => {
+            if (squareContent) {
+                // 块级公式 \[...\] 替换为 $$...$$
+                return `$$${squareContent}$$`
+            } else if (roundContent) {
+                // 行内公式 \(...\) 替换为 $...$
+                return `$${roundContent}$`
+            }
+            return match
+        }
+    )
+
+    return result
 }
