@@ -72,7 +72,7 @@ export class ChatLunaService extends Service {
         this._keysCache = new Cache(this.ctx, config, 'chathub/keys')
         this._preset = new PresetService(ctx, config, this._keysCache)
         this._platformService = new PlatformService(ctx)
-        this._messageTransformer = new MessageTransformer()
+        this._messageTransformer = new MessageTransformer(config)
         this._renderer = new DefaultRenderer(ctx, config)
 
         this._createTempDir()
