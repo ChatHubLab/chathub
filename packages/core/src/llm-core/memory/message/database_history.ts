@@ -242,9 +242,8 @@ export class KoishiChatMessageHistory extends BaseChatMessageHistory {
 
         let additionalArgs = Object.assign({}, message.additional_kwargs)
 
-        if (additionalArgs?.['preset']) {
-            delete additionalArgs['preset']
-        }
+        delete additionalArgs['preset']
+        delete additionalArgs['raw_content']
 
         if (Object.keys(additionalArgs).length === 0) {
             additionalArgs = null

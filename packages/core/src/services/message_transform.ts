@@ -53,7 +53,7 @@ export class MessageTransformer {
                 quoteMessage.content.length > 0 &&
                 quoteMessage.content !== '[image]'
             ) {
-                message.rawContent = message.content
+                message.additional_kwargs['raw_content'] = message.content
                 // eslint-disable-next-line max-len
                 message.content = `The following is a quoted message: "${quoteMessage.content}"\n\nPlease consider this quote when generating your response. User's message: ${message.content}`
             }

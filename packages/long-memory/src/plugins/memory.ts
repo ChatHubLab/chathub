@@ -34,7 +34,9 @@ export function apply(ctx: Context, config: Config) {
                 longMemoryCache[longMemoryId] = retriever
             }
 
-            let searchContent = getMessageContent(message.content)
+            let searchContent =
+                (message.additional_kwargs['raw_content'] as string | null) ??
+                getMessageContent(message.content)
 
             if (config.longMemoryNewQuestionSearch) {
                 const chatHistory = await selectChatHistory(
