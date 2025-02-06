@@ -250,15 +250,19 @@ export class GeminiRequester
             }
 
             if (groundingContent.length > 0) {
-                const groundingMessage = new AIMessageChunk(
-                    `\n${groundingContent}`
-                )
-                const generationChunk = new ChatGenerationChunk({
-                    message: groundingMessage,
-                    text: '\n' + groundingContent
-                })
+                logger.debug(`grounding content: ${groundingContent}`)
 
-                yield generationChunk
+                if (this._pluginConfig.groundingContentDisplay) {
+                    const groundingMessage = new AIMessageChunk(
+                        `\n${groundingContent}`
+                    )
+                    const generationChunk = new ChatGenerationChunk({
+                        message: groundingMessage,
+                        text: '\n' + groundingContent
+                    })
+
+                    yield generationChunk
+                }
             }
         } catch (e) {
             if (e instanceof ChatLunaError) {
