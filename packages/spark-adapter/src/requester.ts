@@ -292,12 +292,7 @@ export class SparkRequester extends ModelRequester {
                 chunk.name = chunk.additional_kwargs?.function_call?.name
                 chunk.content = message.content
             } else {
-                chunk = chunk ?? new AIMessageChunk('')
-                if (message.content != null && params.tools != null) {
-                    chunk.content = message.content
-                } else {
-                    chunk.content = chunk.content + message.content
-                }
+                chunk = new AIMessageChunk(message.content)
             }
 
             writable.write(chunk)

@@ -82,10 +82,8 @@ export class WenxinRequester
             )
 
             const iterator = sseIterable(response)
-            let content = ''
 
             const defaultRole: WenxinMessageRole = 'assistant'
-            const findTools = params.tools != null
 
             let errorCount = 0
 
@@ -119,18 +117,12 @@ export class WenxinRequester
                         defaultRole
                     )
 
-                    if (!findTools) {
-                        content = content + messageChunk.content
-                        messageChunk.content = content
-                    }
-
                     const generationChunk = new ChatGenerationChunk({
                         message: messageChunk,
                         text: messageChunk.content as string
                     })
 
                     yield generationChunk
-                    content = messageChunk.content as string
                 } catch (e) {
                     console.error(e, chunk)
                     if (errorCount > 5) {

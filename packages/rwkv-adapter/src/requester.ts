@@ -68,9 +68,7 @@ export class RWKVRequester
             )
 
             const iterator = sseIterable(response)
-            let content = ''
 
-            const findTools = params.tools != null
             let defaultRole: ChatCompletionResponseMessageRoleEnum = 'assistant'
 
             let errorCount = 0
@@ -109,11 +107,6 @@ export class RWKVRequester
                     defaultRole = (
                         (delta.role?.length ?? 0) > 0 ? delta.role : defaultRole
                     ) as ChatCompletionResponseMessageRoleEnum
-
-                    if (!findTools) {
-                        content = content + messageChunk.content
-                        messageChunk.content = content
-                    }
 
                     const generationChunk = new ChatGenerationChunk({
                         message: messageChunk,

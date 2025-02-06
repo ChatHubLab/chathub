@@ -135,7 +135,7 @@ export class GeminiRequester
                 }
             }
 
-            await sse(
+            sse(
                 response,
                 async (rawData) => {
                     jsonParser.write(rawData)
@@ -144,10 +144,8 @@ export class GeminiRequester
                 0
             )
 
-            let content = ''
-
             let reasoningContent = ''
-            let isOldVisionModel = params.model.includes('vision')
+            let content = ''
 
             const functionCall: ChatCompletionMessageFunctionCall & {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -168,17 +166,8 @@ export class GeminiRequester
                         reasoningContent += messagePart.text
                         continue
                     }
-                    if (params.tools != null) {
-                        content = messagePart.text
-                    } else {
-                        content += messagePart.text
-                    }
 
-                    // match /w*model:
-                    if (isOldVisionModel && /\s*model:\s*/.test(content)) {
-                        isOldVisionModel = false
-                        content = messagePart.text.replace(/\s*model:\s*/, '')
-                    }
+                    content = messagePart.text
                 }
 
                 const deltaFunctionCall = chatFunctionCallingPart.functionCall

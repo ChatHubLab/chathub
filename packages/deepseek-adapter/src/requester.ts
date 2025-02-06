@@ -78,9 +78,8 @@ export class DeepseekRequester
             )
 
             const iterator = sseIterable(response)
-            let content = ''
+
             let reasoningContent = ''
-            const findTools = params.tools != null
 
             let defaultRole: ChatCompletionResponseMessageRoleEnum = 'assistant'
 
@@ -120,17 +119,9 @@ export class DeepseekRequester
                         defaultRole
                     )
 
-                    if (!findTools) {
-                        content = (content + messageChunk.content) as string
-                        messageChunk.content = content
-
-                        if (delta.reasoning_content) {
-                            reasoningContent = (reasoningContent +
-                                delta.reasoning_content) as string
-                        }
-
-                        messageChunk.additional_kwargs['reasoning_content'] =
-                            reasoningContent
+                    if (delta.reasoning_content) {
+                        reasoningContent = (reasoningContent +
+                            delta.reasoning_content) as string
                     }
 
                     defaultRole = (delta.role ??

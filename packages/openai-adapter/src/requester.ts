@@ -72,8 +72,6 @@ export class OpenAIRequester
             )
 
             const iterator = sseIterable(response)
-            let content = ''
-            const findTools = params.tools != null
 
             let defaultRole: ChatCompletionResponseMessageRoleEnum = 'assistant'
 
@@ -109,11 +107,6 @@ export class OpenAIRequester
                         delta,
                         defaultRole
                     )
-
-                    if (!findTools) {
-                        content = (content + messageChunk.content) as string
-                        messageChunk.content = content
-                    }
 
                     defaultRole = (delta.role ??
                         defaultRole) as ChatCompletionResponseMessageRoleEnum

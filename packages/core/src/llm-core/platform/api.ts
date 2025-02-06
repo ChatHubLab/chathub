@@ -72,10 +72,10 @@ export abstract class ModelRequester implements BaseRequester {
         const stream = this.completionStream(params)
 
         // get final result
-        let result: ChatGeneration
+        let result: ChatGenerationChunk
 
         for await (const chunk of stream) {
-            result = chunk
+            result = result != null ? result.concat(chunk) : chunk
         }
 
         return result

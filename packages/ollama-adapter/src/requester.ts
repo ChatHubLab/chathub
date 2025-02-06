@@ -72,7 +72,8 @@ export class OllamaRequester
             const writable = stream.writable.getWriter()
 
             let buffer = ''
-            await sse(
+
+            sse(
                 response,
                 async (rawData) => {
                     buffer += rawData
@@ -92,11 +93,9 @@ export class OllamaRequester
                 0
             )
 
-            let content = ''
-
             for await (const chunk of iterable) {
                 try {
-                    content += chunk.message.content
+                    const content = chunk.message.content
 
                     const generationChunk = new ChatGenerationChunk({
                         message: new AIMessageChunk(content),

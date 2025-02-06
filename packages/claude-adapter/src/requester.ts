@@ -53,10 +53,6 @@ export class ClaudeRequester extends ModelRequester {
 
         const iterator = sseIterable(response)
 
-        const findTools = params.tools != null
-
-        let content = ''
-
         for await (const event of iterator) {
             if (event.event === 'ping') continue
 
@@ -83,14 +79,9 @@ export class ClaudeRequester extends ModelRequester {
 
             if (parsedChunk == null) continue
 
-            if (!findTools) {
-                parsedChunk.content = content + (parsedChunk.content ?? '')
-                content = parsedChunk.content
-            }
-
             yield new ChatGenerationChunk({
                 message: parsedChunk,
-                text: content
+                text: parsedChunk.content as string
             })
         }
     }

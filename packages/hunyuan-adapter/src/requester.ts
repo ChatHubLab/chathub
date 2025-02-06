@@ -1,4 +1,3 @@
-import { BaseMessageChunk } from '@langchain/core/messages'
 import { ChatGenerationChunk } from '@langchain/core/outputs'
 import {
     EmbeddingsRequester,
@@ -66,14 +65,10 @@ export class HunyuanRequester
                 }
             )
 
-            const findTools = params.tools != null
-
             const iterator = sseIterable(response)
 
             const defaultRole: ChatCompletionResponseMessageRoleEnum =
                 'assistant'
-
-            let lastMessageChunk: BaseMessageChunk
 
             for await (const event of iterator) {
                 const chunk = event.data
@@ -126,15 +121,10 @@ export class HunyuanRequester
                     continue
                 }
 
-                let messageChunk = convertDeltaToMessageChunk(
+                const messageChunk = convertDeltaToMessageChunk(
                     choice.delta,
                     defaultRole
                 )
-
-                if (!findTools) {
-                    messageChunk =
-                        lastMessageChunk?.concat(messageChunk) ?? messageChunk
-                }
 
                 const generationChunk = new ChatGenerationChunk({
                     message: messageChunk,
@@ -142,8 +132,6 @@ export class HunyuanRequester
                 })
 
                 yield generationChunk
-
-                lastMessageChunk = messageChunk
 
                 if (choice.finish_reason === 'stop') {
                     break

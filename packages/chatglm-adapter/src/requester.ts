@@ -65,13 +65,10 @@ export class OpenLLMRequester
             )
 
             const iterator = sseIterable(response)
-            let content = ''
 
             let defaultRole: ChatCompletionResponseMessageRoleEnum = 'assistant'
 
             let errorCount = 0
-
-            const findTools = params.tools != null
 
             for await (const event of iterator) {
                 const chunk = event.data
@@ -103,11 +100,6 @@ export class OpenLLMRequester
                         delta,
                         defaultRole
                     )
-
-                    if (!findTools) {
-                        content = (content + messageChunk.content) as string
-                        messageChunk.content = content
-                    }
 
                     defaultRole = (delta.role ??
                         defaultRole) as ChatCompletionResponseMessageRoleEnum

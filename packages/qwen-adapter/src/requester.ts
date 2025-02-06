@@ -66,8 +66,6 @@ export class QWenRequester
                 }
             )
 
-            const findTools = params.tools != null
-
             let iterator: AsyncGenerator<SSEEvent, string, unknown>
 
             try {
@@ -118,15 +116,10 @@ export class QWenRequester
                     continue
                 }
 
-                let messageChunk = convertDeltaToMessageChunk(
+                const messageChunk = convertDeltaToMessageChunk(
                     choice.delta,
                     defaultRole
                 )
-
-                if (!findTools) {
-                    messageChunk =
-                        lastMessageChunk?.concat(messageChunk) ?? messageChunk
-                }
 
                 const generationChunk = new ChatGenerationChunk({
                     message: messageChunk,
@@ -134,8 +127,6 @@ export class QWenRequester
                 })
 
                 yield generationChunk
-
-                lastMessageChunk = messageChunk
 
                 if (choice.finish_reason === 'stop') {
                     break
