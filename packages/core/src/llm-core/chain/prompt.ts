@@ -56,6 +56,8 @@ export class ChatLunaChatPrompt
 
     private _systemPrompts: BaseMessage[]
 
+    private fields: ChatLunaChatPromptInput
+
     constructor(fields: ChatLunaChatPromptInput) {
         super({
             inputVariables: [
@@ -73,6 +75,7 @@ export class ChatLunaChatPrompt
 
         this.sendTokenLimit = fields.sendTokenLimit ?? 4096
         this.getPreset = fields.preset
+        this.fields = fields
     }
 
     _getPromptType() {
@@ -530,7 +533,7 @@ Your goal is to craft a response that intelligently incorporates relevant knowle
             ...values
         }
         const promptDict = {
-            ...this,
+            ...this.fields,
             inputVariables: newInputVariables,
             partialVariables: newPartialVariables
         }

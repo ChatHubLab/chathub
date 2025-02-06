@@ -63,6 +63,8 @@ export class ReActSingleInputOutputParser extends AgentActionOutputParser {
         const regex = /Thought:\s*([^]*?)\s*Action:\s*([^]*?)/ms
         const actionMatch = text.match(regex)
 
+        console.log('text', text, regex)
+
         if (actionMatch) {
             const [, thoughts, action] = actionMatch
 
@@ -76,7 +78,7 @@ export class ReActSingleInputOutputParser extends AgentActionOutputParser {
         try {
             const parsedRawAction = JSON.stringify(action) as unknown as {
                 name: string
-                arguments: string
+                arguments: Record<string, string>
             }
 
             if (parsedRawAction.name === 'final_answer') {
