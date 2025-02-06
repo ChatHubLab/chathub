@@ -3,7 +3,7 @@ import { Config } from '.'
 import { PlatformService } from 'koishi-plugin-chatluna/llm-core/platform/service'
 import { ModelType } from 'koishi-plugin-chatluna/llm-core/platform/types'
 
-export async function apply(ctx: Context, config: Config) {
+export async function apply(ctx: Context, _config: Config) {
     ctx.on('chatluna/model-added', (service) => {
         ctx.schema.set('model', Schema.union(getModelNames(service)))
     })

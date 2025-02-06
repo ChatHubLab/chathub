@@ -9,10 +9,10 @@ class FreeGoogleSearchProvider extends SearchProvider {
         query: string,
         limit = this.config.topK
     ): Promise<SearchResult[]> {
+        const baseURL = this.config.freeGoogleAPIbaseURL
+
         const response = await this._plugin.fetch(
-            `https://search.dingyi222666.top/search?keyword=${encodeURIComponent(
-                query
-            )}&count=${limit}`,
+            `${baseURL}/search?keyword=${encodeURIComponent(query)}&count=${limit}`,
             {
                 method: 'GET',
                 headers: {
