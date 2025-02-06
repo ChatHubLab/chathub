@@ -10,7 +10,7 @@ class FreeGoogleSearchProvider extends SearchProvider {
         limit = this.config.topK
     ): Promise<SearchResult[]> {
         const response = await this._plugin.fetch(
-            `https://chatluna-search-api.deno.dev/search?keyword=${encodeURIComponent(
+            `https://search.dingyi222666.top/search?keyword=${encodeURIComponent(
                 query
             )}&count=${limit}`,
             {
