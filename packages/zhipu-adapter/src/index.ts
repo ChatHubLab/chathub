@@ -62,7 +62,7 @@ export const Config: Schema<Config> = Schema.intersect([
     }),
     Schema.object({
         maxTokens: Schema.number().min(16).max(1024000).step(16).default(4096),
-        temperature: Schema.percent().min(0).max(1).step(0.1).default(0.8),
+        temperature: Schema.percent().min(0).max(2).step(0.1).default(0.8),
         webSearch: Schema.boolean().default(true),
         retrieval: Schema.array(
             Schema.tuple([Schema.string(), Schema.boolean()])
