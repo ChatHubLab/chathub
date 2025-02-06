@@ -9,6 +9,7 @@ export interface Config {
     msgCooldown: number
     randomReplyFrequency: number
     messageCount: number
+    includeQuoteReply: boolean
     isLog: boolean
 
     isReplyWithAt: boolean
@@ -61,6 +62,7 @@ export const Config: Schema<Config> = Schema.intersect([
         isForwardMsg: Schema.boolean().default(false),
         privateChatWithoutCommand: Schema.boolean().default(true),
         allowChatWithRoomName: Schema.boolean().default(false),
+        includeQuoteReply: Schema.boolean().default(true),
         randomReplyFrequency: Schema.percent()
             .min(0)
             .max(1)

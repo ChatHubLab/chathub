@@ -12,6 +12,7 @@ $inner:
       privateChatWithoutCommand: 在私聊中是否允许无需命令直接与 bot 对话。
       allowChatWithRoomName: 是否允许使用房间名前缀触发对话。注意：启用此选项可能会显著影响 ChatLuna 的性能，建议配合过滤器仅在特定群组中启用。
       randomReplyFrequency: 设置随机回复的频率。
+      includeQuoteReply: 是否在回复内容中包含引用消息的内容。
 
     - $desc: 对话响应选项
       sendThinkingMessage: 是否在请求处理过程中发送等待消息。

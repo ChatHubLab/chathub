@@ -1,5 +1,5 @@
 import { h, Session } from 'koishi'
-import { logger } from 'koishi-plugin-chatluna'
+import { Config, logger } from 'koishi-plugin-chatluna'
 import { Message } from '../types'
 import {
     ChatLunaError,
@@ -9,7 +9,7 @@ import {
 export class MessageTransformer {
     private _transformFunctions: Record<string, MessageTransformFunction> = {}
 
-    constructor() {}
+    constructor(private _config: Config) {}
 
     async transform(
         session: Session,
@@ -36,7 +36,7 @@ export class MessageTransformer {
             }
         }
 
-        if (session.quote && !quote) {
+        if (session.quote && !quote && this._config.includeQuoteReply) {
             const quoteMessage = await this.transform(
                 session,
                 session.quote.elements,
@@ -53,6 +53,7 @@ export class MessageTransformer {
                 quoteMessage.content.length > 0 &&
                 quoteMessage.content !== '[image]'
             ) {
+                message.rawContent = message.content
                 // eslint-disable-next-line max-len
                 message.content = `The following is a quoted message: "${quoteMessage.content}"\n\nPlease consider this quote when generating your response. User's message: ${message.content}`
             }

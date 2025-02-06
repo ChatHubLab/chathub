@@ -62,6 +62,8 @@ export interface Message {
      * 附加消息回复
      */
     additionalReplyMessages?: Message[]
+
+    rawContent?: string
 }
 
 export interface RenderMessage {

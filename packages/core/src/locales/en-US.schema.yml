@@ -12,6 +12,7 @@ $inner:
       privateChatWithoutCommand: Enable direct conversation in private chats without commands.
       allowChatWithRoomName: 'Enable room name prefix triggering. Note: May impact performance significantly. Recommended for use with filters in specific groups only.'
       randomReplyFrequency: Set random reply frequency (0-100, where 0 means never and 100 means always).
+      includeQuoteReply: Include quoted message content in replies.
 
     - $desc: Response Options
       sendThinkingMessage: Send waiting message during processing.
