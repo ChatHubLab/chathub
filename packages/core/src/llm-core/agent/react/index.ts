@@ -4,7 +4,7 @@ import { RunnablePassthrough } from '@langchain/core/runnables'
 import { AgentStep } from '@langchain/core/agents'
 import { ReActSingleInputOutputParser } from './output_parser'
 import { AgentRunnableSequence } from 'koishi-plugin-chatluna/llm-core/agent'
-import { renderTextDescription } from '../render'
+import { renderTextDescriptionAndArgs } from '../render'
 import { FORMAT_INSTRUCTIONS } from './prompt.js'
 import { ChatLunaChatPrompt } from 'koishi-plugin-chatluna/llm-core/chain/prompt'
 import type { ChatLunaChatModel } from '../../platform/model'
@@ -83,7 +83,7 @@ export async function createReactAgent({
     const instructionsFormat = PromptTemplate.fromTemplate(
         FORMAT_INSTRUCTIONS
     ).format({
-        tool_descriptions: renderTextDescription(tools),
+        tool_descriptions: renderTextDescriptionAndArgs(tools),
         tool_names: toolNames.join(', ')
     })
 
@@ -128,9 +128,8 @@ export function formatLogToString(
         (thoughts, { action, observation }) =>
             thoughts +
             [
-                action.log,
-                `\n${observationPrefix}${observation}`,
-                llmPrefix
+                llmPrefix + action.log,
+                `\n${observationPrefix}${observation}`
             ].join('\n'),
         ''
     )

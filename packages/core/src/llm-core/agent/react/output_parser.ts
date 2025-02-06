@@ -60,25 +60,46 @@ export class ReActSingleInputOutputParser extends AgentActionOutputParser {
      * @returns Promise that resolves to an AgentAction or AgentFinish object.
      */
     async parse(text: string): Promise<AgentAction | AgentFinish> {
-        const regex = /Thought:\s*([^]*?)\s*Action:\s*([^]*?)/ms
-        const actionMatch = text.match(regex)
-
-        console.log('text', text, regex)
+        const actionRegex = /Action:\s*(.*\})/ms
+        const thoughtsRegex = /Thought:\s*([^]*?)(?=Action:|$)/ms
+        const actionMatch = text.match(actionRegex)
+        const thoughtsMatch = text.match(thoughtsRegex)
 
         if (actionMatch) {
-            const [, thoughts, action] = actionMatch
+            let [rawAction, action] = actionMatch
+            let [, thoughts] = thoughtsMatch
+
+            action = action.trim()
+
+            if (!thoughts) {
+                thoughts = text.replace(rawAction, '').trim()
+            }
 
             return this.parseAction(action, thoughts)
         }
 
-        throw new OutputParserException(`Could not parse LLM output: ${text}`)
+        throw new OutputParserException(
+            `Could not parse LLM output: ${text}`,
+            `Could not parse LLM output: ${text}`,
+            `Could not parse LLM output: ${text}`,
+            true
+        )
     }
 
     parseAction(action: string, thoughts: string): AgentAction | AgentFinish {
         try {
-            const parsedRawAction = JSON.stringify(action) as unknown as {
+            const parsedRawAction = JSON.parse(action) as unknown as {
                 name: string
                 arguments: Record<string, string>
+            }
+
+            if (
+                parsedRawAction.name == null ||
+                parsedRawAction.arguments == null
+            ) {
+                throw new OutputParserException(
+                    `Could not parse action command: ${action}`
+                )
             }
 
             if (parsedRawAction.name === 'final_answer') {
@@ -90,7 +111,7 @@ export class ReActSingleInputOutputParser extends AgentActionOutputParser {
 
             return {
                 tool: parsedRawAction.name,
-                toolInput: parsedRawAction.arguments,
+                toolInput: parsedRawAction.arguments || {},
                 log: thoughts
             }
         } catch (e) {

@@ -127,7 +127,8 @@ export class ChatLunaPluginChain
                 }),
                 tools,
                 memory: undefined,
-                verbose: false
+                verbose: false,
+                handleParsingErrors: true
             })
         }
 

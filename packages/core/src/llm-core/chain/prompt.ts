@@ -1,6 +1,11 @@
 /* eslint-disable max-len */
 import { Document } from '@langchain/core/documents'
-import { AIMessage, BaseMessage, SystemMessage } from '@langchain/core/messages'
+import {
+    AIMessage,
+    BaseMessage,
+    SystemMessage,
+    HumanMessage
+} from '@langchain/core/messages'
 import {
     BaseChatPromptTemplate,
     HumanMessagePromptTemplate,
@@ -151,9 +156,9 @@ Your goal is to craft a response that intelligently incorporates relevant knowle
 
         instructions =
             instructions ??
-            (typeof this.partialVariables.instructions === 'function'
+            (typeof this.partialVariables?.instructions === 'function'
                 ? await this.partialVariables.instructions()
-                : this.partialVariables.instructions)
+                : this.partialVariables?.instructions)
 
         const [systemPrompts] = await this._formatSystemPrompts(variables)
         this._systemPrompts = systemPrompts
@@ -199,6 +204,10 @@ Your goal is to craft a response that intelligently incorporates relevant knowle
                     Promise.resolve(0)
                 )
             } else {
+                if (typeof agentScratchpad === 'string') {
+                    agentScratchpad = new HumanMessage(agentScratchpad)
+                }
+
                 usedTokens += await this._countMessageTokens(agentScratchpad)
             }
         }
