@@ -40,6 +40,26 @@ export type ChatFunctionResponsePart = {
 export interface ChatResponse {
     candidates: {
         content: ChatCompletionResponseMessage
+        groundingMetadata: {
+            searchEntryPoint: {
+                renderedContent: string
+            }
+            groundingChunks: {
+                web: {
+                    uri: string
+                    title: string
+                }
+            }[]
+            groundingSupports: {
+                segment: {
+                    endIndex: number
+                    text: string
+                }
+                groundingChunkIndices: number[]
+                confidenceScores: number[]
+            }[]
+            webSearchQueries: string[]
+        }
         finishReason: string
         index: number
         safetyRatings: {

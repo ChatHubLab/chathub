@@ -11,4 +11,5 @@ $inner:
       maxTokens: 'Max output tokens (16-2097000, multiple of 16). >2000 for 8k+ models'
       temperature: 'Sampling temperature (0-2). Higher: more random, Lower: more deterministic'
       googleSearch: 'Enable Google search'
+      groundingContentDisplay: "Enable display of search results"
       searchThreshold: 'Search confidence [threshold](https://ai.google.dev/gemini-api/docs/grounding?lang=rest#dynamic-retrieval) (0-1). Lower: more likely to use Google search'

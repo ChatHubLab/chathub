@@ -1,5 +1,5 @@
 import { AIMessageChunk } from '@langchain/core/messages'
-import { ChatGenerationChunk } from '@langchain/core/outputs'
+import { ChatGeneration, ChatGenerationChunk } from '@langchain/core/outputs'
 import { JSONParser } from '@streamparser/json'
 import {
     EmbeddingsRequester,
@@ -112,6 +112,9 @@ export class GeminiRequester
 
             const writable = stream.writable.getWriter()
 
+            let groundingContent = ''
+            let currentGroudingIndex = 0
+
             jsonParser.onEnd = async () => {
                 await writable.close()
             }
@@ -131,6 +134,11 @@ export class GeminiRequester
 
                     for (const part of parts) {
                         await writable.write(part)
+                    }
+
+                    for (const source of candidate.groundingMetadata
+                        ?.groundingChunks ?? []) {
+                        groundingContent += `[^${currentGroudingIndex++}]: [${source.web.title}](${source.web.uri})\n`
                     }
                 }
             }
@@ -239,6 +247,18 @@ export class GeminiRequester
 
             if (reasoningContent.length > 0) {
                 logger.debug(`reasoning content: ${reasoningContent}`)
+            }
+
+            if (groundingContent.length > 0) {
+                const groundingMessage = new AIMessageChunk(
+                    `\n${groundingContent}`
+                )
+                const generationChunk = new ChatGenerationChunk({
+                    message: groundingMessage,
+                    text: '\n' + groundingContent
+                })
+
+                yield generationChunk
             }
         } catch (e) {
             if (e instanceof ChatLunaError) {

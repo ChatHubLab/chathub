@@ -42,6 +42,7 @@ export interface Config extends ChatLunaPlugin.Config {
     temperature: number
     googleSearch: boolean
     searchThreshold: number
+    groundingContentDisplay: boolean
 }
 
 export const Config: Schema<Config> = Schema.intersect([
@@ -60,6 +61,7 @@ export const Config: Schema<Config> = Schema.intersect([
         maxTokens: Schema.number().min(16).max(2097000).step(16).default(8064),
         temperature: Schema.percent().min(0).max(2).step(0.1).default(0.8),
         googleSearch: Schema.boolean().default(false),
+        groundingContentDisplay: Schema.boolean().default(false),
         searchThreshold: Schema.number().min(0).max(1).step(0.1).default(0.5)
     })
 ]).i18n({
