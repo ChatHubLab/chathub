@@ -195,6 +195,9 @@ export const Config: Schema<Config> = Schema.intersect([
     Schema.object({
         searchEngine: Schema.array(
             Schema.union([
+                Schema.const('free-google-api').description(
+                    'Free Google (API & Web)'
+                ),
                 Schema.const('bing-web').description('Bing (Web)'),
                 Schema.const('bing-api').description('Bing (API)'),
                 Schema.const('duckduckgo-lite').description(
@@ -207,7 +210,7 @@ export const Config: Schema<Config> = Schema.intersect([
                 Schema.const('searxng').description('SearxNG')
             ])
         )
-            .default(['bing-web'])
+            .default(['free-google-api'])
             .role('select'),
         topK: Schema.number().min(2).max(50).step(1).default(5),
         puppeteerTimeout: Schema.number().default(60000),
@@ -216,7 +219,7 @@ export const Config: Schema<Config> = Schema.intersect([
             Schema.const('speed'),
             Schema.const('balanced'),
             Schema.const('quality')
-        ]).default('balanced') as Schema<Config['summaryType']>,
+        ]).default('speed') as Schema<Config['summaryType']>,
         mulitSourceMode: Schema.union([
             Schema.const('average'),
             Schema.const('total')

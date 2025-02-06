@@ -3,8 +3,8 @@ import { Document } from '@langchain/core/documents'
 import {
     AIMessage,
     BaseMessage,
-    SystemMessage,
-    HumanMessage
+    HumanMessage,
+    SystemMessage
 } from '@langchain/core/messages'
 import {
     BaseChatPromptTemplate,

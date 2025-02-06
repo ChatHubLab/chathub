@@ -6,6 +6,7 @@ import { SearchManager } from './provide'
 import { apply as bing_api } from './providers/bing_api'
 import { apply as bing_web } from './providers/bing_web'
 import { apply as duckduckgo_lite } from './providers/duckduckgo_lite'
+import { apply as free_google_api } from './providers/free_google_api'
 import { apply as google_web } from './providers/google_web'
 import { apply as searxng } from './providers/searxng'
 import { apply as serper } from './providers/serper'
@@ -31,6 +32,7 @@ export async function providerPlugin(
             bing_api,
             bing_web,
             duckduckgo_lite,
+            free_google_api,
             google_web,
             searxng,
             serper,
