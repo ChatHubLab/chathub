@@ -58,9 +58,7 @@ export class DeepseekClient extends PlatformModelAndEmbeddingsClient<ClientConfi
                             ? ModelType.llm
                             : ModelType.embeddings,
                         functionCall: !model.includes('reasoner'),
-                        supportMode: [
-                            model.includes('reasoner') ? 'chat' : 'all'
-                        ]
+                        supportMode: ['all']
                     }
                 })
         } catch (e) {
