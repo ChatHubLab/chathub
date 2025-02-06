@@ -1,10 +1,8 @@
 /* eslint-disable max-len */
 import { Document } from '@langchain/core/documents'
 import { AIMessage, BaseMessage, SystemMessage } from '@langchain/core/messages'
-import { ChatPromptValueInterface } from '@langchain/core/prompt_values'
 import {
     BaseChatPromptTemplate,
-    BasePromptTemplate,
     HumanMessagePromptTemplate,
     MessagesPlaceholder
 } from '@langchain/core/prompts'
@@ -27,10 +25,19 @@ export interface ChatLunaChatPromptInput {
     tokenCounter: (text: string) => Promise<number>
     sendTokenLimit?: number
     preset?: () => Promise<PresetTemplate>
+    partialVariables?: PartialValues
+}
+
+export interface ChatLunaChatPromptFormat {
+    input: BaseMessage
+    chat_history: BaseMessage[] | string
+    variables?: ChainValues
+    agent_scratchpad?: BaseMessage[] | BaseMessage
+    instructions?: string
 }
 
 export class ChatLunaChatPrompt
-    extends BaseChatPromptTemplate
+    extends BaseChatPromptTemplate<ChatLunaChatPromptFormat>
     implements ChatLunaChatPromptInput
 {
     getPreset?: () => Promise<PresetTemplate>
@@ -45,10 +52,22 @@ export class ChatLunaChatPrompt
 
     sendTokenLimit?: number
 
+    partialVariables: PartialValues = {}
+
     private _systemPrompts: BaseMessage[]
 
     constructor(fields: ChatLunaChatPromptInput) {
-        super({ inputVariables: ['chat_history', 'variables', 'input'] })
+        super({
+            inputVariables: [
+                'chat_history',
+                'variables',
+                'input',
+                'agent_scratchpad',
+                'instructions'
+            ]
+        })
+
+        this.partialVariables = fields.partialVariables
 
         this.tokenCounter = fields.tokenCounter
 
@@ -121,15 +140,17 @@ Your goal is to craft a response that intelligently incorporates relevant knowle
         chat_history: chatHistory,
         input,
         variables,
-        agent_scratchpad: agentScratchpad
-    }: {
-        input: BaseMessage
-        chat_history: BaseMessage[] | string
-        variables?: ChainValues
-        agent_scratchpad?: BaseMessage[] | BaseMessage
-    }) {
+        agent_scratchpad: agentScratchpad,
+        instructions
+    }: ChatLunaChatPromptFormat) {
         const result: BaseMessage[] = []
         let usedTokens = 0
+
+        instructions =
+            instructions ??
+            (typeof this.partialVariables.instructions === 'function'
+                ? await this.partialVariables.instructions()
+                : this.partialVariables.instructions)
 
         const [systemPrompts] = await this._formatSystemPrompts(variables)
         this._systemPrompts = systemPrompts
@@ -138,6 +159,14 @@ Your goal is to craft a response that intelligently incorporates relevant knowle
             const messageTokens = await this._countMessageTokens(message)
             result.push(message)
             usedTokens += messageTokens
+        }
+
+        if (instructions) {
+            for (const message of [new SystemMessage(instructions)]) {
+                const messageTokens = await this._countMessageTokens(message)
+                result.push(message)
+                usedTokens += messageTokens
+            }
         }
 
         const inputTokens = await this.tokenCounter(input.content as string)
@@ -489,10 +518,22 @@ Your goal is to craft a response that intelligently incorporates relevant knowle
         return this._tempPreset[0]
     }
 
-    partial(
-        values: PartialValues
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ): Promise<BasePromptTemplate<any, ChatPromptValueInterface, any>> {
-        throw new Error('Method not implemented.')
+    async partial<NewPartialVariableName extends string>(
+        values: PartialValues<NewPartialVariableName>
+    ) {
+        const newInputVariables = this.inputVariables.filter(
+            (iv) => !(iv in values)
+        )
+
+        const newPartialVariables = {
+            ...(this.partialVariables ?? {}),
+            ...values
+        }
+        const promptDict = {
+            ...this,
+            inputVariables: newInputVariables,
+            partialVariables: newPartialVariables
+        }
+        return new ChatLunaChatPrompt(promptDict)
     }
 }
