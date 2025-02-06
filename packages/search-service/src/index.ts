@@ -73,7 +73,7 @@ export function apply(ctx: Context, config: Config) {
         })
 
         plugin.registerTool('web-browser', {
-            async createTool(params, session) {
+            async createTool(params, _session) {
                 const summaryModel =
                     config.summaryType === SummaryType.Quality
                         ? await createModel(ctx, config.summaryModel)
@@ -187,6 +187,8 @@ export interface Config extends ChatLunaPlugin.Config {
     searchPrompt: string
     newQuestionPrompt: string
     searchThreshold: number
+
+    freeGoogleAPIbaseURL: string
 }
 
 export const Config: Schema<Config> = Schema.intersect([
@@ -227,6 +229,12 @@ export const Config: Schema<Config> = Schema.intersect([
         summaryModel: Schema.dynamic('model'),
         keywordExtractModel: Schema.dynamic('model'),
         searchThreshold: Schema.percent().step(0.01).default(0.25)
+    }),
+
+    Schema.object({
+        freeGoogleAPIbaseURL: Schema.string().default(
+            'https://search.dingyi222666.top'
+        )
     }),
 
     Schema.object({
