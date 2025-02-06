@@ -69,15 +69,33 @@ export class OpenAIClient extends PlatformModelAndEmbeddingsClient {
                     )
             )
 
+            const supportToolCalling = (model: string) => {
+                const lower = model.toLowerCase()
+                if (
+                    lower === 'deepseek-reasoner' ||
+                    lower.includes('deepseek-r1')
+                ) {
+                    return {
+                        functionCall: false,
+                        supportMode: ['all']
+                    }
+                }
+
+                return {
+                    functionCall: true,
+                    supportMode: ['all']
+                }
+            }
+
             const formattedModels = filteredModels.map(
                 (model) =>
                     ({
                         name: model,
-                        type: model.includes('embed')
-                            ? ModelType.embeddings
-                            : ModelType.llm,
-                        functionCall: true,
-                        supportMode: ['all']
+                        type:
+                            model.includes('embed') || model.includes('bge')
+                                ? ModelType.embeddings
+                                : ModelType.llm,
+                        ...supportToolCalling(model)
                     }) as ModelInfo
             )
 
