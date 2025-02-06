@@ -24,6 +24,8 @@ $inner:
               - 平均模式。将多个来源的搜索结果各取平均个。
               - 总和模式。将多个来源的搜索结果进行总和后取前 topK 个。
 
+      freeSearchAPIURL: 快速 Google 搜索 API URL。
+
     - $desc: Serper 设置
       serperApiKey: Serper API 密钥。
       serperCountry: Serper 搜索国家。
