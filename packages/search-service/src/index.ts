@@ -188,7 +188,7 @@ export interface Config extends ChatLunaPlugin.Config {
     newQuestionPrompt: string
     searchThreshold: number
 
-    freeGoogleAPIbaseURL: string
+    freeSearchAPIURL: string
 }
 
 export const Config: Schema<Config> = Schema.intersect([
@@ -232,10 +232,11 @@ export const Config: Schema<Config> = Schema.intersect([
     }),
 
     Schema.object({
-        freeGoogleAPIbaseURL: Schema.string().default(
+        freeSearchAPIURL: Schema.string().default(
             'https://search.dingyi222666.top'
         )
     }),
+
 
     Schema.object({
         serperApiKey: Schema.string().role('secret'),

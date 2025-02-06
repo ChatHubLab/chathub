@@ -18,6 +18,8 @@ $inner:
               - 'Quality mode. Focuses on obtaining high-quality information.'
       searchThreshold: 'Similarity threshold for search content. Higher values mean more likely to search.'
 
+      freeSearchAPIURL: 'Free search API URL'
+
     - $desc: 'Serper Settings'
       serperApiKey: 'Serper API key'
       serperCountry: 'Serper search country'

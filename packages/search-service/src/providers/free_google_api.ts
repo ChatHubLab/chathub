@@ -9,7 +9,7 @@ class FreeGoogleSearchProvider extends SearchProvider {
         query: string,
         limit = this.config.topK
     ): Promise<SearchResult[]> {
-        const baseURL = this.config.freeGoogleAPIbaseURL
+        const baseURL = this.config.freeSearchAPIURL
 
         const response = await this._plugin.fetch(
             `${baseURL}/search?keyword=${encodeURIComponent(query)}&count=${limit}`,
