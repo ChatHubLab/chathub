@@ -98,7 +98,16 @@ export class GeminiRequester
                 }
             )
 
-            const parsedResponse = (await response.json()) as ChatResponse
+            const rawResponse = await response.text()
+
+            let parsedResponse: ChatResponse
+
+            try {
+                parsedResponse = JSON.parse(rawResponse)
+            } catch (e) {
+                logger.error('error with parse json', e, rawResponse)
+                throw new ChatLunaError(ChatLunaErrorCode.API_REQUEST_FAILED, e)
+            }
 
             let groundingContent = ''
             let currentGroudingIndex = 0
