@@ -340,8 +340,14 @@ export class OpenAPIPluginTool
             schemaShape.body = z.object(bodySchema)
         }
 
+        let normalizedName = generateRandomString()
+
+        while (/^[0-9]/.test(normalizedName[0])) {
+            normalizedName = generateRandomString()
+        }
+
         return new OpenAPIPluginTool({
-            name: generateRandomString(),
+            name: normalizedName,
             description: action.action.description ?? operation.summary ?? '',
             schema: z.object(schemaShape),
             meta,

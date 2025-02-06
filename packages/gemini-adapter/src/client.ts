@@ -64,13 +64,16 @@ export class GeminiClient extends PlatformModelAndEmbeddingsClient {
                             if (model.includes('gemini-1.5-pro')) {
                                 return 1048576
                             }
-                            if (model.includes('gemini-1.5-flash')) {
+                            if (
+                                model.includes('gemini-1.5-flash') ||
+                                model.includes('gemini-2.0-pro')
+                            ) {
                                 return 2097152
                             }
                             if (model.includes('gemini-1.0-pro')) {
                                 return 30720
                             }
-                            return 30720
+                            return 1048576
                         })(model),
                         type: model.includes('embedding')
                             ? ModelType.embeddings

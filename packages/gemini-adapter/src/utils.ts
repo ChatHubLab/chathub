@@ -8,7 +8,7 @@ import {
     SystemMessageChunk
 } from '@langchain/core/messages'
 import { StructuredTool } from '@langchain/core/tools'
-import { zodToJsonSchema } from 'zod-to-json-schema'
+import { JsonSchema7Type, zodToJsonSchema } from 'zod-to-json-schema'
 import {
     ChatCompletionFunction,
     ChatCompletionResponseMessage,
@@ -281,7 +281,7 @@ export function formatToolsToGeminiAITools(
             functionDeclarations: functions
         })
     } else if (functions.length > 0 && config.googleSearch) {
-        logger.warn('Google search is enabled, function call will be disabled.')
+        logger.warn('Google search is enabled, tool calling will be disabled.')
     }
 
     if (config.googleSearch) {
@@ -307,18 +307,47 @@ export function formatToolsToGeminiAITools(
 export function formatToolToGeminiAITool(
     tool: StructuredTool
 ): ChatCompletionFunction {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const parameters = zodToJsonSchema(tool.schema as any)
+    const parameters = removeAdditionalProperties(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        zodToJsonSchema(tool.schema as any)
+    )
 
-    // remove unsupported properties
-    delete parameters['$schema']
-    delete parameters['additionalProperties']
     return {
         name: tool.name,
         description: tool.description,
         // any?
         parameters
     }
+}
+
+function removeAdditionalProperties(schema: JsonSchema7Type): JsonSchema7Type {
+    const updatedSchema = { ...schema }
+    if (Object.hasOwn(updatedSchema, 'additionalProperties')) {
+        delete updatedSchema['additionalProperties']
+    }
+
+    if (Object.hasOwn(updatedSchema, '$schema')) {
+        delete updatedSchema['$schema']
+    }
+
+    if (updatedSchema['properties']) {
+        const keys = Object.keys(updatedSchema['properties'])
+        removeProperties(updatedSchema['properties'], keys, 0)
+    }
+    return updatedSchema
+}
+function removeProperties(
+    properties: JsonSchema7Type,
+    keys: string[],
+    index: number
+): void {
+    if (index >= keys.length) {
+        return
+    }
+    const key = keys[index]
+    // eslint-disable-next-line no-param-reassign
+    properties[key] = removeAdditionalProperties(properties[key])
+    removeProperties(properties, keys, index + 1)
 }
 
 export function messageTypeToGeminiRole(

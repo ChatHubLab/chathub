@@ -10,7 +10,7 @@ import {
     ToolMessageChunk
 } from '@langchain/core/messages'
 import { StructuredTool } from '@langchain/core/tools'
-import { zodToJsonSchema } from 'zod-to-json-schema'
+import { JsonSchema7Type, zodToJsonSchema } from 'zod-to-json-schema'
 import {
     ChatCompletionResponseMessage,
     ChatCompletionResponseMessageRoleEnum,
@@ -123,11 +123,10 @@ export function formatToolsToOpenAITools(
 export function formatToolToOpenAITool(
     tool: StructuredTool
 ): ChatCompletionTool {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const parameters = zodToJsonSchema(tool.schema as any)
-
-    delete parameters['$schema']
-    delete parameters['additionalProperties']
+    const parameters = removeAdditionalProperties(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        zodToJsonSchema(tool.schema as any)
+    )
 
     return {
         type: 'function',
@@ -139,6 +138,36 @@ export function formatToolToOpenAITool(
             parameters
         }
     }
+}
+
+function removeAdditionalProperties(schema: JsonSchema7Type): JsonSchema7Type {
+    const updatedSchema = { ...schema }
+    if (Object.hasOwn(updatedSchema, 'additionalProperties')) {
+        delete updatedSchema['additionalProperties']
+    }
+
+    if (Object.hasOwn(updatedSchema, '$schema')) {
+        delete updatedSchema['$schema']
+    }
+
+    if (updatedSchema['properties']) {
+        const keys = Object.keys(updatedSchema['properties'])
+        removeProperties(updatedSchema['properties'], keys, 0)
+    }
+    return updatedSchema
+}
+function removeProperties(
+    properties: JsonSchema7Type,
+    keys: string[],
+    index: number
+): void {
+    if (index >= keys.length) {
+        return
+    }
+    const key = keys[index]
+    // eslint-disable-next-line no-param-reassign
+    properties[key] = removeAdditionalProperties(properties[key])
+    removeProperties(properties, keys, index + 1)
 }
 
 export function convertDeltaToMessageChunk(
