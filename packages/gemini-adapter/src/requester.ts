@@ -105,7 +105,7 @@ export class GeminiRequester
             try {
                 parsedResponse = JSON.parse(rawResponse)
             } catch (e) {
-                logger.error('error with parse json', e, rawResponse)
+                logger.error('error with parse json', rawResponse)
                 throw new ChatLunaError(ChatLunaErrorCode.API_REQUEST_FAILED, e)
             }
 
