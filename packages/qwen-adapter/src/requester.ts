@@ -1,4 +1,3 @@
-import { BaseMessageChunk } from '@langchain/core/messages'
 import { ChatGenerationChunk } from '@langchain/core/outputs'
 import {
     EmbeddingsRequester,
@@ -86,8 +85,6 @@ export class QWenRequester
 
             const defaultRole: ChatCompletionResponseMessageRoleEnum =
                 'assistant'
-
-            let lastMessageChunk: BaseMessageChunk
 
             for await (const event of iterator) {
                 const chunk = event.data

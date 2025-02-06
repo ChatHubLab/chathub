@@ -338,8 +338,8 @@ function formatToolCall(tool: string, arg: any, log: string) {
 
     let rawArg = arg
 
-    if (rawArg.input && Object.keys(rawArg).length === 1) {
-        rawArg = rawArg.input
+    if (Object.keys(rawArg).length === 1) {
+        rawArg = rawArg?.input ?? rawArg?.arguments ?? rawArg
     }
 
     if (typeof rawArg !== 'string') {
