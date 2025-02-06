@@ -219,8 +219,6 @@ export class ChatInterface {
             throw new ChatLunaError(ChatLunaErrorCode.MODEL_INIT_ERROR, error)
         }
 
-        embeddings = (await this._checkChatMode(modelInfo)) ?? embeddings
-
         try {
             await this._createChatHistory()
         } catch (error) {
@@ -248,7 +246,8 @@ export class ChatInterface {
             embeddings,
             historyMemory,
             preset: this._input.preset,
-            vectorStoreName: this._input.vectorStoreName
+            vectorStoreName: this._input.vectorStoreName,
+            supportChatChain: this._supportChatMode(modelInfo)
         })
 
         this._chains[currentLLMConfig.md5()] = chatChain
@@ -384,26 +383,23 @@ export class ChatInterface {
         }
     }
 
-    private async _checkChatMode(modelInfo: ModelInfo) {
+    private _supportChatMode(modelInfo: ModelInfo) {
         if (
             // default check
             (!modelInfo.supportMode?.includes(this._input.chatMode) &&
                 // all
                 !modelInfo.supportMode?.includes('all')) ||
-            // func call with plugin browsing
+            // func call with plugin
             (!modelInfo.functionCall && this._input.chatMode === 'plugin')
         ) {
             logger.warn(
-                `Chat mode ${this._input.chatMode} is not supported by model ${this._input.model}, falling back to chat mode`
+                `Chat mode ${this._input.chatMode} is not supported by model ${this._input.model}`
             )
 
-            this._input.chatMode = 'chat'
-            const embeddings = emptyEmbeddings
-
-            return embeddings
+            return false
         }
 
-        return undefined
+        return true
     }
 
     private async _createChatHistory(): Promise<BaseChatMessageHistory> {

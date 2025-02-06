@@ -14,7 +14,8 @@ import {
 import { ChatLunaTool } from 'koishi-plugin-chatluna/llm-core/platform/types'
 import {
     AgentExecutor,
-    createOpenAIAgent
+    createOpenAIAgent,
+    createReactAgent
 } from 'koishi-plugin-chatluna/llm-core/agent'
 import { BufferMemory } from 'koishi-plugin-chatluna/llm-core/memory/langchain'
 import { logger } from '../..'
@@ -29,6 +30,7 @@ export interface ChatLunaPluginChainInput {
     prompt: ChatLunaChatPrompt
     historyMemory: BufferMemory
     embeddings: ChatHubBaseEmbeddings
+    agentMode?: 'tool-calling' | 'react'
     preset: () => Promise<PresetTemplate>
 }
 
@@ -56,13 +58,16 @@ export class ChatLunaPluginChain
 
     preset: () => Promise<PresetTemplate>
 
+    agentMode?: 'tool-calling' | 'react'
+
     constructor({
         historyMemory,
         prompt,
         llm,
         tools,
         preset,
-        embeddings
+        embeddings,
+        agentMode
     }: ChatLunaPluginChainInput & {
         tools: ChatLunaTool[]
         llm: ChatLunaChatModel
@@ -74,6 +79,8 @@ export class ChatLunaPluginChain
         this.tools = tools
         this.embeddings = embeddings
         this.llm = llm
+        this.agentMode = agentMode ?? 'react'
+
         this.preset = preset
     }
 
@@ -83,7 +90,8 @@ export class ChatLunaPluginChain
         {
             historyMemory,
             preset,
-            embeddings
+            embeddings,
+            agentMode
         }: Omit<ChatLunaPluginChainInput, 'prompt'>
     ): Promise<ChatLunaPluginChain> {
         const prompt = new ChatLunaChatPrompt({
@@ -98,6 +106,7 @@ export class ChatLunaPluginChain
             historyMemory,
             prompt,
             llm,
+            agentMode,
             embeddings,
             tools,
             preset
@@ -108,8 +117,22 @@ export class ChatLunaPluginChain
         llm: ChatLunaChatModel,
         tools: StructuredTool[]
     ) {
+        if (this.agentMode === 'react') {
+            return AgentExecutor.fromAgentAndTools({
+                tags: ['react'],
+                agent: await createReactAgent({
+                    llm,
+                    tools,
+                    prompt: this.prompt
+                }),
+                tools,
+                memory: undefined,
+                verbose: false
+            })
+        }
+
         return AgentExecutor.fromAgentAndTools({
-            tags: ['openai-functions'],
+            tags: ['tool-calling'],
             agent: createOpenAIAgent({
                 llm,
                 tools,

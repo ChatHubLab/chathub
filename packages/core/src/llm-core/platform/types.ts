@@ -34,6 +34,7 @@ export interface CreateChatLunaLLMChainParams {
     embeddings?: ChatHubBaseEmbeddings
     historyMemory: BufferMemory
     preset: () => Promise<PresetTemplate>
+    supportChatChain?: boolean
     vectorStoreName?: string
 }
 

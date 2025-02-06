@@ -92,7 +92,10 @@ export async function defaultFactory(ctx: Context, service: PlatformService) {
                 {
                     preset: params.preset,
                     historyMemory: params.historyMemory,
-                    embeddings: params.embeddings
+                    embeddings: params.embeddings,
+                    agentMode: params.supportChatChain
+                        ? 'tool-calling'
+                        : 'react'
                 }
             )
         }
