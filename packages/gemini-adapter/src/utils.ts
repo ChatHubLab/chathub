@@ -281,7 +281,7 @@ export function formatToolsToGeminiAITools(
             functionDeclarations: functions
         })
     } else if (functions.length > 0 && config.googleSearch) {
-        logger.warn('Google search is enabled, tool calling will be disabled.')
+        logger.warn('Google search is enabled, tool calling will be disable.')
     }
 
     if (config.googleSearch) {
