@@ -232,13 +232,6 @@ export const Config: Schema<Config> = Schema.intersect([
     }),
 
     Schema.object({
-        freeSearchAPIURL: Schema.string().default(
-            'https://search.dingyi222666.top'
-        )
-    }),
-
-
-    Schema.object({
         serperApiKey: Schema.string().role('secret'),
         serperCountry: Schema.string().default('cn'),
         serperLocation: Schema.string().default('zh-cn'),
@@ -253,6 +246,12 @@ export const Config: Schema<Config> = Schema.intersect([
 
     Schema.object({
         tavilyApiKey: Schema.string().role('secret')
+    }),
+
+    Schema.object({
+        freeSearchAPIURL: Schema.string().default(
+            'https://search.dingyi222666.top'
+        )
     }),
 
     Schema.object({
