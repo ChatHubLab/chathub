@@ -24,7 +24,7 @@ $inner:
               - 平均模式。将多个来源的搜索结果各取平均个。
               - 总和模式。将多个来源的搜索结果进行总和后取前 topK 个。
 
-      freeSearchAPIURL: 快速 Google 搜索 API URL。
+
 
     - $desc: Serper 设置
       serperApiKey: Serper API 密钥。
@@ -39,6 +39,9 @@ $inner:
 
     - $desc: Tavily 设置
       tavilyApiKey: Tavily API 密钥。
+
+    - $desc: 免费搜索设置
+      freeSearchBaseURL: 免费搜索 API 基础 URL。
 
     - $desc: Wikipedia 设置
       wikipediaBaseURL: Wikipedia API 基础 URL。
