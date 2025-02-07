@@ -615,6 +615,13 @@ class DefaultChatChainSender {
     ): Promise<void> {
         const sendMessages = this.convertToForwardMessages(messages)
 
+        if (
+            sendMessages.length < 1 ||
+            (sendMessages.length === 1 && sendMessages.join().length === 0)
+        ) {
+            return
+        }
+
         await session.sendQueued(
             h('message', { forward: true }, ...sendMessages)
         )
@@ -668,6 +675,14 @@ class DefaultChatChainSender {
             session.messageId
 
         let messageContent = this.convertMessageToArray(message)
+
+        if (
+            messageContent == null ||
+            messageContent.length < 1 ||
+            (messageContent.length === 1 && messageContent.join().length === 0)
+        ) {
+            return
+        }
 
         if (!shouldAddQuote) {
             return messageContent

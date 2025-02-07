@@ -32,6 +32,7 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                     name: options.room
                 },
                 renderOptions: {
+                    session,
                     split: config.splitMessage,
                     type: renderType as RenderType
                 }
@@ -47,6 +48,7 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                     name: options.room
                 },
                 renderOptions: {
+                    session,
                     split: config.splitMessage,
                     type: config.outputMode as RenderType
                 }
@@ -74,7 +76,8 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                     type: 'voice',
                     voice: {
                         speakerId: options.speaker
-                    }
+                    },
+                    session
                 },
                 room_resolve: {
                     name: options.room

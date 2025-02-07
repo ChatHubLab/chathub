@@ -1,4 +1,4 @@
-import { h } from 'koishi'
+import { h, Session } from 'koishi'
 
 export interface ConversationRoom {
     visibility: 'public' | 'private' | 'template_clone'
@@ -46,6 +46,7 @@ export interface RenderOptions {
     }
     split?: boolean
     type: RenderType
+    session?: Session
 }
 
 export interface Message {

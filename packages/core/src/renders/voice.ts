@@ -48,10 +48,17 @@ export class VoiceRenderer extends Renderer {
     }
 
     private _renderToVoice(text: string, options: RenderOptions) {
-        return this.ctx.vits.say({
-            speaker_id: options?.voice?.speakerId ?? 0,
-            input: text
-        })
+        return this.ctx.vits.say(
+            Object.assign(
+                {
+                    speaker_id: options?.voice?.speakerId ?? 0,
+                    input: text
+                },
+                {
+                    session: options.session
+                }
+            )
+        )
     }
 
     schema = Schema.const('voice').i18n({
