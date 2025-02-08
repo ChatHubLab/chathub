@@ -47,9 +47,12 @@ export async function apply(
         try {
             await fs.access(jsonFile)
             lunaDBStore = await LunaDBVectorStore.load(directory, embeddings)
+
+            await lunaDBStore.similaritySearch('test', 1)
         } catch (e) {
             lunaDBStore = new LunaDBVectorStore(new LunaDB(), embeddings)
 
+            logger.debug(`Creating new luna vdb store`)
             try {
                 await lunaDBStore.save(directory)
             } catch (e) {
