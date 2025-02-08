@@ -206,7 +206,7 @@ export class LunaDBVectorStore extends SaveableVectorStore {
             this.docstore.add({ [documentId]: documents[idx] })
             return resource
         })
-        this.client.index({ embeddings })
+        this.client.add({ embeddings })
         return documentIds
     }
 
