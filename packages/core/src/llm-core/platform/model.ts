@@ -300,6 +300,10 @@ export class ChatLunaChatModel extends BaseChatModel<ChatLunaModelCallOptions> {
                 })
             }
 
+            if (response == null) {
+                throw new ChatLunaError(ChatLunaErrorCode.API_REQUEST_FAILED)
+            }
+
             return response
         }
 
