@@ -35,7 +35,9 @@ export function apply(ctx: Context, config: Config): void {
                 cache.set(preset, matcher)
             }
 
-            const messages = await chatInterface.chatHistory.getMessages()
+            const messages = [
+                ...(await chatInterface.chatHistory.getMessages())
+            ]
 
             messages.push(message)
 

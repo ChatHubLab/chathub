@@ -52,7 +52,7 @@ import { Config } from '../config'
 import { DefaultRenderer } from '../render'
 import type { PostHandler } from '../utils/types'
 import { withResolver } from 'koishi-plugin-chatluna/utils/promise'
-import { EmptyEmbeddings } from '../llm-core/model/in_memory'
+import { EmptyEmbeddings } from 'koishi-plugin-chatluna/llm-core/model/in_memory'
 
 export class ChatLunaService extends Service {
     private _plugins: Record<string, ChatLunaPlugin> = {}

@@ -24,6 +24,7 @@ import {
 import { logger } from 'koishi-plugin-chatluna'
 import { SystemPrompts } from 'koishi-plugin-chatluna/llm-core/chain/base'
 import { Logger } from 'koishi'
+import { getMessageContent } from 'koishi-plugin-chatluna/utils/string'
 
 export interface ChatLunaChatPromptInput {
     messagesPlaceholder?: MessagesPlaceholder
@@ -177,7 +178,9 @@ Your goal is to craft a response that intelligently incorporates relevant knowle
             }
         }
 
-        const inputTokens = await this.tokenCounter(input.content as string)
+        const inputTokens = await this.tokenCounter(
+            getMessageContent(input.content)
+        )
         const longHistory = (variables?.['long_memory'] ?? []) as Document[]
         const knowledge = (variables?.['knowledge'] ?? []) as Document[]
         const loreBooks = (variables?.['lore_books'] ?? []) as RoleBook[]

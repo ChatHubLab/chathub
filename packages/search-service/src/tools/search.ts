@@ -72,7 +72,6 @@ export class SearchTool extends Tool {
                                 params: query
                             })
 
-                        console.log(browserContent)
                         if (
                             !browserContent.includes(
                                 'Error getting page text:'

@@ -131,7 +131,6 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
         .option('limit', '-l <limit:number>')
         .option('all', '-a')
         .action(async ({ options, session }) => {
-            console.log(options.all)
             await chain.receiveCommand(session, 'list_room', {
                 page: options.page ?? 1,
                 limit: options.limit ?? 2,

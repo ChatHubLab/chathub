@@ -244,6 +244,7 @@ export class KoishiChatMessageHistory extends BaseChatMessageHistory {
 
         delete additionalArgs['preset']
         delete additionalArgs['raw_content']
+        delete additionalArgs['type']
 
         if (Object.keys(additionalArgs).length === 0) {
             additionalArgs = null

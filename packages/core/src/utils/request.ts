@@ -235,8 +235,6 @@ function parseSocksURL(url: URL): { shouldLookup: boolean; proxy: SocksProxy } {
         })
     }
 
-    console.log(proxy)
-
     return { shouldLookup: lookup, proxy }
 }
 
