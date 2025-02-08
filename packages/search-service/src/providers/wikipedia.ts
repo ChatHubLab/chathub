@@ -81,9 +81,7 @@ class WikipediaSearchProvider extends SearchProvider {
         this.baseUrl = params.baseUrl ?? this.baseUrl
 
         if (!model) {
-            logger?.warn(
-                'No summary model provided, skipping enhanced keywrod extract'
-            )
+            logger?.warn('No model provided, skip enhanced keyword extract')
         }
     }
 
@@ -273,10 +271,13 @@ export async function apply(
         return
     }
 
-    const summaryModel =
-        config.summaryType === SummaryType.Quality
-            ? await createModel(ctx, config.summaryModel)
-            : undefined
+    let summaryModel: ChatLunaChatModel
+
+    try {
+        summaryModel = await createModel(ctx, config.keywordExtractModel)
+    } catch (error) {
+        logger?.error(error)
+    }
 
     const wikipediaBaseURLs = config.wikipediaBaseURL
     for (const baseURL of wikipediaBaseURLs) {
