@@ -52,6 +52,7 @@ import { Config } from '../config'
 import { DefaultRenderer } from '../render'
 import type { PostHandler } from '../utils/types'
 import { withResolver } from 'koishi-plugin-chatluna/utils/promise'
+import { EmptyEmbeddings } from '../llm-core/model/in_memory'
 
 export class ChatLunaService extends Service {
     private _plugins: Record<string, ChatLunaPlugin> = {}
@@ -250,10 +251,8 @@ export class ChatLunaService extends Service {
         const client = await service.randomClient(platformName)
 
         if (client == null) {
-            throw new ChatLunaError(
-                ChatLunaErrorCode.MODEL_ADAPTER_NOT_FOUND,
-                new Error(`The platform ${platformName} no available`)
-            )
+            this.logger.warn(`The platform ${platformName} no available`)
+            return new EmptyEmbeddings()
         }
 
         const model = client.createModel(modelName)
