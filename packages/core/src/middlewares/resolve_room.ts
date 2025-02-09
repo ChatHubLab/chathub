@@ -219,7 +219,9 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                 }
 
                 // 如果设置不关闭，则跟随更新
-                cloneRoom.autoUpdate = config.autoUpdateRoomMode !== 'disable'
+                cloneRoom.autoUpdate =
+                    config.autoUpdateRoomMode !== 'disable' ||
+                    cloneRoom.visibility === 'template_clone'
 
                 await createConversationRoom(ctx, session, cloneRoom)
 
