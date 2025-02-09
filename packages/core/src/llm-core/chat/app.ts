@@ -115,7 +115,12 @@ export class ChatInterface {
 
             const additionalArgs = await this._chatHistory.getAdditionalArgs()
             arg.variables = { ...additionalArgs, ...arg.variables }
+        } catch (error) {
+            logger.error('Something went wrong when calling before-chat hook:')
+            logger.error(error)
+        }
 
+        try {
             const response = await this.processChat(arg, wrapper)
 
             delete this._errorCountsMap[config.md5()]
