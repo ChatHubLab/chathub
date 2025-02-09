@@ -290,9 +290,15 @@ export class ChatLunaChatModel extends BaseChatModel<ChatLunaModelCallOptions> {
                     options,
                     runManager
                 )
+                let responseChunk: ChatGenerationChunk
                 for await (const chunk of stream) {
-                    response = chunk
+                    responseChunk =
+                        responseChunk != null
+                            ? responseChunk.concat(chunk)
+                            : chunk
                 }
+
+                response = responseChunk
             } else {
                 response = await this._completion({
                     ...this.invocationParams(options),
