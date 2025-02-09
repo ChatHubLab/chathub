@@ -47,6 +47,12 @@ $inner:
       defaultChatMode: 设置默认的聊天模式。
       defaultModel: 设置默认使用的聊天模型。
       defaultPreset: 设置默认使用的聊天预设。
+      autoUpdateRoomMode:
+          $desc: 自动更新房间配置模式。触发后，相关房间的配置将跟随模版房间的配置。
+          $inner:
+              - 所有房间更新
+              - 仅自动创建房间更新
+              - 禁用更新
 
     - $desc: 杂项
       authSystem:
@@ -68,4 +74,4 @@ $inner:
     - - $desc: 配额组选项
         $inner:
             authUserDefaultGroup:
-               $desc: 格式为 [权限等级, 初始余额, 授权组名称]。权限等级：0 为 guest，1 为 user，2 为 admin。如不了解，请勿配置。
+                $desc: 格式为 [权限等级, 初始余额, 授权组名称]。权限等级：0 为 guest，1 为 user，2 为 admin。如不了解，请勿配置。

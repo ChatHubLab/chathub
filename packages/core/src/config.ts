@@ -26,6 +26,7 @@ export interface Config {
     autoDelete: boolean
     autoDeleteTimeout: number
     messageDelay: number
+    autoUpdateRoomMode: 'disable' | 'all' | 'manual'
 
     privateChatWithoutCommand: boolean
     allowAtReply: boolean
@@ -117,7 +118,12 @@ export const Config: Schema<Config> = Schema.intersect([
         autoCreateRoomFromUser: Schema.boolean().default(false),
         defaultChatMode: Schema.dynamic('chat-mode').default('chat'),
         defaultModel: Schema.dynamic('model').default('无'),
-        defaultPreset: Schema.dynamic('preset').default('chatgpt')
+        defaultPreset: Schema.dynamic('preset').default('chatgpt'),
+        autoUpdateRoomMode: Schema.union([
+            Schema.const('all'),
+            Schema.const('manual'),
+            Schema.const('disable')
+        ]).default('disable')
     }),
 
     Schema.object({

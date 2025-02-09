@@ -47,6 +47,12 @@ $inner:
       defaultChatMode: Set default chat mode.
       defaultModel: Set default chat model.
       defaultPreset: Set default chat preset.
+      autoUpdateRoomMode:
+          $desc: Automatic room configuration update mode. When triggered, room settings will follow template room configuration.
+          $inner:
+              - Update all rooms
+              - Update auto-created rooms only
+              - Disable updates
 
     - $desc: Miscellaneous
       authSystem:

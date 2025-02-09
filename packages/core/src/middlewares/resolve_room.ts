@@ -218,11 +218,19 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                     )
                 }
 
-                cloneRoom.autoUpdate = true
+                // 如果设置不关闭，则跟随更新
+                cloneRoom.autoUpdate = config.autoUpdateRoomMode !== 'disable'
 
                 await createConversationRoom(ctx, session, cloneRoom)
 
                 joinRoom = cloneRoom
+            }
+
+            if (
+                joinRoom?.autoUpdate !== true &&
+                config.autoUpdateRoomMode === 'all'
+            ) {
+                joinRoom.autoUpdate = true
             }
 
             if (joinRoom?.autoUpdate === true) {
@@ -243,6 +251,9 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                 joinRoom.chatMode = config.defaultChatMode
 
                 if (joinRoom.preset !== config.defaultPreset) {
+                    logger.debug(
+                        `The room ${joinRoom.roomName} preset changed to ${joinRoom.preset}. Clearing chat history.`
+                    )
                     // 需要提前清空聊天记录
                     await ctx.chatluna.clearChatHistory(joinRoom)
                 }
