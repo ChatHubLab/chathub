@@ -64,14 +64,7 @@ export class PresetService {
             await this.loadPreset(path.join(presetDir, file))
         }
 
-        this.ctx.schema.set(
-            'preset',
-            Schema.union(
-                this._presets.map((preset) =>
-                    Schema.const(preset.triggerKeyword[0])
-                )
-            )
-        )
+        this._updateSchema()
     }
 
     watchPreset() {
@@ -145,14 +138,7 @@ export class PresetService {
                     }
 
                     // Update schema after changes
-                    this.ctx.schema.set(
-                        'preset',
-                        Schema.union(
-                            this._presets.map((preset) =>
-                                Schema.const(preset.triggerKeyword[0])
-                            )
-                        )
-                    )
+                    this._updateSchema()
                 } catch (e) {
                     logger.error(
                         `error when watching preset file ${filePath}`,
@@ -231,6 +217,19 @@ export class PresetService {
 
     async addPreset(preset: PresetTemplate): Promise<void> {
         this._presets.push(preset)
+
+        this._updateSchema()
+    }
+
+    private _updateSchema() {
+        this.ctx.schema.set(
+            'preset',
+            Schema.union(
+                this._presets.map((preset) =>
+                    Schema.const(preset.triggerKeyword[0])
+                )
+            )
+        )
     }
 
     async resetDefaultPreset(): Promise<void> {
