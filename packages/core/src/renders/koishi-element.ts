@@ -2,6 +2,7 @@ import { Message, RenderMessage, RenderOptions } from '../types'
 import { Renderer } from './default'
 import { h, Schema } from 'koishi'
 import he from 'he'
+import { logger } from 'koishi-plugin-chatluna'
 
 export class KoishiElementRenderer extends Renderer {
     async render(
@@ -38,7 +39,10 @@ function unescape(element: h): h {
 }
 
 export function transformAndEscape(source: string) {
-    const transformed = h.parse(source).map(unescape)
-
-    return transformed
+    try {
+        return h.parse(source).map(unescape)
+    } catch (e) {
+        logger.error(e)
+        return [h.text(source)]
+    }
 }
