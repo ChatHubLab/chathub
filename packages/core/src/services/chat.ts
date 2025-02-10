@@ -994,7 +994,7 @@ export namespace ChatLunaPlugin {
             chatTimeLimit: Schema.number()
                 .min(1)
                 .max(2000)
-                .role('computed')
+                .computed()
                 .default(200),
             configMode: Schema.union([
                 Schema.const('default'),

@@ -91,7 +91,7 @@ export const Config: Schema<Config> = Schema.intersect([
     }),
 
     Schema.object({
-        blackList: Schema.boolean().role('computed').default(false)
+        blackList: Schema.boolean().computed().default(false)
     }),
 
     Schema.object({
@@ -147,7 +147,7 @@ export const Config: Schema<Config> = Schema.intersect([
                 Schema.number().default(1.0),
                 Schema.string().default('guest')
             ])
-                .role('computed')
+                .computed()
                 .default([0, 1.0, 'guest'])
         }),
         Schema.object({})

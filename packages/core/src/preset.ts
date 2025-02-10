@@ -222,6 +222,10 @@ export class PresetService {
     }
 
     private _updateSchema() {
+        if (!this.ctx.scope.isActive) {
+            return
+        }
+
         this.ctx.schema.set(
             'preset',
             Schema.union(
