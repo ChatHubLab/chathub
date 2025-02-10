@@ -91,9 +91,7 @@ export const Config: Schema<Config> = Schema.intersect([
     }),
 
     Schema.object({
-        blackList: Schema.union([Schema.boolean(), Schema.any().hidden()])
-            .role('computed')
-            .default(false)
+        blackList: Schema.boolean().role('computed').default(false)
     }),
 
     Schema.object({
@@ -144,13 +142,10 @@ export const Config: Schema<Config> = Schema.intersect([
     Schema.union([
         Schema.object({
             authSystem: Schema.const(true).required(),
-            authUserDefaultGroup: Schema.union([
-                Schema.tuple([
-                    Schema.number().default(0),
-                    Schema.number().default(1.0),
-                    Schema.string().default('guest')
-                ]),
-                Schema.any().hidden()
+            authUserDefaultGroup: Schema.tuple([
+                Schema.number().default(0),
+                Schema.number().default(1.0),
+                Schema.string().default('guest')
             ])
                 .role('computed')
                 .default([0, 1.0, 'guest'])

@@ -991,10 +991,9 @@ export namespace ChatLunaPlugin {
     export const Config: Schema<ChatLunaPlugin.Config> = Schema.intersect([
         Schema.object({
             chatConcurrentMaxSize: Schema.number().min(1).max(8).default(3),
-            chatTimeLimit: Schema.union([
-                Schema.number().min(1).max(2000),
-                Schema.any().hidden()
-            ])
+            chatTimeLimit: Schema.number()
+                .min(1)
+                .max(2000)
                 .role('computed')
                 .default(200),
             configMode: Schema.union([
