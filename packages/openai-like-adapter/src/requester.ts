@@ -40,6 +40,11 @@ export class OpenAIRequester
     async *completionStream(
         params: ModelRequestParams
     ): AsyncGenerator<ChatGenerationChunk> {
+        const enableGoogleSearch =
+            this._pluginConfig.googleSearch &&
+            this._pluginConfig.googleSearchSupportModel.some((model) =>
+                params.model.includes(model)
+            )
         try {
             const response = await this._post(
                 'chat/completions',
@@ -50,14 +55,10 @@ export class OpenAIRequester
                         params.model
                     ),
                     tools:
-                        params.tools != null
+                        enableGoogleSearch || params.tools != null
                             ? formatToolsToOpenAITools(
-                                  params.tools,
-                                  this._pluginConfig.googleSearch &&
-                                      this._pluginConfig.googleSearchSupportModel.some(
-                                          (model) =>
-                                              params.model.includes(model)
-                                      )
+                                  params.tools ?? [],
+                                  enableGoogleSearch
                               )
                             : undefined,
                     stop: params.stop != null ? params.stop : undefined,
