@@ -41,6 +41,7 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
 
     ctx.command('chatluna.chat.rollback [message:text]')
         .option('room', '-r <room:string>')
+        .option('i', '-i <i: string>')
         .action(async ({ options, session }, message) => {
             await chain.receiveCommand(session, 'rollback', {
                 message,
@@ -51,7 +52,8 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                     session,
                     split: config.splitMessage,
                     type: config.outputMode as RenderType
-                }
+                },
+                rollback_round: options.i ?? 1
             })
         })
 

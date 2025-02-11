@@ -14,6 +14,8 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
 
             let room = context.options.room
 
+            const rollbackRound = context.options.rollback_round ?? 1
+
             if (room == null && context.options.room_resolve != null) {
                 // 尝试完整搜索一次
 
@@ -56,52 +58,48 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
             let parentId = conversation.latestId
             const messages: ChatLunaMessage[] = []
 
-            for (let i = 0; i < 3; i++) {
+            // 获取 (轮数*2) 条消息，一轮对话 两条消息
+            while (messages.length < rollbackRound * 2) {
                 const message = await ctx.database.get('chathub_message', {
                     conversation: room.conversationId,
                     id: parentId
                 })
 
                 if (message == null) {
+                    parentId = null
                     break
                 }
 
                 parentId = message[0]?.parent
 
-                messages.push(...message)
+                messages.unshift(...message)
             }
 
-            if (messages.length < 2) {
+            // 小于目标轮次，就是没有
+            if (messages.length < rollbackRound * 2) {
                 context.message = session.text('.no_chat_history')
                 return ChainMiddlewareRunStatus.STOP
             }
 
-            const parentMessage = messages[2]
+            // 最后一条消息
 
-            if (parentMessage == null) {
-                await ctx.database.upsert('chathub_conversation', [
-                    {
-                        id: room.conversationId,
-                        latestId: null
-                    }
-                ])
-            } else {
-                await ctx.database.upsert('chathub_conversation', [
-                    {
-                        id: room.conversationId,
-                        latestId: parentMessage.id
-                    }
-                ])
+            const lastMessage =
+                parentId == null
+                    ? undefined
+                    : await ctx.database
+                          .get('chathub_message', {
+                              conversation: room.conversationId,
+                              id: parentId
+                          })
+                          .then((message) => message?.[0])
 
-                messages.pop()
-            }
-
-            const humanMessage = messages[1]
-
-            if (humanMessage.role !== 'human') {
-                context.message = session.text('.invalid_chat_history')
-                return ChainMiddlewareRunStatus.STOP
-            }
+            const humanMessage = messages[messages.length - 2]
+            await ctx.database.upsert('chathub_conversation', [
+                {
+                    id: room.conversationId,
+                    latestId: parentId == null ? null : lastMessage.id
+                }
+            ])
 
             if ((context.options.message?.length ?? 0) < 1) {
                 context.options.inputMessage =
@@ -110,11 +108,9 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                     ])
             }
 
-            while (messages.length > 0) {
-                await ctx.database.remove('chathub_message', {
-                    id: messages.pop()?.id
-                })
-            }
+            await ctx.database.remove('chathub_message', {
+                id: messages.map((message) => message.id)
+            })
 
             logger.debug(
                 `rollback chat ${room.roomName} ${context.options.inputMessage}`
@@ -128,5 +124,8 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
 declare module '../chains/chain' {
     interface ChainMiddlewareName {
         rollback_chat: never
+    }
+    interface ChainMiddlewareContextOptions {
+        rollback_round?: number
     }
 }

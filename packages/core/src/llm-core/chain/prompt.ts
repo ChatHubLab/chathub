@@ -259,6 +259,9 @@ Your goal is to craft a response that intelligently incorporates relevant knowle
             const mapMessages = result.map((msg) => {
                 const original = msg.toDict()
                 const dict = structuredClone(original)
+                if (dict.data == null) {
+                    return dict
+                }
                 delete dict.data.additional_kwargs['images']
                 delete dict.data.additional_kwargs['preset']
                 return dict
