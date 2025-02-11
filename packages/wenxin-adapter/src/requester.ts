@@ -79,7 +79,7 @@ export class WenxinRequester
             for await (const event of iterator) {
                 const chunk = event.data
                 if (chunk === '[DONE]') {
-                    return
+                    break
                 }
 
                 try {

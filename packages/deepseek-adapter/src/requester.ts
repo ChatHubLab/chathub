@@ -88,10 +88,7 @@ export class DeepseekRequester
             for await (const event of iterator) {
                 const chunk = event.data
                 if (chunk === '[DONE]') {
-                    if (reasoningContent.length > 0) {
-                        logger.debug(`reasoning content: ${reasoningContent}`)
-                    }
-                    return
+                    break
                 }
 
                 try {

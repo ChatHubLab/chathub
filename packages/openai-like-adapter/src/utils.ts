@@ -196,13 +196,14 @@ export function convertDeltaToMessageChunk(
         additionalKwargs = {
             tool_calls: delta.tool_calls
         }
-    } else if (reasoningContent.length > 0) {
-        additionalKwargs = {
-            reasoning_content: reasoningContent
-        }
     } else {
         additionalKwargs = {}
     }
+
+    if (reasoningContent.length > 0) {
+        additionalKwargs.reasoning_content = reasoningContent
+    }
+
     if (role === 'user') {
         return new HumanMessageChunk({ content })
     } else if (role === 'assistant') {
