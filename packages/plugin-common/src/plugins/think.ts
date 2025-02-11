@@ -1,15 +1,28 @@
 /* eslint-disable max-len */
 import { Tool } from '@langchain/core/tools'
-import { Context, Session } from 'koishi'
+import { Context, Schema, Session } from 'koishi'
 import { ChatLunaPlugin } from 'koishi-plugin-chatluna/services/chat'
 import { Config } from '..'
 import { ChatLunaChatModel } from 'koishi-plugin-chatluna/llm-core/platform/model'
+import { PlatformService } from 'koishi-plugin-chatluna/llm-core/platform/service'
+import { ModelType } from 'koishi-plugin-chatluna/llm-core/platform/types'
+import { parseRawModelName } from 'koishi-plugin-chatluna/llm-core/utils/count_tokens'
 
 export async function apply(
     ctx: Context,
     config: Config,
     plugin: ChatLunaPlugin
 ) {
+    ctx.on('chatluna/model-added', (service) => {
+        ctx.schema.set('model', Schema.union(getModelNames(service)))
+    })
+
+    ctx.on('chatluna/model-removed', (service) => {
+        ctx.schema.set('model', Schema.union(getModelNames(service)))
+    })
+
+    ctx.schema.set('model', Schema.union(getModelNames(ctx.chatluna.platform)))
+
     if (config.think === true) {
         plugin.registerTool('think', {
             selector(_) {
@@ -17,6 +30,16 @@ export async function apply(
             },
 
             async createTool(params, session) {
+                const thinkModel = config.thinkModel
+
+                if (thinkModel != null) {
+                    const [platform, model] = parseRawModelName(thinkModel)
+                    params.model = await ctx.chatluna.createChatModel(
+                        platform,
+                        model
+                    )
+                }
+
                 return new ThinkTool(params.model)
             }
         })
@@ -44,6 +67,10 @@ export async function apply(
             },
             alwaysRecreate: true
         })
+    }
+
+    function getModelNames(service: PlatformService) {
+        return service.getAllModels(ModelType.llm).map((m) => Schema.const(m))
     }
 }
 
@@ -91,7 +118,13 @@ Proceed with executing this plan, using the suggested tools and your best judgme
         try {
             const thinkPrompt = this._thinkPrompt.replace('{input}', input)
             const response = await this._model.invoke(thinkPrompt)
-            const analysis = response.content as string
+            let analysis = response.content as string
+
+            if (response.additional_kwargs?.reasoning_content) {
+                analysis = response.additional_kwargs[
+                    'reasoning_content'
+                ] as string
+            }
 
             const finalResponse = this._responsePrompt.replace(
                 '{analysis}',

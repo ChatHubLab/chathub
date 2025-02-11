@@ -5,6 +5,7 @@ export interface ChatCompletionResponse {
         delta: {
             content?: string
             role?: string
+            reasoning_content?: string
             function_call?: ChatCompletionRequestMessageToolCall
         }
         message: ChatCompletionResponseMessage

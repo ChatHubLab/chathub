@@ -78,6 +78,8 @@ export class OpenAIRequester
 
             let errorCount = 0
 
+            let reasoningContent = ''
+
             for await (const event of iterator) {
                 const chunk = event.data
                 if (chunk === '[DONE]') {
@@ -108,6 +110,11 @@ export class OpenAIRequester
                         delta,
                         defaultRole
                     )
+
+                    if (delta.reasoning_content) {
+                        reasoningContent = (reasoningContent +
+                            delta.reasoning_content) as string
+                    }
 
                     defaultRole = (
                         (delta.role?.length ?? 0) > 0 ? delta.role : defaultRole

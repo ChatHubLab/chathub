@@ -45,6 +45,7 @@ export interface Config extends ChatLunaPlugin.Config {
     codeSandboxAPIKey: string
     knowledge: boolean
     knowledgeId: string[]
+    thinkModel: string
     actionsList: {
         name: string
         description: string
@@ -86,6 +87,13 @@ export const Config: Schema<Config> = Schema.intersect([
         Schema.object({
             fs: Schema.const(true).required(),
             fsScopePath: Schema.string().default('')
+        }),
+        Schema.object({})
+    ]),
+    Schema.union([
+        Schema.object({
+            think: Schema.const(true).required(),
+            thinkModel: Schema.dynamic('model')
         }),
         Schema.object({})
     ]),
