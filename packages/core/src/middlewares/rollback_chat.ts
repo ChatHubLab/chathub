@@ -112,6 +112,10 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                 id: messages.map((message) => message.id)
             })
 
+            await session.send(
+                session.text('.rollback_success', [rollbackRound])
+            )
+
             logger.debug(
                 `rollback chat ${room.roomName} ${context.options.inputMessage}`
             )

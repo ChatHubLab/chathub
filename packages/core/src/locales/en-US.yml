@@ -225,6 +225,7 @@ commands:
                     conversation_not_exist: 'Room does not exist.'
                     no_chat_history: 'Chat history not found.'
                     invalid_chat_history: 'Invalid chat history. Clear history and retry.'
+                    rollback_success_1: "Successfully rolled back to {0} rounds ago."
             stop:
                 description: Immediately terminate ongoing conversation.
                 options:

@@ -225,6 +225,7 @@ commands:
                     conversation_not_exist: '房间不存在。'
                     no_chat_history: '找不到对话记录。'
                     invalid_chat_history: '错误的聊天记录，请尝试清空聊天记录后重试。'
+                    rollback_success: '已成功回滚到 {0} 轮前的对话，请等待模型回复。'
             stop:
                 description: 立即停止当前正在进行的对话。
                 options:
