@@ -27,3 +27,7 @@ $inner:
       temperature: 'Sampling temperature (higher values increase randomness)'
       presencePenalty: 'Token presence penalty (-2 to 2, step 0.1, discourages repetition)'
       frequencyPenalty: 'Token frequency penalty (-2 to 2, step 0.1, reduces repetition)'
+
+    - $desc: Other settings
+      googleSearch: Whether to enable Google search. (Only valid for Gemini models that support Google search and use the new-api)
+      googleSearchSupportModel: List of models supported by Google search.

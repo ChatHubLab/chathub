@@ -64,6 +64,8 @@ export interface Config extends ChatLunaPlugin.Config {
     presencePenalty: number
     platform: string
     frequencyPenalty: number
+    googleSearch: boolean
+    googleSearchSupportModel: string[]
 }
 
 export const Config: Schema<Config> = Schema.intersect([
@@ -99,6 +101,12 @@ export const Config: Schema<Config> = Schema.intersect([
         temperature: Schema.percent().min(0).max(2).step(0.1).default(0.8),
         presencePenalty: Schema.number().min(-2).max(2).step(0.1).default(0.2),
         frequencyPenalty: Schema.number().min(-2).max(2).step(0.1).default(0.2)
+    }),
+    Schema.object({
+        googleSearch: Schema.boolean().default(false),
+        googleSearchSupportModel: Schema.array(Schema.string()).default([
+            'gemini-2.0'
+        ])
     })
 ]).i18n({
     'zh-CN': require('./locales/zh-CN.schema.yml'),

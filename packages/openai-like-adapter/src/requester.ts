@@ -51,7 +51,14 @@ export class OpenAIRequester
                     ),
                     tools:
                         params.tools != null
-                            ? formatToolsToOpenAITools(params.tools)
+                            ? formatToolsToOpenAITools(
+                                  params.tools,
+                                  this._pluginConfig.googleSearch &&
+                                      this._pluginConfig.googleSearchSupportModel.some(
+                                          (model) =>
+                                              params.model.includes(model)
+                                      )
+                              )
                             : undefined,
                     stop: params.stop != null ? params.stop : undefined,
                     // remove max_tokens

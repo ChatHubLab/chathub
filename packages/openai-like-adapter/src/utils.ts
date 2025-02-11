@@ -112,12 +112,23 @@ export function messageTypeToOpenAIRole(
 }
 
 export function formatToolsToOpenAITools(
-    tools: StructuredTool[]
+    tools: StructuredTool[],
+    inlcudeGoogleSearch: boolean
 ): ChatCompletionTool[] {
     if (tools.length < 1) {
         return undefined
     }
-    return tools.map(formatToolToOpenAITool)
+    const result = tools.map(formatToolToOpenAITool)
+
+    if (inlcudeGoogleSearch) {
+        result.push({
+            type: 'function',
+            function: {
+                name: 'googleSearch'
+            }
+        })
+    }
+    return result
 }
 
 export function formatToolToOpenAITool(
@@ -156,6 +167,7 @@ function removeAdditionalProperties(schema: JsonSchema7Type): JsonSchema7Type {
     }
     return updatedSchema
 }
+
 function removeProperties(
     properties: JsonSchema7Type,
     keys: string[],
