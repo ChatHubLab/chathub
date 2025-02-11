@@ -198,7 +198,6 @@ async function setupAutoDelete(ctx: Context, config: Config) {
         if (!ctx.scope.isActive) {
             return
         }
-        
         const rooms = await ctx.database.get('chathub_room', {
             updatedTime: {
                 $lt: new Date(Date.now() - config.autoDeleteTimeout * 1000)

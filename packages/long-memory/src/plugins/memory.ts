@@ -148,8 +148,14 @@ export function apply(ctx: Context, config: Config) {
                 try {
                     resultArray = await extractMemory()
                 } catch (e) {
+                    logger?.error(e)
                     logger?.warn(`Error extracting long memory of ${i} times`)
                 }
+            }
+
+            if (!resultArray) {
+                logger?.warn('Error extracting long memory')
+                return undefined
             }
 
             const vectorStore = retriever.vectorStore as VectorStore
@@ -222,7 +228,7 @@ function parseResultContent(content: string): string[] {
         }
     }
 
-    throw new Error('Invalid content format')
+    throw new Error(`Invalid content format:${content}`)
 }
 
 async function filterSimilarMemory(
