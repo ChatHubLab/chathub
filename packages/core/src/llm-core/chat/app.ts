@@ -134,26 +134,38 @@ export class ChatInterface {
         arg: ChatLunaLLMCallArg,
         wrapper: ChatLunaLLMChainWrapper
     ): Promise<ChainValues> {
-        const response = (await wrapper.call(arg)) as {
-            message: AIMessage
-        } & ChainValues
+        const response = (
+            (await wrapper.call(arg)) as {
+                message: AIMessage
+            } & ChainValues
+        ).message
+
+        const displayRespose = new AIMessage(response)
+
         this._chatCount++
 
         // Handle post-processing if needed
         if (arg.postHandler) {
-            const handlerResult = await this.handlePostProcessing(arg, response)
-            response.message.content = handlerResult.displayContent
+            const handlerResult = await this.handlePostProcessing(
+                arg,
+                displayRespose
+            )
+            displayRespose.content = handlerResult.displayContent
             await this._chatHistory.overrideAdditionalArgs(
                 handlerResult.variables
             )
         }
 
-        const messageContent = getMessageContent(response.message.content)
+        const messageContent = getMessageContent(displayRespose.content)
 
         // Update chat history
         if (messageContent.trim().length > 0) {
             await this.chatHistory.addMessage(arg.message)
-            await this.chatHistory.addMessage(response.message)
+            let saveMessage = response
+            if (!this.ctx.chatluna.config.rawOnCensor) {
+                saveMessage = displayRespose
+            }
+            await this.chatHistory.addMessage(saveMessage)
         }
 
         // Process response
@@ -161,24 +173,24 @@ export class ChatInterface {
             'chatluna/after-chat',
             arg.conversationId,
             arg.message,
-            response.message as AIMessage,
+            displayRespose as AIMessage,
             { ...arg.variables, chatCount: this._chatCount },
             this,
             wrapper
         )
 
-        return response
+        return { message: displayRespose }
     }
 
     private async handlePostProcessing(
         arg: ChatLunaLLMCallArg,
-        response: { message: AIMessage } & ChainValues
+        message: AIMessage
     ): Promise<HandlerResult> {
-        logger.debug(`original content: %c`, response.message.content)
+        logger.debug(`original content: %c`, message.content)
 
         return await arg.postHandler.handler(
             arg.session,
-            getMessageContent(response.message.content)
+            getMessageContent(message.content)
         )
     }
 

@@ -27,6 +27,7 @@ $inner:
           $desc: Select message reply rendering mode.
       splitMessage: 'Enable message splitting. Splits replies into multiple messages for natural conversation flow. Note: Incompatible with quoted messages, raw mode, or image mode. Stream response enables finer-grained splitting.'
       censor: Enable text moderation (requires censor service).
+      rawOnCensor: Whether to send the raw message to the model when the Post Handler is triggered.
       streamResponse: 'Enable stream response. Initiates message sending during reply generation. Note: Disables rendering output mode and incompatible with plugin mode.'
 
     - $desc: Blacklist Management

@@ -26,6 +26,7 @@ export interface Config {
     autoDelete: boolean
     autoDeleteTimeout: number
     messageDelay: number
+    rawOnCensor: boolean
     autoUpdateRoomMode: 'disable' | 'all' | 'manual'
 
     privateChatWithoutCommand: boolean
@@ -87,6 +88,7 @@ export const Config: Schema<Config> = Schema.intersect([
         outputMode: Schema.dynamic('output-mode').default('text'),
         splitMessage: Schema.boolean().default(false),
         censor: Schema.boolean().default(false),
+        rawOnCensor: Schema.boolean().default(false),
         streamResponse: Schema.boolean().default(false)
     }),
 
