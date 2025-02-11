@@ -21,6 +21,9 @@ $inner:
     - - $desc: 'File Plugin Configuration'
         fsScopePath: 'Scope path for file plugin. Empty for system-wide access'
 
+    - - $desc: Think Plugin Configuration
+        thinkModel: Model used by the think plugin.
+
     - - $desc: 'Command Plugin Configuration'
         commandList:
             $desc: 'Available commands. If empty, all first-level commands are registered'

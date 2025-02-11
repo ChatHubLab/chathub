@@ -22,6 +22,9 @@ $inner:
     - - $desc: fs 插件配置
         fsScopePath: fs 插件作用域路径。留空则为系统任意路径。
 
+    - - $desc: 思考插件配置
+        thinkModel: 思考插件使用的模型。
+
     - - $desc: 指令插件配置
         commandList:
             $desc: 可用指令列表。不填写则默认注册所有一级指令。

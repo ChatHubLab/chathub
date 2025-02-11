@@ -46,13 +46,13 @@ export async function apply(
     }
 
     if (config.chat === true) {
-        plugin.registerTool('chat', {
+        plugin.registerTool('question', {
             selector(history) {
                 return true
             },
             alwaysRecreate: true,
             async createTool(params, session) {
-                return new ChatTool(session)
+                return new QuestionTool(session)
             }
         })
     }
@@ -137,9 +137,9 @@ Proceed with executing this plan, using the suggested tools and your best judgme
     }
 }
 
-export class ChatTool extends Tool {
-    name = 'chat'
-    description = `A tool for interacting with the user. Use this when you need to ask the user for input, clarification, or a decision. The input is the message or question you want to send to the user, and the output is the user's response. Only use this tool when absolutely necessary for task completion. If the user requests to stop interactions or if you have sufficient information to proceed, avoid using this tool and provide a direct response or result instead.`
+export class QuestionTool extends Tool {
+    name = 'question'
+    description = `A tool for interacting with the user. Use this when you need to ask the user for your task, clarification, or a decision. The input is the message or question you want to send to the user, and the output is the user's response. Only use this tool when absolutely necessary for task completion. If the user requests to stop interactions or if you have sufficient information to proceed, avoid using this tool and provide a direct response or result instead.`
 
     constructor(private session: Session) {
         super()
