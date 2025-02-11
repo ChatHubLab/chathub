@@ -112,13 +112,13 @@ export class ChatInterface {
                 this,
                 wrapper
             )
-
-            const additionalArgs = await this._chatHistory.getAdditionalArgs()
-            arg.variables = { ...additionalArgs, ...arg.variables }
         } catch (error) {
             logger.error('Something went wrong when calling before-chat hook:')
             logger.error(error)
         }
+
+        const additionalArgs = await this._chatHistory.getAdditionalArgs()
+        arg.variables = { ...additionalArgs, ...arg.variables }
 
         try {
             const response = await this.processChat(arg, wrapper)
