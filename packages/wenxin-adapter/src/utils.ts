@@ -6,11 +6,12 @@ import {
     FunctionMessageChunk,
     HumanMessageChunk,
     MessageType,
-    SystemMessageChunk
+    SystemMessageChunk,
+    ToolMessage,
+    ToolMessageChunk
 } from '@langchain/core/messages'
 import {
     ChatCompletionFunction,
-    ChatCompletionResponse,
     WenxinMessage,
     WenxinMessageRole
 } from './types'
@@ -20,18 +21,42 @@ import { zodToJsonSchema } from 'zod-to-json-schema'
 export function langchainMessageToWenXinMessage(
     messages: BaseMessage[]
 ): WenxinMessage[] {
-    const mappedMessage = messages.map((it) => {
-        const role = messageTypeToWenXinRole(it._getType())
+    const mappedMessage = messages.map((rawMessage) => {
+        const role = messageTypeToWenXinRole(rawMessage.getType())
 
-        return {
-            role: it.additional_kwargs.function_call ? 'assistant' : role,
-            content: it.content.length < 1 ? null : it.content,
-            name: role === 'function' ? it.name : undefined,
-            function_call:
-                role === 'function'
-                    ? it.additional_kwargs.function_call
-                    : undefined
+        const msg = {
+            content: (rawMessage.content as string) || null,
+            name:
+                role === 'assistant' || role === 'tool'
+                    ? rawMessage.name
+                    : undefined,
+            role,
+            //  function_call: rawMessage.additional_kwargs.function_call,
+            tool_calls: rawMessage.additional_kwargs.tool_calls,
+            tool_call_id: (rawMessage as ToolMessage).tool_call_id
         }
+
+        if (msg.tool_calls == null) {
+            delete msg.tool_calls
+        }
+
+        if (msg.tool_call_id == null) {
+            delete msg.tool_call_id
+        }
+
+        if (msg.tool_calls) {
+            for (const toolCall of msg.tool_calls) {
+                const tool = toolCall.function
+
+                if (!tool.arguments) {
+                    continue
+                }
+                // Remove spaces, new line characters etc.
+                tool.arguments = JSON.stringify(JSON.parse(tool.arguments))
+            }
+        }
+
+        return msg
     })
 
     const result: WenxinMessage[] = []
@@ -51,7 +76,8 @@ export function langchainMessageToWenXinMessage(
             role: message.role,
             content: message.content as string,
             name: message.name,
-            function_call: message.function_call
+            tool_calls: message.tool_calls,
+            tool_call_id: message.tool_call_id
         })
 
         if (
@@ -87,36 +113,10 @@ export function messageTypeToWenXinRole(type: MessageType): WenxinMessageRole {
             return 'user'
         case 'function':
             return 'function'
+        case 'tool':
+            return 'tool'
         default:
             throw new Error(`Unknown message type: ${type}`)
-    }
-}
-
-export function convertDeltaToMessageChunk(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    delta: ChatCompletionResponse,
-    defaultRole?: WenxinMessageRole
-) {
-    const role = defaultRole
-    const content = delta.result ?? ''
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-
-    if (role === 'user') {
-        return new HumanMessageChunk({ content })
-    } else if (role === 'assistant' && delta.function_call) {
-        return new FunctionMessageChunk({
-            content,
-            name: delta.function_call.name,
-            additional_kwargs: {
-                function_call: delta.function_call
-            }
-        })
-    } else if (role === 'system') {
-        return new SystemMessageChunk({ content })
-    } else if (role === 'assistant') {
-        return new AIMessageChunk({ content })
-    } else {
-        return new ChatMessageChunk({ content, role })
     }
 }
 
@@ -141,56 +141,73 @@ export function formatToolToWenxinTool(
     }
 }
 
-export const modelMappedUrl = {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    'ERNIE-4.0': (accessToken: string) => {
-        return `https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions_pro?access_token=${accessToken}`
-    },
-    // https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-4.0-turbo-8k
-    'ERNIE-4.0-turbo': (accessToken: string) => {
-        return `https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-4.0-turbo-8k?access_token=${accessToken}`
-    },
+export function convertDeltaToMessageChunk(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    delta: Record<string, any>,
+    defaultRole?: WenxinMessageRole
+) {
+    const role = (
+        (delta.role?.length ?? 0) > 0 ? delta.role : defaultRole
+    ).toLowerCase()
+    const content = delta.content ?? ''
+    const reasoningContent = delta.reasoning_content ?? ''
 
-    // https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions
-    'ERNIE-3.5': (accessToken: string) => {
-        return `https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions?access_token=${accessToken}`
-    },
-
-    // https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-3.5-128k
-    'ERNIE-3.5-128k': (accessToken: string) => {
-        return `https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-3.5-128k?access_token=${accessToken}`
-    },
-
-    // https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-speed-pro-128k
-    'ERNIE-speed-pro': (accessToken: string) => {
-        return `https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-speed-pro-128k?access_token=${accessToken}`
-    },
-    // https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie_speed
-    'ERNIE-speed': (accessToken: string) => {
-        return `https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie_speed?access_token=${accessToken}`
-    },
-    // https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-speed-128k
-    'ERNIE-speed-128k': (accessToken: string) => {
-        return `https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-speed-128k?access_token=${accessToken}`
-    },
-    // https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-lite-8k
-    'ERNIE-lite': (accessToken: string) => {
-        return `https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-lite-8k?access_token=${accessToken}`
-    },
-    // https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-lite-pro-128k
-    'ERNIE-lite-pro': (accessToken: string) => {
-        return `https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-lite-pro-128k?access_token=${accessToken}`
-    },
-    // https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-tiny-8k
-    'ERNIE-tiny': (accessToken: string) => {
-        return `https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-tiny-8k?access_token=${accessToken}`
-    },
-    // https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-novel-8k
-    'ERNIE-novel': (accessToken: string) => {
-        return `https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-novel-8k?access_token=${accessToken}`
-    },
-    // https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-char-8k
-    'ERNIE-character': (accessToken: string) => {
-        return `https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-char-8k?access_token=${accessToken}`
+    let additionalKwargs: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/naming-convention
+        function_call?: any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/naming-convention
+        tool_calls?: any
+        reasoning_content?: string
+    }
+    if (delta.function_call) {
+        additionalKwargs = {
+            function_call: delta.function_call
+        }
+    } else if (delta.tool_calls) {
+        additionalKwargs = {
+            tool_calls: delta.tool_calls
+        }
+    } else if (reasoningContent.length > 0) {
+        additionalKwargs = {
+            reasoning_content: reasoningContent
+        }
+    } else {
+        additionalKwargs = {}
+    }
+    if (role === 'user') {
+        return new HumanMessageChunk({ content })
+    } else if (role === 'assistant') {
+        const toolCallChunks = []
+        if (Array.isArray(delta.tool_calls)) {
+            for (const rawToolCall of delta.tool_calls) {
+                toolCallChunks.push({
+                    name: rawToolCall.function?.name,
+                    args: rawToolCall.function?.arguments,
+                    id: rawToolCall.id,
+                    index: rawToolCall.index
+                })
+            }
+        }
+        return new AIMessageChunk({
+            content,
+            tool_call_chunks: toolCallChunks,
+            additional_kwargs: additionalKwargs
+        })
+    } else if (role === 'system') {
+        return new SystemMessageChunk({ content })
+    } else if (role === 'function') {
+        return new FunctionMessageChunk({
+            content,
+            additional_kwargs: additionalKwargs,
+            name: delta.name
+        })
+    } else if (role === 'tool') {
+        return new ToolMessageChunk({
+            content,
+            additional_kwargs: additionalKwargs,
+            tool_call_id: delta.tool_call_id
+        })
+    } else {
+        return new ChatMessageChunk({ content, role })
     }
 }

@@ -5,7 +5,6 @@ $inner:
           $desc: 'Baidu Qianfan platform auth params (API Key, Secret Key)'
           $inner:
               - 'API Key for Baidu Qianfan platform'
-              - 'Secret Key for Baidu Qianfan platform'
 
     - $desc: 'Model Parameters'
       maxTokens: 'Max input tokens (16-12000, multiple of 16). Note: >2000 for 8k+ token models'

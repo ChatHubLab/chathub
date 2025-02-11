@@ -1,17 +1,17 @@
-export type WenxinMessageRole = 'assistant' | 'user' | 'system' | 'function'
+export type WenxinMessageRole =
+    | 'assistant'
+    | 'user'
+    | 'system'
+    | 'function'
+    | 'tool'
 
-/*
- * Interface representing a message in the Wenxin chat model.
- */
 export interface WenxinMessage {
     role: WenxinMessageRole
-    content: string
+    content?: string
+
     name?: string
-    function_call?: {
-        name: string
-        thoughts?: string
-        arguments: string
-    }
+    tool_calls?: ChatCompletionRequestMessageToolCall[]
+    tool_call_id?: string
 }
 
 /**
@@ -141,4 +141,13 @@ export interface CreateEmbeddingResponseUsage {
      * @memberof CreateEmbeddingResponseUsage
      */
     total_tokens: number
+}
+
+export interface ChatCompletionRequestMessageToolCall {
+    id: string
+    type: 'function'
+    function: {
+        name: string
+        arguments: string
+    }
 }

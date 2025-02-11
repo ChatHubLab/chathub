@@ -139,6 +139,10 @@ export class OpenAIRequester
                     }
                 }
             }
+
+            if (reasoningContent.length > 0) {
+                logger.debug(`reasoning content: ${reasoningContent}`)
+            }
         } catch (e) {
             if (e instanceof ChatLunaError) {
                 throw e

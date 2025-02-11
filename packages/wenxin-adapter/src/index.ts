@@ -1,18 +1,22 @@
 import { ChatLunaPlugin } from 'koishi-plugin-chatluna/services/chat'
-import { Context, Schema } from 'koishi'
+import { Context, Logger, Schema } from 'koishi'
 import { WenxinClient } from './client'
+import { createLogger } from 'koishi-plugin-chatluna/utils/logger'
 
+export let logger: Logger
 export function apply(ctx: Context, config: Config) {
     const plugin = new ChatLunaPlugin(ctx, config, 'wenxin')
+
+    logger = createLogger(ctx, 'chatluna-wenxin-adapter')
 
     ctx.on('ready', async () => {
         plugin.registerToService()
 
         await plugin.parseConfig((config) => {
-            return config.apiKeys.map(([apiKey, apiEndpoint]) => {
+            return config.apiKeys.map((apiKey) => {
                 return {
                     apiKey,
-                    apiEndpoint,
+                    apiEndpoint: '',
                     platform: 'wenxin',
                     chatLimit: config.chatTimeLimit,
                     timeout: config.timeout,
@@ -32,7 +36,7 @@ export function apply(ctx: Context, config: Config) {
 }
 
 export interface Config extends ChatLunaPlugin.Config {
-    apiKeys: [string, string][]
+    apiKeys: string[]
     maxTokens: number
     temperature: number
     presencePenalty: number
@@ -44,15 +48,12 @@ export const Config: Schema<Config> = Schema.intersect([
     ChatLunaPlugin.Config,
     Schema.object({
         apiKeys: Schema.array(
-            Schema.tuple([
-                Schema.string().role('secret').required(),
-                Schema.string().role('secret').default('')
-            ])
-        ).default([['', '']])
+            Schema.string().role('secret').required()
+        ).default([''])
     }),
     Schema.object({
-        maxTokens: Schema.number().min(16).max(128000).step(16).default(1024),
-        temperature: Schema.percent().min(0).max(1).step(0.1).default(0.8),
+        maxTokens: Schema.number().min(16).max(1280000).step(16).default(4096),
+        temperature: Schema.percent().min(0).max(2).step(0.1).default(0.8),
         presencePenalty: Schema.number()
             .min(1.0)
             .max(2.0)

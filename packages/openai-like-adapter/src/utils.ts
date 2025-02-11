@@ -24,7 +24,7 @@ export function langchainMessageToOpenAIMessage(
     const result: ChatCompletionResponseMessage[] = []
 
     for (const rawMessage of messages) {
-        const role = messageTypeToOpenAIRole(rawMessage._getType())
+        const role = messageTypeToOpenAIRole(rawMessage.getType())
 
         const msg = {
             content: (rawMessage.content as string) || null,

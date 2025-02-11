@@ -8,7 +8,6 @@ import { ClientConfig } from 'koishi-plugin-chatluna/llm-core/platform/config'
 import * as fetchType from 'undici/types/fetch'
 import { ChatGenerationChunk } from '@langchain/core/outputs'
 import {
-    ChatCompletionResponse,
     CreateEmbeddingResponse,
     WenxinMessage,
     WenxinMessageRole
@@ -21,18 +20,15 @@ import { sseIterable } from 'koishi-plugin-chatluna/utils/sse'
 import {
     convertDeltaToMessageChunk,
     formatToolsToWenxinTools,
-    langchainMessageToWenXinMessage,
-    modelMappedUrl
+    langchainMessageToWenXinMessage
 } from './utils'
-import { Config } from '.'
+import { Config, logger } from '.'
 import { ChatLunaPlugin } from 'koishi-plugin-chatluna/services/chat'
 
 export class WenxinRequester
     extends ModelRequester
     implements EmbeddingsRequester
 {
-    private _accessToken: string | undefined
-
     constructor(
         private _config: ClientConfig,
         private _pluginConfig: Config,
@@ -46,31 +42,22 @@ export class WenxinRequester
     ): AsyncGenerator<ChatGenerationChunk> {
         await this.init()
 
-        let messages = params.input
-
-        // Wenxin requires the system message to be put in the params, not messages array
-        const systemMessage = messages.find(
-            (message) => message._getType() === 'system'
+        const messagesMapped: WenxinMessage[] = langchainMessageToWenXinMessage(
+            params.input
         )
-        if (systemMessage) {
-            // eslint-disable-next-line no-param-reassign
-            messages = messages.filter((message) => message !== systemMessage)
-        }
-        const messagesMapped: WenxinMessage[] =
-            langchainMessageToWenXinMessage(messages)
 
         try {
             const response = await this._post(
-                modelMappedUrl[params.model](this._accessToken),
+                'v2/chat/completions',
                 {
                     messages: messagesMapped,
                     stream: true,
-                    system: systemMessage ? systemMessage.content : undefined,
                     temperature: params.temperature,
                     top_p: params.topP,
                     penalty_score: params.presencePenalty,
                     disable_search: !this._pluginConfig.enableSearch,
-                    enable_citation: this._pluginConfig.enableSearch,
+
+                    model: params.model,
                     functions:
                         params.tools != null
                             ? formatToolsToWenxinTools(params.tools)
@@ -83,9 +70,11 @@ export class WenxinRequester
 
             const iterator = sseIterable(response)
 
-            const defaultRole: WenxinMessageRole = 'assistant'
+            let defaultRole: WenxinMessageRole = 'assistant'
 
             let errorCount = 0
+
+            let reasoningContent = ''
 
             for await (const event of iterator) {
                 const chunk = event.data
@@ -94,28 +83,38 @@ export class WenxinRequester
                 }
 
                 try {
-                    const data = JSON.parse(chunk) as ChatCompletionResponse
+                    const data = JSON.parse(chunk)
 
-                    const message = data as ChatCompletionResponse
-                    if (!message) {
-                        continue
-                    }
-
-                    if (message.need_clear_history) {
-                        errorCount = 114514
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    if ((data as any).error) {
                         throw new ChatLunaError(
-                            ChatLunaErrorCode.API_UNSAFE_CONTENT,
+                            ChatLunaErrorCode.API_REQUEST_FAILED,
                             new Error(
-                                'error when calling wenxin completion, Result: ' +
+                                'error when calling openai completion, Result: ' +
                                     chunk
                             )
                         )
                     }
 
+                    const choice = data.choices?.[0]
+                    if (!choice) {
+                        continue
+                    }
+
+                    const { delta } = choice
                     const messageChunk = convertDeltaToMessageChunk(
-                        message,
+                        delta,
                         defaultRole
                     )
+
+                    if (delta.reasoning_content) {
+                        reasoningContent = (reasoningContent +
+                            delta.reasoning_content) as string
+                    }
+
+                    defaultRole = (
+                        (delta.role?.length ?? 0) > 0 ? delta.role : defaultRole
+                    ) as WenxinMessageRole
 
                     const generationChunk = new ChatGenerationChunk({
                         message: messageChunk,
@@ -124,22 +123,21 @@ export class WenxinRequester
 
                     yield generationChunk
                 } catch (e) {
-                    console.error(e, chunk)
                     if (errorCount > 5) {
-                        if (e instanceof ChatLunaError) {
-                            throw e
-                        }
+                        logger.error('error with chunk', chunk)
                         throw new ChatLunaError(
                             ChatLunaErrorCode.API_REQUEST_FAILED,
-                            new Error(
-                                'error when calling wenxin completion, Result: ' +
-                                    chunk
-                            )
+                            e
                         )
                     } else {
                         errorCount++
+                        continue
                     }
                 }
+            }
+
+            if (reasoningContent.length > 0) {
+                logger.debug(`reasoning content: ${reasoningContent}`)
             }
         } catch (e) {
             if (e instanceof ChatLunaError) {
@@ -166,15 +164,13 @@ export class WenxinRequester
         let data: CreateEmbeddingResponse | string
 
         try {
-            const response = await this._post(
-                `https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/embeddings/embedding-v1?access_token=${this._accessToken}`,
-                {
-                    input:
-                        params.input instanceof Array
-                            ? params.input
-                            : [params.input]
-                }
-            )
+            const response = await this._post(`v2/embeddings`, {
+                input:
+                    params.input instanceof Array
+                        ? params.input
+                        : [params.input],
+                model: params.model
+            })
 
             data = await response.text()
 
@@ -213,7 +209,7 @@ export class WenxinRequester
     private _post(url: string, data: any, params: fetchType.RequestInit = {}) {
         const body = JSON.stringify(data)
 
-        return this._plugin.fetch(url, {
+        return this._plugin.fetch(`https://qianfan.baidubce.com/${url}`, {
             body,
             headers: this._buildHeaders(),
             method: 'POST',
@@ -223,39 +219,12 @@ export class WenxinRequester
 
     private _buildHeaders() {
         return {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            appid: '',
+            Authorization: `Bearer ${this._config.apiKey}`
         }
     }
 
-    private async _getAccessToken(): Promise<string> {
-        // eslint-disable-next-line max-len
-        const url = `https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=${this._config.apiKey}&client_secret=${this._config.apiEndpoint}`
-        const response = await this._plugin.fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Accept: 'application/json'
-            }
-        })
-        if (!response.ok) {
-            const text = await response.text()
-            const error = new Error(
-                `Baidu get access token failed with status code ${response.status}, response: ${text}`
-            )
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ;(error as any).response = response
-            throw new ChatLunaError(ChatLunaErrorCode.API_REQUEST_FAILED, error)
-        }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const json = (await response.json()) as any
-        return json.access_token
-    }
-
-    async init(): Promise<void> {
-        if (this._accessToken == null) {
-            this._accessToken = await this._getAccessToken()
-        }
-    }
-
-    async dispose(): Promise<void> {}
+    async dispose() {}
+    async init() {}
 }

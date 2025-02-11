@@ -40,72 +40,31 @@ export class WenxinClient extends PlatformModelAndEmbeddingsClient<ClientConfig>
         await this.getModels()
     }
 
-    /*     // eslint-disable-next-line @typescript-eslint/naming-convention
-    'ERNIE-4.0': (accessToken: string) => {
-        return `https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions_pro?access_token=${accessToken}`
-    },
-    // https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-4.0-turbo-8k
-    'ERNIE-4.0-turbo': (accessToken: string) => {
-        return `https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-4.0-turbo-8k?access_token=${accessToken}`
-    },
-
-    // https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions
-    'ERNIE-3.5': (accessToken: string) => {
-        return `https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions?access_token=${accessToken}`
-    },
-
-    // https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-3.5-128k
-    'ERNIE-3.5-128k': (accessToken: string) => {
-        return `https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-3.5-128k?access_token=${accessToken}`
-    },
-
-    // https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-speed-pro-128k
-    'ERNIE-speed-pro': (accessToken: string) => {
-        return `https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-speed-pro-128k?access_token=${accessToken}`
-    },
-    // https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie_speed
-    'ERNIE-speed': (accessToken: string) => {
-        return `https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie_speed?access_token=${accessToken}`
-    },
-    // https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-speed-128k
-    'ERNIE-speed-128k': (accessToken: string) => {
-        return `https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-speed-128k?access_token=${accessToken}`
-    },
-    // https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-lite-8k
-    'ERNIE-lite': (accessToken: string) => {
-        return `https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-lite-8k?access_token=${accessToken}`
-    },
-    // https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-lite-pro-128k
-    'ERNIE-lite-pro': (accessToken: string) => {
-        return `https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-lite-pro-128k?access_token=${accessToken}`
-    },
-    // https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-tiny-8k
-    'ERNIE-tiny': (accessToken: string) => {
-        return `https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-tiny-8k?access_token=${accessToken}`
-    },
-    // https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-novel-8k
-    'ERNIE-novel': (accessToken: string) => {
-        return `https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-novel-8k?access_token=${accessToken}`
-    },
-    // https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-char-8k
-    'ERNIE-char': (accessToken: string) => {
-        return `https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-char-8k?access_token=${accessToken}`
-    } */
-
     async refreshModels(): Promise<ModelInfo[]> {
         const rawModels = [
-            ['ERNIE-4.0', 8000],
-            ['ERNIE-4.0-turbo', 8000],
-            ['ERNIE-3.5', 4096],
-            ['ERNIE-3.5-128k', 128000],
-            ['ERNIE-speed-pro', 128000],
-            ['ERNIE-speed', 4096],
-            ['ERNIE-speed-128k', 128000],
-            ['ERNIE-lite', 8000],
-            ['ERNIE-lite-pro', 128000],
-            ['ERNIE-tiny', 8000],
-            ['ERNIE-novel', 8000],
-            ['ERNIE-character', 8000]
+            ['ernie-4.0-8k', 8000], // ERNIE-4.0-8K
+            ['ernie-4.0-8k-preview', 8000], // ERNIE-4.0-8K-Preview
+            ['ernie-4.0-8k-latest', 8000], // ERNIE-4.0-8K-Latest
+            ['ernie-4.0-turbo-8k', 8000], // ERNIE-4.0-Turbo-8K
+            ['ernie-4.0-turbo-8k-preview', 8000], // ERNIE-4.0-Turbo-8K-Preview
+            ['ernie-4.0-turbo-8k-latest', 8000], // ERNIE-4.0-Turbo-8K-Latest
+            ['ernie-4.0-turbo-128k', 128000], // ERNIE-4.0-Turbo-128K
+            ['ernie-3.5-8k', 4096], // ERNIE-3.5-8K
+            ['ernie-3.5-8k-preview', 4096], // ERNIE-3.5-8K-Preview
+            ['ernie-3.5-128k', 128000], // ERNIE-3.5-128K
+            ['ernie-speed-pro-128k', 128000], // ERNIE-Speed-Pro-128K
+            ['ernie-speed-8k', 4096], // ERNIE-Speed-8K
+            ['ernie-speed-128k', 128000], // ERNIE-Speed-128K
+            ['ernie-character-8k', 8000], // ERNIE-Character-8K
+            ['ernie-character-fiction-8k', 8000], // ERNIE-Character-Fiction-8K
+            ['ernie-lite-8k', 8000], // ERNIE-Lite-8K
+            ['ernie-lite-pro-128k', 128000], // ERNIE-Lite-Pro-128K
+            ['ernie-tiny-8k', 8000], // ERNIE-Tiny-8K
+            ['ernie-novel-8k', 8000], // ERNIE-Novel-8K
+            ['deepseek-v3', 128000], // DeepSeek-V3 (未提供上下文大小)
+            ['deepseek-r1', 128000], // DeepSeek-R1 (未提供上下文大小)
+            ['deepseek-r1-distill-qwen-32b', 8000], // DeepSeek-R1-Distill-Qwen-32B (未提供上下文大小)
+            ['deepseek-r1-distill-qwen-14b', 8000] // DeepSeek-R1-Distill-Qwen-14B (未提供上下文大小)
         ] as [string, number][]
 
         return rawModels
@@ -120,7 +79,7 @@ export class WenxinClient extends PlatformModelAndEmbeddingsClient<ClientConfig>
             })
             .concat([
                 {
-                    name: 'text-embedding',
+                    name: 'embedding-v1',
                     type: ModelType.embeddings,
                     functionCall: false,
                     supportMode: ['all'],
