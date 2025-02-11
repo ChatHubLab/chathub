@@ -179,18 +179,29 @@ export function convertDeltaToMessageChunk(
         (delta.role?.length ?? 0) > 0 ? delta.role : defaultRole
     ).toLowerCase()
     const content = delta.content ?? ''
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/naming-convention
-    let additional_kwargs: { function_call?: any; tool_calls?: any }
+    const reasoningContent = delta.reasoning_content ?? ''
+
+    let additionalKwargs: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/naming-convention
+        function_call?: any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/naming-convention
+        tool_calls?: any
+        reasoning_content?: string
+    }
     if (delta.function_call) {
-        additional_kwargs = {
+        additionalKwargs = {
             function_call: delta.function_call
         }
     } else if (delta.tool_calls) {
-        additional_kwargs = {
+        additionalKwargs = {
             tool_calls: delta.tool_calls
         }
+    } else if (reasoningContent.length > 0) {
+        additionalKwargs = {
+            reasoning_content: reasoningContent
+        }
     } else {
-        additional_kwargs = {}
+        additionalKwargs = {}
     }
     if (role === 'user') {
         return new HumanMessageChunk({ content })
@@ -209,20 +220,20 @@ export function convertDeltaToMessageChunk(
         return new AIMessageChunk({
             content,
             tool_call_chunks: toolCallChunks,
-            additional_kwargs
+            additional_kwargs: additionalKwargs
         })
     } else if (role === 'system') {
         return new SystemMessageChunk({ content })
     } else if (role === 'function') {
         return new FunctionMessageChunk({
             content,
-            additional_kwargs,
+            additional_kwargs: additionalKwargs,
             name: delta.name
         })
     } else if (role === 'tool') {
         return new ToolMessageChunk({
             content,
-            additional_kwargs,
+            additional_kwargs: additionalKwargs,
             tool_call_id: delta.tool_call_id
         })
     } else {
