@@ -30,10 +30,12 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
 
                 // 从消息元素中检测是否有被艾特当前用户
 
-                appel = session.elements.some(
-                    (element) =>
-                        element.type === 'at' && element.attrs?.['id'] === botId
-                )
+                appel =
+                    session.elements?.some(
+                        (element) =>
+                            element.type === 'at' &&
+                            element.attrs?.['id'] === botId
+                    ) ?? false
 
                 if (appel) {
                     return await checkReplyPermission()
@@ -56,7 +58,10 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
             }
 
             // 随机回复检查
-            if (Math.random() < config.randomReplyFrequency) {
+            if (
+                Math.random() <
+                (await session.resolve(config.randomReplyFrequency))
+            ) {
                 return await checkReplyPermission()
             }
 

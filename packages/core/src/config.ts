@@ -7,7 +7,7 @@ export interface Config {
     isForwardMsg: boolean
     allowChatWithRoomName: boolean
     msgCooldown: number
-    randomReplyFrequency: number
+    randomReplyFrequency: Computed<Awaitable<number>>
     messageCount: number
     includeQuoteReply: boolean
     isLog: boolean
@@ -70,6 +70,7 @@ export const Config: Schema<Config> = Schema.intersect([
             .max(1)
             .step(0.01)
             .default(0)
+            .computed()
     }),
 
     Schema.object({
