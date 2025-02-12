@@ -34,8 +34,6 @@ export async function apply(
         })
         const testVector = await embeddings.embedDocuments(['test'])
 
-        logger.debug(`Loading redis store from %c`, vectorStore.indexName)
-
         try {
             await vectorStore.createIndex(testVector[0].length)
         } catch (e) {
@@ -59,6 +57,8 @@ export async function apply(
             }
             logger.error(e)
         }
+
+        logger.debug(`Loading redis store from %c`, vectorStore.indexName)
 
         const wrapperStore = new ChatLunaSaveableVectorStore<RedisVectorStore>(
             vectorStore,
