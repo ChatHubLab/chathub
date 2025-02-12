@@ -48,6 +48,18 @@ export async function apply(
             logger.error(e)
         }
 
+        try {
+            await vectorStore.similaritySearchVectorWithScore(testVector[0], 1)
+        } catch (e) {
+            try {
+                await vectorStore.dropIndex(true)
+                await vectorStore.createIndex(testVector[0].length)
+            } catch (e) {
+                logger.error(e)
+            }
+            logger.error(e)
+        }
+
         const wrapperStore = new ChatLunaSaveableVectorStore<RedisVectorStore>(
             vectorStore,
             {
