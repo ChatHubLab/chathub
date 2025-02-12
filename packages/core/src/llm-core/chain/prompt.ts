@@ -500,6 +500,7 @@ Your goal is to craft a response that intelligently incorporates relevant knowle
         const formatDocuments: Document[] = []
 
         for (const document of longHistory) {
+            if (document.pageContent.length === 0) continue
             const documentTokens = await this.tokenCounter(document.pageContent)
 
             if (usedTokens + documentTokens > this.sendTokenLimit - 80) {
@@ -508,6 +509,10 @@ Your goal is to craft a response that intelligently incorporates relevant knowle
 
             usedTokens += documentTokens
             formatDocuments.push(document)
+        }
+
+        if (formatDocuments.length < 1) {
+            return usedTokens
         }
 
         const formatConversationSummary =
