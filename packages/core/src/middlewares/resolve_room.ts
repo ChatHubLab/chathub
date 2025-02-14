@@ -229,7 +229,8 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
             }
 
             if (
-                joinRoom?.autoUpdate !== true &&
+                joinRoom != null &&
+                joinRoom.autoUpdate !== true &&
                 config.autoUpdateRoomMode === 'all'
             ) {
                 joinRoom.autoUpdate = true
