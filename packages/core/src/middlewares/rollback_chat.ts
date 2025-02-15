@@ -65,14 +65,13 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                     id: parentId
                 })
 
-                if (message == null) {
-                    parentId = null
-                    break
-                }
-
                 parentId = message[0]?.parent
 
                 messages.unshift(...message)
+
+                if (parentId == null) {
+                    break
+                }
             }
 
             // 小于目标轮次，就是没有
