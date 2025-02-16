@@ -347,9 +347,14 @@ export class ChatInterface {
             this._input.embeddings.length < 1 ||
             this._input.embeddings === '无'
         ) {
-            logger.warn(
-                'Embeddings are empty, falling back to fake embeddings. Try check your config.'
-            )
+            if (
+                this._input.vectorStoreName != null &&
+                this._input.vectorStoreName?.length > 0
+            ) {
+                logger.warn(
+                    'Embeddings are empty, falling back to fake embeddings. Try check your config.'
+                )
+            }
             return emptyEmbeddings
         }
 
