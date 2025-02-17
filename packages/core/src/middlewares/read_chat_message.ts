@@ -46,8 +46,8 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
             const name = element.attrs['name']
             const id = element.attrs['id']
 
-            if (name && id !== session.bot.selfId) {
-                message.content += `<at name="${name}" id="${id}"/>`
+            if (id !== session.bot.selfId) {
+                message.content += `<at ${name != null ? `name="${name}"` : ''} id="${id}"/>`
             }
         }
     )
