@@ -81,7 +81,9 @@ class WikipediaSearchProvider extends SearchProvider {
         this.baseUrl = params.baseUrl ?? this.baseUrl
 
         if (!model) {
-            logger?.warn('No model provided, skip enhanced keyword extract')
+            logger?.warn(
+                'No keywordExtract model provided, skip enhanced keyword extract'
+            )
         }
     }
 
