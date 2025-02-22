@@ -86,7 +86,7 @@ export class OpenAIFunctionsAgentOutputParser extends AgentActionOutputParser {
             }
         } else {
             return {
-                returnValues: { output: message.content },
+                returnValues: { output: message.content, message },
                 log: message.content as string
             }
         }

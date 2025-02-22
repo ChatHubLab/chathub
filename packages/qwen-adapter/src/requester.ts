@@ -86,6 +86,10 @@ export class QWenRequester
             const defaultRole: ChatCompletionResponseMessageRoleEnum =
                 'assistant'
 
+            let reasoningContent = ''
+            let isSetReasoingTime = false
+            let reasoningTime = 0
+
             for await (const event of iterator) {
                 const chunk = event.data
 
@@ -113,10 +117,34 @@ export class QWenRequester
                     continue
                 }
 
+                const delta = choice.delta
                 const messageChunk = convertDeltaToMessageChunk(
-                    choice.delta,
+                    delta,
                     defaultRole
                 )
+
+                if (delta.reasoning_content) {
+                    reasoningContent = (reasoningContent +
+                        delta.reasoning_content) as string
+
+                    if (reasoningTime === 0) {
+                        reasoningTime = Date.now()
+                    }
+                }
+
+                if (
+                    (delta.reasoning_content == null ||
+                        delta.reasoning_content === '') &&
+                    delta.content &&
+                    delta.content.length > 0 &&
+                    reasoningTime > 0 &&
+                    !isSetReasoingTime
+                ) {
+                    reasoningTime = Date.now() - reasoningTime
+                    messageChunk.additional_kwargs.reasoning_time =
+                        reasoningTime
+                    isSetReasoingTime = true
+                }
 
                 const generationChunk = new ChatGenerationChunk({
                     message: messageChunk,
@@ -128,6 +156,16 @@ export class QWenRequester
                 if (choice.finish_reason === 'stop') {
                     break
                 }
+            }
+
+            if (reasoningContent.length > 0) {
+                console.log(
+                    'reasoningContent: ' +
+                        reasoningContent +
+                        ', reasoningTime: ' +
+                        reasoningTime / 1000 +
+                        's'
+                )
             }
         } catch (e) {
             if (e instanceof ChatLunaError) {

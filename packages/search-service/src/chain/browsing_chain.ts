@@ -217,7 +217,7 @@ export class ChatLunaBrowsingChain
 
         // format and call
 
-        const { text: finalResponse } = await callChatLunaChain(
+        const finalResponse = await callChatLunaChain(
             this.chain,
             {
                 ...requests,
@@ -226,7 +226,7 @@ export class ChatLunaBrowsingChain
             events
         )
 
-        logger?.debug(`final response %c`, finalResponse)
+        logger?.debug(`final response %c`, finalResponse.text)
 
         // remove to reduce context length
         /* if (responsePrompt.length > 0) {
@@ -236,7 +236,9 @@ export class ChatLunaBrowsingChain
             )
         } */
 
-        const aiMessage = new AIMessage(finalResponse)
+        const aiMessage =
+            (finalResponse?.message as AIMessage) ??
+            new AIMessage(finalResponse.text)
 
         return {
             message: aiMessage

@@ -80,10 +80,12 @@ export class DeepseekRequester
             const iterator = sseIterable(response)
 
             let reasoningContent = ''
+            let isSetReasoingTime = false
 
             let defaultRole: ChatCompletionResponseMessageRoleEnum = 'assistant'
 
             let errorCount = 0
+            let reasoningTime = 0
 
             for await (const event of iterator) {
                 const chunk = event.data
@@ -119,6 +121,24 @@ export class DeepseekRequester
                     if (delta.reasoning_content) {
                         reasoningContent = (reasoningContent +
                             delta.reasoning_content) as string
+
+                        if (reasoningTime === 0) {
+                            reasoningTime = Date.now()
+                        }
+                    }
+
+                    if (
+                        (delta.reasoning_content == null ||
+                            delta.reasoning_content === '') &&
+                        delta.content &&
+                        delta.content.length > 0 &&
+                        reasoningTime > 0 &&
+                        !isSetReasoingTime
+                    ) {
+                        reasoningTime = Date.now() - reasoningTime
+                        messageChunk.additional_kwargs.reasoning_time =
+                            reasoningTime
+                        isSetReasoingTime = true
                     }
 
                     defaultRole = (delta.role ??
@@ -145,7 +165,9 @@ export class DeepseekRequester
             }
 
             if (reasoningContent.length > 0) {
-                logger.debug(`reasoning content: ${reasoningContent}`)
+                logger.debug(
+                    `reasoning content: ${reasoningContent}. Use time: ${reasoningTime / 1000}s`
+                )
             }
         } catch (e) {
             if (e instanceof ChatLunaError) {

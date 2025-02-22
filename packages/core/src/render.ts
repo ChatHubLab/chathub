@@ -1,4 +1,4 @@
-import { Context, Schema } from 'koishi'
+import { Context, h, Schema } from 'koishi'
 import {
     ChatLunaError,
     ChatLunaErrorCode
@@ -56,15 +56,23 @@ export class DefaultRenderer {
                     ? currentRenderer
                     : await this.getRenderer('raw')
 
-            result.push(await currentRenderer.render(message, options))
-
             if (message.additionalReplyMessages) {
                 for (const additionalMessage of message.additionalReplyMessages) {
-                    result.push(
-                        await rawRenderer.render(additionalMessage, options)
-                    )
+                    const elements = await rawRenderer
+                        .render(additionalMessage, options)
+                        .then((r) => r.element)
+
+                    result.push({
+                        element: h(
+                            'message',
+                            { forward: true },
+                            Array.isArray(elements) ? elements : [elements]
+                        )
+                    })
                 }
             }
+
+            result.push(await currentRenderer.render(message, options))
 
             return result
         } catch (e) {

@@ -36,7 +36,7 @@ export const inject2 = {
 export let logger: Logger
 
 export const usage = `
-## chatluna v1
+## chatluna v1.1
 
 ChatLuna 插件交流群：282381753 （有问题或出现 Bug 先加群问）
 

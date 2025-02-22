@@ -100,9 +100,7 @@ export class ChatHubChatChain
             throw new Error('response.text is null')
         }
 
-        const responseString = response.text
-
-        const aiMessage = new AIMessage(responseString)
+        const aiMessage = response.message ?? new AIMessage(response.text)
 
         response.message = aiMessage
 

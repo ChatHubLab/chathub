@@ -20,7 +20,7 @@ import {
     BaseLangChain,
     BaseLangChainParams
 } from '@langchain/core/language_models/base'
-import { RUN_KEY } from '@langchain/core/outputs'
+import { ChatGeneration, RUN_KEY } from '@langchain/core/outputs'
 import { BaseMemory } from '@langchain/core/memory'
 import type { PostHandler } from '../../utils/types'
 
@@ -331,6 +331,7 @@ export class ChatLunaLLMChain<
         return {
             [this.outputKey]: generation.text,
             rawGeneration: generation,
+            message: (generation as ChatGeneration).message,
             extra: generation?.generationInfo
         } as unknown as RunOutput
     }

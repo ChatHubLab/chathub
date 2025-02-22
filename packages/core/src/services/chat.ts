@@ -807,11 +807,29 @@ class ChatInterfaceWrapper {
                 postHandler
             })
 
+            const aiMessage = chainValues.message as AIMessage
+
+            const reasoningContent = aiMessage.additional_kwargs
+                ?.reasoning_content as string
+
+            const reasoingTime = aiMessage.additional_kwargs
+                ?.reasoning_time as number
+
+            const additionalReplyMessages: Message[] = []
+
+            if (
+                reasoningContent != null &&
+                reasoningContent.length > 0 &&
+                this._service.config.showThoughtMessage
+            ) {
+                additionalReplyMessages.push({
+                    content: `Thought for ${reasoingTime / 1000} seconds: \n\n${reasoningContent}`
+                })
+            }
+
             return {
-                content: (chainValues.message as AIMessage).content as string,
-                additionalReplyMessages: (
-                    chainValues.additionalReplyMessages as string[]
-                )?.map((content) => ({ content }))
+                content: aiMessage.content as string,
+                additionalReplyMessages
             }
         } finally {
             // Clean up resources

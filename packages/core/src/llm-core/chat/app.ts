@@ -142,6 +142,8 @@ export class ChatInterface {
 
         const displayRespose = new AIMessage(response)
 
+        displayRespose.additional_kwargs = response.additional_kwargs
+
         this._chatCount++
 
         // Handle post-processing if needed
