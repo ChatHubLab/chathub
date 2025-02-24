@@ -87,7 +87,7 @@ export abstract class ModelRequester implements BaseRequester {
 
     abstract init(): Promise<void>
 
-    abstract dispose(): Promise<void>
+    abstract dispose(model?: string, id?: string): Promise<void>
 }
 
 export interface EmbeddingsRequester {

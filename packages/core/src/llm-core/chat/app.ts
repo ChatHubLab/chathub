@@ -295,7 +295,7 @@ export class ChatInterface {
         await this.clearChatHistory()
 
         for (const chain of Object.values(this._chains)) {
-            await chain.model.clearContext()
+            await chain.model.clearContext(room.conversationId)
         }
 
         this._chains = {}
@@ -337,7 +337,7 @@ export class ChatInterface {
         await this._chatHistory.clear()
 
         for (const chain of Object.values(this._chains)) {
-            await chain.model.clearContext()
+            await chain.model.clearContext(this._input.conversationId)
         }
     }
 

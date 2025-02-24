@@ -1,0 +1,11 @@
+$inner:
+    - {}
+    - $desc: 请求选项
+      apiURL:
+          $desc: Dify API 后端地址，例如 https://api.dify.ai/v1
+      additionalModels:
+          $desc: Dify 工作流列表
+          $inner:
+              apiKey: API Key
+              workflowName: 工作流名称
+              workflowType: 工作流类型

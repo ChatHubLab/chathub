@@ -506,8 +506,8 @@ export class ChatLunaChatModel extends BaseChatModel<ChatLunaModelCallOptions> {
         return totalCount
     }
 
-    async clearContext(): Promise<void> {
-        await this._requester.dispose()
+    async clearContext(id: string): Promise<void> {
+        await this._requester.dispose(this.modelName, id)
     }
 
     getModelMaxContextSize() {

@@ -1,0 +1,11 @@
+$inner:
+    - {}
+    - $desc: Request Options
+      apiURL:
+          $desc: Dify API backend address
+      additionalModels:
+          $desc: Dify workflow list
+          $inner:
+              apiKey: API Key
+              workflowName: Workflow Name
+              workflowType: Node Type
