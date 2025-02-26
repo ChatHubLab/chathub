@@ -13,7 +13,7 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
         .middleware('delete_memory', async (session, context) => {
             let {
                 command,
-                options: { type, room, ids }
+                options: { type, room, ids, view }
             } = context
 
             if (command !== 'delete_memory')
@@ -31,7 +31,7 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                 modelName
             )
 
-            const key = resolveLongMemoryId(type, session.userId)
+            const key = resolveLongMemoryId(type, session.userId, view)
 
             try {
                 const vectorStore = await services.createVectorStore(

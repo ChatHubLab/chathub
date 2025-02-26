@@ -13,7 +13,7 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
         .middleware('edit_memory', async (session, context) => {
             let {
                 command,
-                options: { type, room, memoryId }
+                options: { type, room, memoryId, view }
             } = context
 
             if (command !== 'edit_memory')
@@ -31,7 +31,7 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                 modelName
             )
 
-            const key = resolveLongMemoryId(type, session.userId)
+            const key = resolveLongMemoryId(type, session.userId, view)
 
             try {
                 const vectorStore = await services.createVectorStore(
@@ -69,5 +69,6 @@ declare module '../chains/chain' {
 
     interface ChainMiddlewareContextOptions {
         memoryId?: string
+        view?: string
     }
 }

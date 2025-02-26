@@ -24,7 +24,7 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
         .middleware('search_memory', async (session, context) => {
             let {
                 command,
-                options: { page, limit, query, type, room }
+                options: { page, limit, query, type, room, view }
             } = context
 
             if (command !== 'search_memory')
@@ -52,7 +52,7 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                 modelName
             )
 
-            const key = resolveLongMemoryId(type, session.userId)
+            const key = resolveLongMemoryId(type, session.userId, view)
 
             try {
                 const vectorStore = await services.createVectorStore(
@@ -102,11 +102,18 @@ async function formatDocumentInfo(session: Session, document: Document) {
     return buffer.join('\n')
 }
 
-export function resolveLongMemoryId(preset: string, userId: string) {
-    const hash = crypto
-        .createHash('sha256')
-        .update(`${preset}-${userId}`)
-        .digest('hex')
+export function resolveLongMemoryId(
+    preset: string,
+    userId: string,
+    view: string
+) {
+    let hash = crypto.createHash('sha256')
 
-    return hash
+    if (view === 'preset') {
+        hash = hash.update(`${preset}`)
+    } else {
+        hash = hash.update(`${preset}-${userId}`)
+    }
+
+    return hash.digest('hex')
 }
