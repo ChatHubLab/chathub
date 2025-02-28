@@ -114,10 +114,6 @@ function enhancedMemoryToDocument(memory: EnhancedMemory): Document {
         metadata.expirationDate = memory.expirationDate.toISOString()
     }
 
-    if (memory.rawId) {
-        metadata.rawId = memory.rawId
-    }
-
     return new Document({
         pageContent: memory.content,
         metadata
@@ -138,8 +134,8 @@ function documentToEnhancedMemory(document: Document): EnhancedMemory {
         memory.expirationDate = new Date(metadata.expirationDate)
     }
 
-    if (metadata.rawId) {
-        memory.rawId = metadata.rawId
+    if (metadata.raw_id) {
+        memory.rawId = metadata.raw_id
     }
 
     return memory
@@ -242,8 +238,7 @@ class VectorStoreMemoryLayer extends BaseMemoryRetrievalLayer {
         if (memories.length === 0) return
 
         await this.vectorStore.addDocuments(
-            memories.map(enhancedMemoryToDocument),
-            {}
+            memories.map(enhancedMemoryToDocument)
         )
 
         if (this.vectorStore instanceof ChatLunaSaveableVectorStore) {
@@ -264,7 +259,7 @@ class VectorStoreMemoryLayer extends BaseMemoryRetrievalLayer {
         try {
             // 获取所有记忆
             const allMemories = await this.vectorStore.similaritySearch(
-                '',
+                'test',
                 1000
             )
 
@@ -797,7 +792,12 @@ async function selectChatHistory(
         .join('\n')
 }
 
-const ENHANCED_MEMORY_PROMPT = `Extract key memories from this chat as a JSON array of structured memory objects:
+const ENHANCED_MEMORY_PROMPT = `You are now a Memory Extraction expert.
+
+Your task is to extract memory content related to the conversation based on the given context and the specifications below:
+
+
+Extract key memories from this chat as a JSON array of structured memory objects:
 {user_input}
 
 Guidelines:
@@ -806,7 +806,9 @@ Guidelines:
 3. Each memory should be a complete, standalone sentence that makes sense without additional context.
 4. Avoid creating memories about the current conversation flow or meta-discussions.
 5. Do not include greetings, pleasantries, or other conversation fillers.
-6. Categorize each memory into one of these types:
+6. The memories output language should be same as the user input language.
+7. If the context don't include any relevant information, return an empty array: []
+8. Categorize each memory into one of these types:
    - "factual": Objective information and facts
    - "preference": User likes, dislikes, and preferences
    - "personal": Personal details about the user
@@ -820,7 +822,7 @@ Guidelines:
    - "location": Location-related information
    - "relationship": Information about user's relationships
 
-7. Assign an importance score (1-10) to each memory:
+9. Assign an importance score (1-10) to each memory:
    - 10: Critical information that must be remembered
    - 7-9: Very important information
    - 4-6: Moderately important information
@@ -840,7 +842,11 @@ Format your response as a valid JSON array of objects with this structure:
   }
 ]
 
-If no meaningful memories can be extracted, return an empty array: []`
+The memories output language should be same as the user input language!!!
+The memories output language should be same as the user input language!!!
+If no meaningful memories can be extracted, return an empty array: []
+
+Output:`
 
 // 从聊天历史中提取记忆
 async function extractMemoriesFromChat(
@@ -898,7 +904,6 @@ async function extractMemoriesFromChat(
     }
 
     if (!memories || memories.length === 0) {
-        logger?.warn('Error extracting long memory')
         return []
     }
 
