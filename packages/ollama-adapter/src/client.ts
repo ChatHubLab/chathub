@@ -46,16 +46,20 @@ export class OllamaClient extends PlatformModelAndEmbeddingsClient<ClientConfig>
             return rawModels.map((model) => {
                 return {
                     name: model,
-                    type: model.includes('embed')
-                        ? ModelType.embeddings
-                        : ModelType.llm,
+                    type:
+                        model.includes('embed') ||
+                        model.includes('all-minilm') ||
+                        model.includes('bge') ||
+                        model.includes('paraphrase-multilingual')
+                            ? ModelType.embeddings
+                            : ModelType.llm,
                     supportMode: ['all'],
                     maxTokens: ((model: string) => {
                         if (model.startsWith('llama3')) {
                             return 32000
                         }
 
-                        return 8000
+                        return 128000
                     })(model)
                 }
             })
