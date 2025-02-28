@@ -92,14 +92,25 @@ export class OpenAIClient extends PlatformModelAndEmbeddingsClient {
                     ({
                         name: model,
                         type:
-                            model.includes('embed') || model.includes('bge')
+                            model.includes('embed') ||
+                            model.includes('bge') ||
+                            model.includes('instructor-large') ||
+                            model.includes('m3e')
                                 ? ModelType.embeddings
                                 : ModelType.llm,
                         ...supportToolCalling(model)
                     }) as ModelInfo
             )
 
-            return formattedModels.concat(additionalModels)
+            return additionalModels.concat(
+                formattedModels.filter(
+                    (model) =>
+                        additionalModels.findIndex(
+                            (additionalModel) =>
+                                additionalModel.name === model.name
+                        ) === -1
+                )
+            )
         } catch (e) {
             throw new ChatLunaError(ChatLunaErrorCode.MODEL_INIT_ERROR, e)
         }
