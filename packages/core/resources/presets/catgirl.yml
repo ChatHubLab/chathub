@@ -19,4 +19,4 @@ prompts:
     - role: assistant
       content: '喵~你好主人'
 
-format_user_prompt: '用户{sender}说: {prompt}'
+format_user_prompt: '用户[{sender},{sender_id}]说: {prompt}'

@@ -183,6 +183,7 @@ Your goal is to craft a response that intelligently incorporates relevant knowle
         )
         const longHistory = (variables?.['long_memory'] ?? []) as Document[]
         const knowledge = (variables?.['knowledge'] ?? []) as Document[]
+        const otherDocuments = (variables?.['documents'] ?? []) as Document[][]
         const loreBooks = (variables?.['lore_books'] ?? []) as RoleBook[]
         const authorsNote = variables?.['authors_note'] as AuthorsNote
         const [formatAuthorsNote, usedTokensAuthorsNote] = authorsNote
@@ -217,8 +218,11 @@ Your goal is to craft a response that intelligently incorporates relevant knowle
 
         const formatResult = await this._formatWithMessagesPlaceholder(
             chatHistory as BaseMessage[],
-            longHistory,
-            knowledge,
+            [longHistory, knowledge].concat(
+                Array.isArray(otherDocuments[0])
+                    ? otherDocuments
+                    : [otherDocuments as unknown as Document[]]
+            ),
             usedTokens
         )
 
@@ -354,8 +358,7 @@ Your goal is to craft a response that intelligently incorporates relevant knowle
 
     private async _formatWithMessagesPlaceholder(
         chatHistory: BaseMessage[],
-        longHistory: Document[],
-        knowledge: Document[],
+        documents: Document[][],
         usedTokens: number
     ): Promise<{ messages: BaseMessage[]; usedTokens: number }> {
         const result: BaseMessage[] = []
@@ -365,7 +368,7 @@ Your goal is to craft a response that intelligently incorporates relevant knowle
 
             if (
                 usedTokens + messageTokens >
-                this.sendTokenLimit - (longHistory.length > 0 ? 480 : 80)
+                this.sendTokenLimit - (documents.length > 0 ? 480 : 80)
             ) {
                 break
             }
@@ -374,18 +377,9 @@ Your goal is to craft a response that intelligently incorporates relevant knowle
             result.unshift(message)
         }
 
-        if (knowledge.length > 0) {
+        for (const document of documents) {
             usedTokens = await this._formatLongHistory(
-                knowledge,
-                chatHistory,
-                usedTokens,
-                result
-            )
-        }
-
-        if (longHistory.length > 0) {
-            usedTokens = await this._formatLongHistory(
-                longHistory,
+                document,
                 result,
                 usedTokens,
                 result

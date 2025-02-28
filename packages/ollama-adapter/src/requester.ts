@@ -134,7 +134,8 @@ export class OllamaRequester
         try {
             const response = await this._post('api/embed', {
                 input: params.input,
-                model: params.model
+                model: params.model,
+                keep_alive: this._plugin.config.keepAlive ? -1 : undefined
             })
 
             data = await response.text()
@@ -142,10 +143,7 @@ export class OllamaRequester
             data = JSON.parse(data as string) as OllamaEmbedResponse
 
             if (data.embeddings && data.embeddings.length > 0) {
-                if (
-                    typeof params.input === 'string' ||
-                    (Array.isArray(params.input) && params.input.length === 1)
-                ) {
+                if (typeof params.input === 'string') {
                     return data.embeddings[0]
                 }
                 return data.embeddings
