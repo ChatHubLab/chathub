@@ -124,7 +124,7 @@ export const Config: Schema<Config> = Schema.intersect([
             Schema.const('all'),
             Schema.const('manual'),
             Schema.const('disable')
-        ]).default('disable')
+        ]).default('manual')
     }),
 
     Schema.object({

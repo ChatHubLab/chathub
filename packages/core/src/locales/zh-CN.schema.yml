@@ -20,7 +20,7 @@ $inner:
       thinkingMessage: 自定义等待消息的内容。
       msgCooldown: 设置全局消息冷却时间（单位：秒），用于防止适配器被过于频繁地调用。
       messageDelay: 设置消息的延迟响应时间（单位：毫秒），在该时间内如果接收到了多条消息，则会累积起来一起发送。为 0 时，则不启用延迟响应。
-      showThoughtMessage: 在使用插件模式时，是否显示思考过程。
+      showThoughtMessage: 在使用插件模式或思考模型时，是否显示思考过程。
 
     - $desc: 消息渲染选项
       outputMode:

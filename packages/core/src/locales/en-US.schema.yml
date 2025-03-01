@@ -20,7 +20,7 @@ $inner:
       thinkingMessage: Customize waiting message content.
       msgCooldown: Set global message cooldown (seconds) to limit adapter calls.
       messageDelay: Set message delay (ms) for message accumulation. 0 means no delay.
-      showThoughtMessage: Display thinking process in plugin mode.
+      showThoughtMessage: Display thinking message in plugin mode or reasoner model.
 
     - $desc: Message Rendering
       outputMode:
