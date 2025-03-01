@@ -4,6 +4,7 @@ import { ClientConfig } from 'koishi-plugin-chatluna/llm-core/platform/config'
 import { ChatLunaPlugin } from 'koishi-plugin-chatluna/services/chat'
 import { createLogger } from 'koishi-plugin-chatluna/utils/logger'
 import { plugins } from './plugin'
+import { ChatLunaLongMemoryService } from './service/memory'
 
 export let logger: Logger
 
@@ -19,7 +20,13 @@ export function apply(ctx: Context, config: Config) {
     ctx.on('ready', async () => {
         plugin.registerToService()
 
-        await plugins(ctx, config)
+        ctx.plugin(ChatLunaLongMemoryService, config)
+
+        ctx.inject(['chatluna_long_memory'], (ctx) => {
+            ctx.on('ready', async () => {
+                await plugins(ctx, config, plugin)
+            })
+        })
     })
 }
 
@@ -31,10 +38,12 @@ export interface Config extends ChatLunaPlugin.Config {
     longMemoryDuplicateCheck: boolean
     longMemoryInterval: number
     longMemoryExtractModel: string
+    longMemoryLayer: string[]
 }
 
 export const Config: Schema<Config> = Schema.intersect([
     Schema.object({
+        longMemoryInterval: Schema.number().default(3).min(1).max(10),
         longMemoryNewQuestionSearch: Schema.boolean().default(false),
         longMemorySimilarity: Schema.percent()
             .min(0)
@@ -46,13 +55,22 @@ export const Config: Schema<Config> = Schema.intersect([
             .max(1)
             .step(0.01)
             .default(0),
+        longMemoryDuplicateCheck: Schema.boolean().default(true),
         longMemoryDuplicateThreshold: Schema.percent()
             .min(0)
             .max(1)
             .step(0.01)
             .default(0.8),
-        longMemoryDuplicateCheck: Schema.boolean().default(true),
-        longMemoryInterval: Schema.number().default(3).min(1).max(10),
+        longMemoryLayer: Schema.array(
+            Schema.union([
+                Schema.const('Global'),
+                Schema.const('Preset'),
+                Schema.const('Preset-User'),
+                Schema.const('User')
+            ])
+        )
+            .role('checkbox')
+            .default(['Preset-User']),
         longMemoryExtractModel: Schema.dynamic('model').default('无')
     })
 ]).i18n({
@@ -63,3 +81,6 @@ export const Config: Schema<Config> = Schema.intersect([
 export const inject = ['chatluna']
 
 export const name = 'chatluna-long-memory'
+
+export * from './types'
+export * from './service/memory'

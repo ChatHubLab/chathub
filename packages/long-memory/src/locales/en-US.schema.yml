@@ -8,3 +8,10 @@ $inner:
       longMemoryInterval: Set long-term memory save frequency (number of conversation turns between memory lookups, e.g., 5 means save memory every 5 turns).
       longMemoryExtractModel: Specify the model for long-term memory extraction. Faster models improve extraction speed.
       longMemoryNewQuestionSearch: Enable new question search. If enabled, the model will generate new questions before searching long-term memory.
+      longMemoryLayer:
+          $desc: Enabled long-term memory layers
+          $inner:
+            - Global layer. Memories in this layer are shared across all rooms.
+            - Preset layer. Memories in this layer are shared across rooms with the same preset.
+            - Preset/User layer. This layer is the primary retrieval layer for long-term memory. User chat memories are added to this layer by default. This layer is differentiated for different users and presets.
+            - User layer. Memories in this layer are unique to each user but shared across all presets.

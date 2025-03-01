@@ -22,7 +22,6 @@ export interface Config extends ChatLunaPlugin.Config {
     fsScopePath: string
     bilibili: boolean
     bilibiliTempTimeout: number
-    memory: boolean
     group: boolean
     groupScopeSelector: string[]
     command: boolean
@@ -68,7 +67,6 @@ export const Config: Schema<Config> = Schema.intersect([
         send: Schema.boolean().default(false),
         draw: Schema.boolean().default(false),
         codeSandbox: Schema.boolean().default(false),
-        memory: Schema.boolean().default(false),
         actions: Schema.boolean().default(false),
         knowledge: Schema.boolean().default(false),
         music: Schema.boolean().default(false)

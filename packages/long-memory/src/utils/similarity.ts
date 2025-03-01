@@ -1,6 +1,11 @@
 import { cut } from 'jieba-wasm'
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import TinySegmenter from 'tiny-segmenter'
 import stopwords from 'stopwords-iso'
+import { VectorStore } from '@langchain/core/vectorstores'
+import { logger } from 'koishi-plugin-chatluna'
+import { EnhancedMemory } from '../types'
+import { Document } from '@langchain/core/documents'
 
 const segmenter = new TinySegmenter()
 
@@ -299,4 +304,62 @@ export function calculateSimilarity(
     str2: string
 ): SimilarityResult {
     return SimilarityCalculator.calculate(str1, str2)
+}
+
+export async function filterSimilarMemoryByVectorStore(
+    memoryArray: EnhancedMemory[],
+    vectorStore: VectorStore,
+    similarityThreshold: number
+): Promise<EnhancedMemory[]> {
+    const result: EnhancedMemory[] = []
+
+    const existingMemories = await vectorStore.similaritySearch('', 1000)
+
+    for (const memory of memoryArray) {
+        let isSimilar = false
+
+        for (const existingMemory of existingMemories) {
+            const similarity = calculateSimilarity(
+                memory.content,
+                existingMemory.pageContent
+            )
+
+            if (similarity.score >= similarityThreshold) {
+                isSimilar = true
+                break
+            }
+        }
+
+        if (!isSimilar) {
+            result.push(memory)
+        } else {
+            logger?.debug(
+                `Skip similar memory: ${memory.content}, threshold: ${similarityThreshold}`
+            )
+        }
+    }
+
+    return result
+}
+
+export function filterSimilarMemoryByBM25(
+    memory: Document[],
+    searchContent: string,
+    threshold: number
+): Document[] {
+    const result: Document[] = []
+
+    for (const doc of memory) {
+        const similarity = calculateSimilarity(searchContent, doc.pageContent)
+
+        if (similarity.score >= threshold) {
+            result.push(doc)
+        } else {
+            logger?.debug(
+                `Skip memory: ${doc.pageContent}, similarity: ${similarity}, threshold: ${threshold}`
+            )
+        }
+    }
+
+    return result
 }

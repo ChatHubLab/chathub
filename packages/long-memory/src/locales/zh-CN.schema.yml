@@ -2,10 +2,18 @@ $inner:
     - $desc: 长期记忆选项
       longMemory: 是否启用长期记忆功能。启用后，模型能够记住较久远的对话内容（需要使用向量数据库和 Embeddings 服务）。
       longMemorySimilarity: 设置长期记忆检索的相似度阈值。
-      longMemoryTFIDFThreshold: 设置长期记忆检索的 TF-IDF 阈值。为 0 则不启用。
+      longMemoryTFIDFThreshold: 设置长期记忆检索的 TF-IDF(BM25) 阈值。为 0 则不启用。
       longMemoryDuplicateCheck: 是否启用相似度检查。启用后，在添加记忆时会检查新记忆与已有记忆的相似度，如果相似度过高，则不会添加到长期记忆中。
       longMemoryDuplicateThreshold: 设置长期记忆在添加前检索的相似度阈值，基于添加前的记忆进行检索，如检索到的记忆超过此阈值，则不会添加到长期记忆中。
       longMemoryInterval: 设置长期记忆调用的频率，即每隔多少轮对话调用一次长期记忆。
       longMemoryExtractModel: 设置长期记忆的提取模型。使用较快的模型可以提升提取的速度。
       longMemoryNewQuestionSearch: 是否启用新问题搜索。启用后，在长期记忆搜索时会先生成新问题，然后再进行搜索。
+      longMemoryLayer:
+          $desc: 启用的长期记忆层
+          $inner:
+            - 全局层。此层记忆会被所有房间共享。
+            - 预设层。此层记忆会被相同预设的所有房间共享。
+            - 预设/用户层。此层记忆会是长期记忆的主要检索层。用户聊天的记忆默认会被添加到此层。此层针对不同用户和预设都会区分。
+            - 用户层。此层记忆不同用户之间不同，但会在所有预设之间共享。
+
 

@@ -9,7 +9,6 @@ import { apply as draw } from './plugins/draw'
 import { apply as fs } from './plugins/fs'
 import { apply as group } from './plugins/group'
 import { apply as knowledge } from './plugins/knowledge'
-import { apply as memory } from './plugins/memory'
 import { apply as music } from './plugins/music'
 import { apply as openapi } from './plugins/openapi'
 import { apply as request } from './plugins/request'
@@ -36,7 +35,6 @@ export async function plugin(
             fs,
             group,
             knowledge,
-            memory,
             music,
             openapi,
             request,
