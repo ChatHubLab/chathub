@@ -19,7 +19,7 @@ export class ChatLunaLongMemoryService extends Service {
 
         this.defaultLayerTypes.push(
             ...config.longMemoryLayer.map(
-                (layer) => MemoryRetrievalLayerType[layer.toLocaleLowerCase()]
+                (layer) => MemoryRetrievalLayerType[layer.toUpperCase()]
             )
         )
 
