@@ -96,15 +96,15 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
         }
     )
 
-    ctx.command('chatluna.room.clear [room:text]').action(
-        async ({ session }, room) => {
+    ctx.command('chatluna.room.clear [room:text]')
+        .alias('chatluna.chat.clear')
+        .action(async ({ session }, room) => {
             await chain.receiveCommand(session, 'clear_room', {
                 room_resolve: {
                     name: room
                 }
             })
-        }
-    )
+        })
 
     ctx.command('chatluna.room.set')
         .option('name', '-n <name:string>')
