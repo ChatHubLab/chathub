@@ -65,12 +65,12 @@ export const Config: Schema<Config> = Schema.intersect([
             Schema.union([
                 Schema.const('Global'),
                 Schema.const('Preset'),
-                Schema.const('Preset-User'),
+                Schema.const('Preset_User'),
                 Schema.const('User')
             ])
         )
             .role('checkbox')
-            .default(['Preset-User']),
+            .default(['Preset_User']),
         longMemoryExtractModel: Schema.dynamic('model').default('无')
     })
 ]).i18n({
