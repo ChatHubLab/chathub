@@ -63,6 +63,14 @@ export function langchainMessageToSparkMessage(
         })
     }
 
+    if (result[0].role === 'assistant') {
+        result.unshift({
+            role: 'user',
+            content:
+                'Continue what I said to you last time. Follow these instructions.'
+        })
+    }
+
     return result
 }
 

@@ -89,14 +89,6 @@ export function langchainMessageToDeepseekMessage(
         return mappedMessage
     }
 
-    if (!model.includes('reasoner')) {
-        return mappedMessage
-    }
-
-    if (!model.includes('reasoner')) {
-        return mappedMessage
-    }
-
     const result: ChatCompletionResponseMessage[] = []
 
     for (let i = 0; i < mappedMessage.length; i++) {
@@ -154,6 +146,14 @@ export function langchainMessageToDeepseekMessage(
         result.push({
             role: 'user',
             content: 'Continue what I said to you last user message.'
+        })
+    }
+
+    if (result[0].role === 'assistant') {
+        result.unshift({
+            role: 'user',
+            content:
+                'Continue what I said to you last time. Follow these instructions.'
         })
     }
 
