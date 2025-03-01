@@ -9,7 +9,8 @@ import {
 import {
     BaseChatPromptTemplate,
     HumanMessagePromptTemplate,
-    MessagesPlaceholder
+    MessagesPlaceholder,
+    SystemMessagePromptTemplate
 } from '@langchain/core/prompts'
 import { ChainValues, PartialValues } from '@langchain/core/utils/types'
 import { messageTypeToOpenAIRole } from 'koishi-plugin-chatluna/llm-core/utils/count_tokens'
@@ -50,9 +51,7 @@ export class ChatLunaChatPrompt
 
     tokenCounter: (text: string) => Promise<number>
 
-    conversationSummaryPrompt?: HumanMessagePromptTemplate
-
-    knowledgePrompt?: HumanMessagePromptTemplate
+    conversationSummaryPrompt?: SystemMessagePromptTemplate
 
     _tempPreset?: [PresetTemplate, [SystemPrompts, string[]]]
 
@@ -107,7 +106,7 @@ export class ChatLunaChatPrompt
 
         if (!this._tempPreset || this._tempPreset[0] !== preset) {
             this.conversationSummaryPrompt =
-                HumanMessagePromptTemplate.fromTemplate(
+                SystemMessagePromptTemplate.fromTemplate(
                     preset.config.longMemoryPrompt ?? // eslint-disable-next-line max-len
                         `Relevant context: {long_history}
 
@@ -119,20 +118,6 @@ Guidelines for response:
 
 Your goal is to craft an insightful, engaging response that seamlessly integrates all relevant information while maintaining coherence and originality.`
                 )
-
-            this.knowledgePrompt = HumanMessagePromptTemplate.fromTemplate(
-                preset.knowledge?.prompt ??
-                    `Relevant knowledge: {input}
-
-Guidelines for incorporating knowledge:
-1. Review the provided knowledge and assess its relevance to the current conversation.
-2. If relevant, seamlessly integrate this information into your response.
-3. Maintain a natural flow in the conversation; don't force the inclusion of knowledge if it doesn't fit.
-4. Use the knowledge to enhance your answer, provide context, or offer additional insights.
-5. Balance between using the provided knowledge and your existing understanding.
-
-Your goal is to craft a response that intelligently incorporates relevant knowledge while maintaining coherence and naturalness in the conversation.`
-            )
         }
 
         const result = formatPresetTemplate(preset, variables, true) as [
@@ -525,7 +510,6 @@ Your goal is to craft a response that intelligently incorporates relevant knowle
 
         if (formatConversationSummary) {
             result.push(formatConversationSummary)
-            result.push(new AIMessage('Ok. I will remember.'))
         }
 
         return usedTokens

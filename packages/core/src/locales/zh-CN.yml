@@ -440,11 +440,15 @@ commands:
                     page: '页码。'
                     limit: '每页显示的数量。'
                     type: '记忆所属的预设。'
+                    view: '记忆所属的层级。'
                 messages:
                     header: '以下是使用 {0} 关键词在 {1} 预设下搜索出的记忆列表：'
                     footer: ''
                     document_content: '记忆内容： {0}'
                     document_id: '记忆 ID： {0}'
+                    document_type: '记忆所属的类型： {0}'
+                    document_expire: '记忆过期时间： {0}'
+                    document_level: '记忆的重要性： {0}'
                     pages: '当前为第 [page] / [total] 页'
                     search_failed: '搜索记忆失败。'
 
@@ -454,6 +458,7 @@ commands:
                     ids: '记忆 ID 列表。'
                 options:
                     type: '记忆所属的预设。'
+                    view: '记忆所属的层级。'
                 messages:
                     delete_success: '已删除记忆。'
                     delete_failed: '删除记忆失败。'
@@ -462,6 +467,7 @@ commands:
                 description: '清空记忆。'
                 options:
                     type: '记忆所属的预设。'
+                    view: '记忆所属的层级。'
                 messages:
                     clear_success: '已清空记忆。'
                     clear_failed: '清空记忆失败。'
@@ -472,6 +478,7 @@ commands:
                     content: '记忆内容。'
                 options:
                     type: '记忆所属的预设。'
+                    view: '记忆所属的层级。'
                 messages:
                     add_success: '已添加记忆。'
                     add_failed: '添加记忆失败。'
@@ -482,6 +489,7 @@ commands:
                     id: '记忆 ID。'
                 options:
                     type: '记忆所属的预设。'
+                    view: '记忆所属的层级。'
                 messages:
                     edit_success: '已编辑记忆。'
                     edit_failed: '编辑记忆失败。'

@@ -3,7 +3,6 @@ import { ChatChain } from './chains/chain'
 import { Config } from './config'
 
 // import start
-import { apply as add_memory } from './middlewares/add_memory'
 import { apply as add_preset } from './middlewares/add_preset'
 import { apply as add_user_to_auth_group } from './middlewares/add_user_to_auth_group'
 import { apply as allow_reply } from './middlewares/allow_reply'
@@ -13,16 +12,13 @@ import { apply as chat_time_limit_check } from './middlewares/chat_time_limit_ch
 import { apply as chat_time_limit_save } from './middlewares/chat_time_limit_save'
 import { apply as check_room } from './middlewares/check_room'
 import { apply as clear_balance } from './middlewares/clear_balance'
-import { apply as clear_memory } from './middlewares/clear_memory'
 import { apply as clear_room } from './middlewares/clear_room'
 import { apply as clone_preset } from './middlewares/clone_preset'
 import { apply as cooldown_time } from './middlewares/cooldown_time'
 import { apply as create_auth_group } from './middlewares/create_auth_group'
 import { apply as create_room } from './middlewares/create_room'
-import { apply as delete_memory } from './middlewares/delete_memory'
 import { apply as delete_preset } from './middlewares/delete_preset'
 import { apply as delete_room } from './middlewares/delete_room'
-import { apply as edit_memory } from './middlewares/edit_memory'
 import { apply as invite_room } from './middlewares/invite_room'
 import { apply as join_room } from './middlewares/join_room'
 import { apply as kick_member } from './middlewares/kick_member'
@@ -47,7 +43,6 @@ import { apply as restart } from './middlewares/restart'
 import { apply as rollback_chat } from './middlewares/rollback_chat'
 import { apply as room_info } from './middlewares/room_info'
 import { apply as room_permission } from './middlewares/room_permission'
-import { apply as search_memory } from './middlewares/search_memory'
 import { apply as search_model } from './middlewares/search_model'
 import { apply as set_auth_group } from './middlewares/set_auth_group'
 import { apply as set_auto_update_room } from './middlewares/set_auto_update_room'
@@ -72,7 +67,6 @@ export async function middleware(ctx: Context, config: Config) {
     const middlewares: Middleware[] =
         // middleware start
         [
-            add_memory,
             add_preset,
             add_user_to_auth_group,
             allow_reply,
@@ -82,16 +76,13 @@ export async function middleware(ctx: Context, config: Config) {
             chat_time_limit_save,
             check_room,
             clear_balance,
-            clear_memory,
             clear_room,
             clone_preset,
             cooldown_time,
             create_auth_group,
             create_room,
-            delete_memory,
             delete_preset,
             delete_room,
-            edit_memory,
             invite_room,
             join_room,
             kick_member,
@@ -116,7 +107,6 @@ export async function middleware(ctx: Context, config: Config) {
             rollback_chat,
             room_info,
             room_permission,
-            search_memory,
             search_model,
             set_auth_group,
             set_auto_update_room,

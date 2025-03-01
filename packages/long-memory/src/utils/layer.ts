@@ -1,7 +1,7 @@
 import { Config, logger } from '..'
 import { VectorStoreRetriever } from '@langchain/core/vectorstores'
 import { ChatLunaSaveableVectorStore } from 'koishi-plugin-chatluna/llm-core/model/base'
-import { Context } from 'vm'
+import { Context } from 'koishi'
 import {
     EnhancedMemory,
     MemoryRetrievalLayerInfo,
@@ -18,6 +18,7 @@ import {
 } from './memory'
 import { parseRawModelName } from 'koishi-plugin-chatluna/llm-core/utils/count_tokens'
 import { ScoreThresholdRetriever } from 'koishi-plugin-chatluna/llm-core/retrievers'
+import { createHash } from 'crypto'
 
 // Interface for memory retrieval layer
 interface MemoryRetrievalLayer {
@@ -47,6 +48,7 @@ export abstract class BaseMemoryRetrievalLayer<
     abstract addMemories(memories: EnhancedMemory[]): Promise<void>
     abstract deleteMemories(memoryIds: string[]): Promise<void>
     abstract initialize(): Promise<void>
+    abstract clearMemories(): Promise<void>
 
     async cleanupExpiredMemories(): Promise<void> {}
 }
@@ -96,7 +98,9 @@ export class VectorStoreMemoryLayer<
             )
         }
 
-        return memory.map(documentToEnhancedMemory)
+        return memory
+            .map(documentToEnhancedMemory)
+            .sort((a, b) => b.importance - a.importance)
     }
 
     async addMemories(memories: EnhancedMemory[]): Promise<void> {
@@ -130,6 +134,14 @@ export class VectorStoreMemoryLayer<
                 console.error(e)
             }
         }
+    }
+
+    async clearMemories(): Promise<void> {
+        if (!this.vectorStore) {
+            return
+        }
+
+        await this.vectorStore.delete({ deleteAll: true })
     }
 
     async deleteMemories(memoryIds: string[]): Promise<void> {
@@ -223,4 +235,60 @@ export function sortMemoryRetrievalLayerType(
         'global'
     ]
     return order.indexOf(a) - order.indexOf(b)
+}
+
+export function createMemoryLayers(
+    ctx: Context,
+    presetId: string,
+    userId: string,
+    layerTypes?: MemoryRetrievalLayerType[]
+): Promise<VectorStoreMemoryLayer[]> {
+    const resolveLongMemoryId = (
+        presetId: string,
+        userId: string,
+        layerType: MemoryRetrievalLayerType
+    ) => {
+        let hash = createHash('sha256')
+
+        switch (layerType) {
+            case 'user':
+                hash = hash.update(`${userId}`)
+                break
+            case 'preset':
+                hash = hash.update(`${presetId}`)
+                break
+            case 'preset-user':
+                hash = hash.update(`${presetId}-${userId}`)
+                break
+            case 'global':
+            default:
+                hash = hash.update('global')
+                break
+        }
+
+        const hex = hash.digest('hex')
+
+        return hex
+    }
+
+    layerTypes = layerTypes ?? ctx.chatluna_long_memory.defaultLayerTypes
+
+    return Promise.all(
+        layerTypes.map(async (layerType) => {
+            const memoryId = resolveLongMemoryId(presetId, userId, layerType)
+            const layer = new VectorStoreMemoryLayer(
+                ctx,
+                ctx.chatluna_long_memory.config,
+                {
+                    type: layerType,
+                    userId,
+                    presetId,
+                    memoryId
+                }
+            )
+
+            await layer.initialize()
+            return layer
+        })
+    )
 }

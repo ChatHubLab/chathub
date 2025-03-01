@@ -1,17 +1,16 @@
 import { Context, Session } from 'koishi'
-
-import { ChainMiddlewareRunStatus, ChatChain } from '../chains/chain'
-import { Config } from '../config'
 import { Pagination } from 'koishi-plugin-chatluna/utils/pagination'
-import { Document } from '@langchain/core/documents'
 import crypto from 'crypto'
-import { parseRawModelName } from 'koishi-plugin-chatluna/llm-core/utils/count_tokens'
-import { logger } from '..'
+import { ChainMiddlewareRunStatus } from 'koishi-plugin-chatluna/chains'
+import { logger } from 'koishi-plugin-chatluna'
+import { EnhancedMemory, MemoryRetrievalLayerType } from '../types'
+import { Config } from '..'
+import { createMemoryLayers } from '../utils/layer'
 
-export function apply(ctx: Context, config: Config, chain: ChatChain) {
-    const services = ctx.chatluna.platform
+export function apply(ctx: Context, config: Config) {
+    const chain = ctx.chatluna.chatChain
 
-    const pagination = new Pagination<Document>({
+    const pagination = new Pagination<EnhancedMemory>({
         formatItem: (value) => '',
         formatString: {
             top: '',
@@ -44,29 +43,21 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
                 formatDocumentInfo(session, value)
             )
 
-            const [platform, modelName] = parseRawModelName(
-                config.defaultEmbeddings
-            )
-            const embeddings = await ctx.chatluna.createEmbeddings(
-                platform,
-                modelName
-            )
-
-            const key = resolveLongMemoryId(type, session.userId, view)
+            query = query ?? ' '
 
             try {
-                const vectorStore = await services.createVectorStore(
-                    config.defaultVectorStore,
-                    { embeddings, key }
+                const layers = await createMemoryLayers(
+                    ctx,
+                    type,
+                    session.userId,
+                    view != null
+                        ? [view as MemoryRetrievalLayerType]
+                        : ctx.chatluna_long_memory.defaultLayerTypes
                 )
 
-                const documents = await vectorStore
-                    .similaritySearchWithScore(query, 10000)
-                    .then((value) =>
-                        value
-                            .sort((a, b) => (a[1] > b[1] ? 1 : -1))
-                            .map((a) => a[0])
-                    )
+                const documents = await Promise.all(
+                    layers.map((layer) => layer.retrieveMemory(query))
+                ).then((documents) => documents.flat())
 
                 await pagination.push(documents)
 
@@ -81,7 +72,7 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
         .after('lifecycle-handle_command')
 }
 
-declare module '../chains/chain' {
+declare module 'koishi-plugin-chatluna/chains' {
     interface ChainMiddlewareName {
         search_memory: never
     }
@@ -91,11 +82,18 @@ declare module '../chains/chain' {
     }
 }
 
-async function formatDocumentInfo(session: Session, document: Document) {
+async function formatDocumentInfo(session: Session, document: EnhancedMemory) {
     const buffer = []
 
-    buffer.push(session.text('.document_id', [document.metadata?.raw_id]))
-    buffer.push(session.text('.document_content', [document.pageContent]))
+    buffer.push(session.text('.document_id', [document.rawId]))
+    buffer.push(session.text('.document_content', [document.content]))
+    buffer.push(session.text('.document_type', [document.type]))
+    buffer.push(session.text('.document_level', [document.importance]))
+    buffer.push(
+        session.text('.document_expire', [
+            document.expirationDate?.toDateString()
+        ])
+    )
 
     buffer.push('\n')
 

@@ -135,6 +135,22 @@ export class ChatLunaLongMemoryService extends Service {
         )
     }
 
+    async clear(
+        conversationId: string,
+
+        types:
+            | MemoryRetrievalLayerType
+            | MemoryRetrievalLayerType[] = 'preset-user'
+    ): Promise<void> {
+        const memoryLayers = this.getMemoryLayersByType(conversationId, types)
+
+        if (memoryLayers.length === 0) {
+            return
+        }
+
+        await Promise.all(memoryLayers.map((layer) => layer.clearMemories()))
+    }
+
     async deleteMemories(
         conversationId: string,
         memoryIds: string[],

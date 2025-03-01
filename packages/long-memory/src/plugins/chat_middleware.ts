@@ -1,13 +1,7 @@
 import { Context } from 'koishi'
-import { HumanMessage } from '@langchain/core/messages'
-import crypto from 'crypto'
-import {
-    Config,
-    logger,
-    MemoryRetrievalLayerType
-} from 'koishi-plugin-chatluna-long-memory'
+import { Config, logger } from 'koishi-plugin-chatluna-long-memory'
 import { getMessageContent } from 'koishi-plugin-chatluna/utils/string'
-import { VectorStoreMemoryLayer } from '../utils/layer'
+import { createMemoryLayers } from '../utils/layer'
 import {
     extractMemoriesFromChat,
     generateNewQuestion,
@@ -18,27 +12,6 @@ import { enhancedMemoryToDocument, isMemoryExpired } from '../utils/memory'
 // 应用函数
 export function apply(ctx: Context, config: Config) {
     // 获取或创建记忆层
-    function createMemoryLayers(
-        message: HumanMessage,
-        conversationId: string
-    ): Promise<VectorStoreMemoryLayer[]> {
-        const defaultLayerTypes = ctx.chatluna_long_memory.defaultLayerTypes
-
-        return Promise.all(
-            defaultLayerTypes.map(async (layerType) => {
-                const memoryId = resolveLongMemoryId(message, layerType)
-                const layer = new VectorStoreMemoryLayer(ctx, config, {
-                    type: layerType,
-                    userId: message.id,
-                    presetId: message.additional_kwargs?.preset as string,
-                    memoryId
-                })
-
-                await layer.initialize()
-                return layer
-            })
-        )
-    }
 
     // 在聊天前处理长期记忆
     ctx.on(
@@ -48,9 +21,13 @@ export function apply(ctx: Context, config: Config) {
                 return
             }
 
+            const presetId = message.additional_kwargs?.preset as string
+
+            const userId = message.id
+
             const layers = await ctx.chatluna_long_memory.getOrPutMemoryLayers(
                 conversationId,
-                () => createMemoryLayers(message, conversationId)
+                () => createMemoryLayers(ctx, presetId, userId)
             )
 
             let searchContent =
@@ -73,7 +50,7 @@ export function apply(ctx: Context, config: Config) {
 
                 if (searchContent === '[skip]') {
                     logger?.debug(
-                        `Don't search long memory for user: ${message.id}`
+                        `Don't search long memory for user: ${message.id}. Because model response is [skip].`
                     )
                     return
                 }
@@ -151,36 +128,4 @@ export function apply(ctx: Context, config: Config) {
             await ctx.chatluna_long_memory.addMemories(conversationId, memories)
         }
     )
-}
-
-function resolveLongMemoryId(
-    message: HumanMessage,
-
-    layerType: MemoryRetrievalLayerType
-) {
-    const presetId = message.additional_kwargs?.preset as string
-
-    const userId = message.id
-
-    let hash = crypto.createHash('sha256')
-
-    switch (layerType) {
-        case 'user':
-            hash = hash.update(`${userId}`)
-            break
-        case 'preset':
-            hash = hash.update(`${presetId}`)
-            break
-        case 'preset-user':
-            hash = hash.update(`${presetId}-${userId}`)
-            break
-        case 'global':
-        default:
-            hash = hash.update('global')
-            break
-    }
-
-    const hex = hash.digest('hex')
-
-    return hex
 }

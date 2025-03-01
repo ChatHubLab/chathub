@@ -22,7 +22,7 @@ export async function generateNewQuestion(
     const prompt = `
 Given the following conversation history and the user's question, generate a new search query that will help retrieve relevant information from a long-term memory database. The search query should be concise and focused on the key information needs.
 
-If you think the user's question is a casual greeting, a simple question that doesn't need memory retrieval, or is not related to any previous context, just respond with "[skip]".
+If you think the user's question is a casual greeting, a simple question that doesn't need memory retrieval, just respond with "[skip]".
 
 Conversation History:
 ${chatHistory}

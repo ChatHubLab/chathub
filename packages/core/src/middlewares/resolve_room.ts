@@ -285,7 +285,7 @@ export function apply(ctx: Context, config: Config, chain: ChatChain) {
 export type ChatMode = 'plugin' | 'chat' | 'browsing'
 
 declare module '../chains/chain' {
-    interface ChainMiddlewareContextOptions {
+    export interface ChainMiddlewareContextOptions {
         room?: ConversationRoom
     }
 
