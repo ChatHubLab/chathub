@@ -228,13 +228,7 @@ export function sortMemoryRetrievalLayerType(
     a: MemoryRetrievalLayerType,
     b: MemoryRetrievalLayerType
 ): number {
-    const order: MemoryRetrievalLayerType[] = [
-        'preset-user',
-        'preset',
-        'user',
-        'global'
-    ]
-    return order.indexOf(a) - order.indexOf(b)
+    return a.localeCompare(b)
 }
 
 export function createMemoryLayers(

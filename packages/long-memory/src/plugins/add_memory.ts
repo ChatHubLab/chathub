@@ -21,14 +21,25 @@ export function apply(ctx: Context, config: Config) {
                 type = room.preset
             }
 
+            let parsedLayerType = MemoryRetrievalLayerType.PRESET_USER
+
+            if (view != null) {
+                parsedLayerType = MemoryRetrievalLayerType[view.toUpperCase()]
+
+                if (parsedLayerType == null) {
+                    context.message = session.text('.invalid_view', [
+                        ['global', 'preset', 'user', 'preset_user'].join(', ')
+                    ])
+                    return ChainMiddlewareRunStatus.STOP
+                }
+            }
+
             try {
                 const layers = await createMemoryLayers(
                     ctx,
                     type,
                     session.userId,
-                    view != null
-                        ? [view as MemoryRetrievalLayerType]
-                        : ctx.chatluna_long_memory.defaultLayerTypes
+                    [parsedLayerType]
                 )
 
                 await Promise.all(

@@ -19,7 +19,7 @@ export class ChatLunaLongMemoryService extends Service {
 
         this.defaultLayerTypes.push(
             ...config.longMemoryLayer.map(
-                (layer) => layer.toLocaleLowerCase() as MemoryRetrievalLayerType
+                (layer) => MemoryRetrievalLayerType[layer.toLocaleLowerCase()]
             )
         )
 
@@ -122,7 +122,7 @@ export class ChatLunaLongMemoryService extends Service {
         memories: EnhancedMemory[],
         types:
             | MemoryRetrievalLayerType
-            | MemoryRetrievalLayerType[] = 'preset-user'
+            | MemoryRetrievalLayerType[] = MemoryRetrievalLayerType.PRESET_USER
     ): Promise<void> {
         const memoryLayers = this.getMemoryLayersByType(conversationId, types)
 
@@ -140,7 +140,7 @@ export class ChatLunaLongMemoryService extends Service {
 
         types:
             | MemoryRetrievalLayerType
-            | MemoryRetrievalLayerType[] = 'preset-user'
+            | MemoryRetrievalLayerType[] = MemoryRetrievalLayerType.PRESET_USER
     ): Promise<void> {
         const memoryLayers = this.getMemoryLayersByType(conversationId, types)
 
@@ -156,7 +156,7 @@ export class ChatLunaLongMemoryService extends Service {
         memoryIds: string[],
         types:
             | MemoryRetrievalLayerType
-            | MemoryRetrievalLayerType[] = 'preset-user'
+            | MemoryRetrievalLayerType[] = MemoryRetrievalLayerType.PRESET_USER
     ): Promise<void> {
         const memoryLayers = this.getMemoryLayersByType(conversationId, types)
 

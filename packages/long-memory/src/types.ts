@@ -23,19 +23,24 @@ export interface EnhancedMemory {
     rawId?: string // 原始ID
 }
 
-export type MemoryRetrievalLayerType =
-    | 'global'
-    | 'preset'
-    | 'preset-user'
-    | 'user'
+export enum MemoryRetrievalLayerType {
+    GLOBAL = 'global',
+    PRESET = 'preset',
+    PRESET_USER = 'preset-user',
+    USER = 'user'
+}
 
 export interface MemoryRetrievalLayerInfo<
     T extends MemoryRetrievalLayerType = MemoryRetrievalLayerType
 > {
-    userId: T extends 'preset-user' ? string : T extends 'user' ? string : never
-    presetId: T extends 'preset'
+    userId: T extends MemoryRetrievalLayerType.PRESET_USER
         ? string
-        : T extends 'preset-user'
+        : T extends MemoryRetrievalLayerType.PRESET
+          ? string
+          : never
+    presetId: T extends MemoryRetrievalLayerType.PRESET
+        ? string
+        : T extends MemoryRetrievalLayerType.PRESET_USER
           ? string
           : never
     memoryId: string

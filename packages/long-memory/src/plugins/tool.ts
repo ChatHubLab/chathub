@@ -4,7 +4,7 @@ import { ChatLunaPlugin } from 'koishi-plugin-chatluna/services/chat'
 import { Config } from '../index'
 import { CreateToolParams } from 'koishi-plugin-chatluna/llm-core/platform/types'
 import { z } from 'zod'
-import { EnhancedMemory, MemoryType } from '../types'
+import { EnhancedMemory, MemoryRetrievalLayerType, MemoryType } from '../types'
 import { calculateExpirationDate } from '../utils/memory'
 
 export async function apply(
@@ -52,7 +52,7 @@ export class MemorySearchTool extends StructuredTool {
             .array(
                 z.union([
                     z.literal('user'),
-                    z.literal('preset-user'),
+                    z.literal('preset_user'),
                     z.literal('preset'),
                     z.literal('global')
                 ])
@@ -74,7 +74,12 @@ export class MemorySearchTool extends StructuredTool {
             const result = await this.ctx.chatluna_long_memory.retrieveMemory(
                 this.params.conversationId,
                 input.content,
-                input.layer
+                input.layer != null
+                    ? input.layer.map(
+                          (layer) =>
+                              MemoryRetrievalLayerType[layer.toUpperCase()]
+                      )
+                    : MemoryRetrievalLayerType.PRESET_USER
             )
 
             return JSON.stringify(result)
@@ -88,12 +93,12 @@ export class MemorySearchTool extends StructuredTool {
 
     - content: Specify search keywords or phrases (e.g., "birthday", "favorite food") to retrieve relevant memories
     - layer: Specify which memory layers to search in as an array. Available layers:
-      * preset-user: (Recommended, Default) User-specific memories for the current preset. This is the primary retrieval layer where chat memories are stored by default
+      * preset_user: (Recommended, Default) User-specific memories for the current preset. This is the primary retrieval layer where chat memories are stored by default
       * user: User-specific memories shared across all presets
       * preset: Memories shared by all users using the same preset
       * global: Memories shared across all users and presets
 
-    For best results, prioritize searching in the 'preset-user' layer as it contains the most relevant user-specific memories.`
+    For best results, prioritize searching in the 'preset_user' layer as it contains the most relevant user-specific memories.`
 }
 
 export class MemoryAddTool extends StructuredTool {
@@ -119,7 +124,7 @@ export class MemoryAddTool extends StructuredTool {
             .array(
                 z.union([
                     z.literal('user'),
-                    z.literal('preset-user'),
+                    z.literal('preset_user'),
                     z.literal('preset'),
                     z.literal('global')
                 ])
@@ -154,7 +159,12 @@ export class MemoryAddTool extends StructuredTool {
             await this.ctx.chatluna_long_memory.addMemories(
                 this.params.conversationId,
                 enhancedMemories,
-                input.layer ?? 'preset-user'
+                input.layer != null
+                    ? input.layer.map(
+                          (layer) =>
+                              MemoryRetrievalLayerType[layer.toUpperCase()]
+                      )
+                    : MemoryRetrievalLayerType.PRESET_USER
             )
 
             return `Successfully added ${enhancedMemories.length} memories.`
@@ -174,7 +184,7 @@ export class MemoryAddTool extends StructuredTool {
       * importance: Rating 1-10 (higher = longer retention)
 
     - layer: Target memory layers (array):
-      * preset-user: (Default) User memories for current preset
+      * preset_user: (Default) User memories for current preset
       * user: User memories across all presets
       * preset: Shared memories for all users of this preset
       * global: Shared across all users and presets
@@ -193,7 +203,7 @@ export class MemoryDeleteTool extends StructuredTool {
             .array(
                 z.union([
                     z.literal('user'),
-                    z.literal('preset-user'),
+                    z.literal('preset_user'),
                     z.literal('preset'),
                     z.literal('global')
                 ])
@@ -215,7 +225,12 @@ export class MemoryDeleteTool extends StructuredTool {
             await this.ctx.chatluna_long_memory.deleteMemories(
                 this.params.conversationId,
                 input.memoryIds,
-                input.layer ?? 'preset-user'
+                input.layer != null
+                    ? input.layer.map(
+                          (layer) =>
+                              MemoryRetrievalLayerType[layer.toUpperCase()]
+                      )
+                    : MemoryRetrievalLayerType.PRESET_USER
             )
 
             return `Successfully deleted ${input.memoryIds.length} memories.`
@@ -229,7 +244,7 @@ export class MemoryDeleteTool extends StructuredTool {
 
     - memoryIds: Array of memory IDs to delete
     - layer: Specify which memory layers to delete from as an array. Available layers:
-      * preset-user: (Recommended, Default) User-specific memories for the current preset
+      * preset_user: (Recommended, Default) User-specific memories for the current preset
       * user: User-specific memories shared across all presets
       * preset: Memories shared by all users using the same preset
       * global: Memories shared across all users and presets

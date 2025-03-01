@@ -451,6 +451,8 @@ commands:
                     document_level: '记忆的重要性： {0}'
                     pages: '当前为第 [page] / [total] 页'
                     search_failed: '搜索记忆失败。'
+                    invalid_view: '无效的记忆层级。目前可用：{0}'
+
 
             delete:
                 description: '删除记忆。'
@@ -462,6 +464,7 @@ commands:
                 messages:
                     delete_success: '已删除记忆。'
                     delete_failed: '删除记忆失败。'
+                    invalid_view: '无效的记忆层级。目前可用：{0}'
 
             clear:
                 description: '清空记忆。'
@@ -471,6 +474,7 @@ commands:
                 messages:
                     clear_success: '已清空记忆。'
                     clear_failed: '清空记忆失败。'
+                    invalid_view: '无效的记忆层级。目前可用：{0}'
 
             add:
                 description: '添加记忆。'
@@ -482,6 +486,7 @@ commands:
                 messages:
                     add_success: '已添加记忆。'
                     add_failed: '添加记忆失败。'
+                    invalid_view: '无效的记忆层级。目前可用：{0}'
 
             edit:
                 description: '编辑记忆。'
@@ -494,6 +499,7 @@ commands:
                     edit_success: '已编辑记忆。'
                     edit_failed: '编辑记忆失败。'
                     edit_memory_start: '请发送你的新记忆内容。'
+                    invalid_view: '无效的记忆层级。目前可用：{0}'
 
         preset:
             description: 'ChatLuna 预设相关指令。'

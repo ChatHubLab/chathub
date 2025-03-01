@@ -1,5 +1,9 @@
 import { Context } from 'koishi'
-import { Config, logger } from 'koishi-plugin-chatluna-long-memory'
+import {
+    Config,
+    logger,
+    MemoryRetrievalLayerType
+} from 'koishi-plugin-chatluna-long-memory'
 import { getMessageContent } from 'koishi-plugin-chatluna/utils/string'
 import { createMemoryLayers } from '../utils/layer'
 import {
@@ -95,7 +99,7 @@ export function apply(ctx: Context, config: Config) {
 
             if (
                 !ctx.chatluna_long_memory.defaultLayerTypes.includes(
-                    'preset-user'
+                    MemoryRetrievalLayerType.PRESET_USER
                 )
             ) {
                 logger?.warn(

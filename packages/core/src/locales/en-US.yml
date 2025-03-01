@@ -440,14 +440,18 @@ commands:
                     page: 'Page number.'
                     limit: 'Items per page.'
                     type: 'Memory preset.'
-
+                    view: 'Memory layer.'
                 messages:
                     header: 'Here is the list of memories found using the keyword {0} under the preset {1}:'
                     footer: ''
                     document_content: 'Memory content: {0}'
                     document_id: 'Memory ID: {0}'
+                    document_type: 'Memory type: {0}'
+                    document_expire: 'Memory expire: {0}'
+                    document_level: 'Memory level: {0}'
                     pages: 'Page: [page] / [total]'
                     search_failed: 'Failed to search memories.'
+                    invalid_view: 'Invalid view type. Currently supported types are: {0}.'
 
             delete:
                 description: 'Delete memory.'
@@ -455,17 +459,21 @@ commands:
                     ids: 'Memory ID list.'
                 options:
                     type: 'Memory preset.'
+                    view: 'Memory layer.'
                 messages:
                     delete_success: 'Memory deleted successfully.'
                     delete_failed: 'Failed to delete memory.'
+                    invalid_view: 'Invalid view type. Currently supported types are: {0}.'
 
             clear:
                 description: 'Clear memory.'
                 options:
                     type: 'Memory preset.'
+                    view: 'Memory layer.'
                 messages:
                     clear_success: 'Memory cleared successfully.'
                     clear_failed: 'Failed to clear memory.'
+                    invalid_view: 'Invalid view type. Currently supported types are: {0}.'
 
             add:
                 description: 'Add memory.'
@@ -473,9 +481,11 @@ commands:
                     content: 'Memory content.'
                 options:
                     type: 'Memory preset.'
+                    view: 'Memory layer.'
                 messages:
                     add_success: 'Memory added successfully.'
                     add_failed: 'Failed to add memory.'
+                    invalid_view: 'Invalid view type. Currently supported types are: {0}.'
 
             edit:
                 description: 'Edit memory.'
@@ -483,10 +493,12 @@ commands:
                     id: 'Memory ID.'
                 options:
                     type: 'Memory preset.'
+                    view: 'Memory layer.'
                 messages:
                     edit_success: 'Memory edited successfully.'
                     edit_failed: 'Failed to edit memory.'
                     edit_memory_start: 'Please send your new memory content.'
+                    invalid_view: 'Invalid view type. Currently supported types are: {0}.'
 
         preset:
             description: 'ChatLuna preset management.'
