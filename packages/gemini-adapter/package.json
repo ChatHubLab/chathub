@@ -65,7 +65,7 @@
         "@langchain/core": "^0.3.18",
         "@streamparser/json": "^0.0.21",
         "zod": "^3.24.0-canary.20241107T043915",
-        "zod-to-json-schema": "^3.23.5"
+        "zod-to-json-schema": "^3.24.3"
     },
     "devDependencies": {
         "atsc": "^2.1.0",

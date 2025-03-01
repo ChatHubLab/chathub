@@ -43,7 +43,7 @@
     ],
     "dependencies": {
         "@langchain/core": "^0.3.18",
-        "zod-to-json-schema": "^3.23.5"
+        "zod-to-json-schema": "^3.24.3"
     },
     "devDependencies": {
         "@types/uuid": "^10.0.0",

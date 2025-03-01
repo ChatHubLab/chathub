@@ -227,7 +227,7 @@
         "uuid": "^9.0.1",
         "ws": "^8.18.0",
         "zod": "^3.24.0-canary.20241107T043915",
-        "zod-to-json-schema": "^3.23.5"
+        "zod-to-json-schema": "^3.24.3"
     },
     "devDependencies": {
         "@initencounter/sst": "^0.0.1",
