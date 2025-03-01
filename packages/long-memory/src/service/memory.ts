@@ -18,9 +18,9 @@ export class ChatLunaLongMemoryService extends Service {
         super(ctx, 'chatluna_long_memory', true)
 
         this.defaultLayerTypes.push(
-            ...config.longMemoryLayer.map(
-                (layer) => MemoryRetrievalLayerType[layer.toUpperCase()]
-            )
+            ...config.longMemoryLayer.map((layer) => {
+                return MemoryRetrievalLayerType[layer.toUpperCase()]
+            })
         )
 
         // 清理聊天历史时清理长期记忆缓存
