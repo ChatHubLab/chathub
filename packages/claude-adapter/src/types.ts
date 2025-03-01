@@ -58,6 +58,7 @@ type ResponsePayload<T extends ClaudeDeltaResponseType> = {
         type: string
         text: string
         partial_json?: string
+        thinking?: string
     }
     content_block_start: {
         type: string

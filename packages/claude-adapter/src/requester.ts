@@ -11,7 +11,7 @@ import {
 } from 'koishi-plugin-chatluna/utils/error'
 import { Context } from 'koishi'
 import { sseIterable } from 'koishi-plugin-chatluna/utils/sse'
-import { Config } from '.'
+import { Config, logger } from '.'
 import { ClaudeDeltaResponse, ClaudeRequest } from './types'
 import {
     convertDeltaToMessageChunk,
@@ -33,6 +33,10 @@ export class ClaudeRequester extends ModelRequester {
     async *completionStream(
         params: ModelRequestParams
     ): AsyncGenerator<ChatGenerationChunk> {
+        let reasoningContent = ''
+        let isSetReasoingTime = false
+        let reasoningTime = 0
+
         const response = await this._post('messages', {
             model: params.model,
             max_tokens: params.maxTokens ?? 4096,
@@ -79,10 +83,43 @@ export class ClaudeRequester extends ModelRequester {
 
             if (parsedChunk == null) continue
 
+            if (
+                parsedRawChunk.type === 'content_block_delta' &&
+                parsedRawChunk.delta.type === 'thinking_delta'
+            ) {
+                reasoningContent = (reasoningContent +
+                    parsedRawChunk.delta.thinking) as string
+
+                parsedChunk.additional_kwargs.reasoning_content =
+                    reasoningContent
+
+                if (reasoningTime === 0) {
+                    reasoningTime = Date.now()
+                }
+            }
+
+            if (
+                parsedChunk.additional_kwargs['reasoning_content'] == null &&
+                parsedChunk.content &&
+                parsedChunk.content.length > 0 &&
+                reasoningTime > 0 &&
+                !isSetReasoingTime
+            ) {
+                reasoningTime = Date.now() - reasoningTime
+                parsedChunk.additional_kwargs.reasoning_time = reasoningTime
+                isSetReasoingTime = true
+            }
+
             yield new ChatGenerationChunk({
                 message: parsedChunk,
                 text: parsedChunk.content as string
             })
+        }
+
+        if (reasoningContent.length > 0) {
+            logger.debug(
+                `reasoning content: ${reasoningContent}. Use time: ${reasoningTime / 1000}s`
+            )
         }
     }
 

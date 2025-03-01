@@ -1,14 +1,18 @@
 import { ClientConfig } from 'koishi-plugin-chatluna/llm-core/platform/config'
 import { ChatLunaPlugin } from 'koishi-plugin-chatluna/services/chat'
-import { Context, Schema } from 'koishi'
+import { createLogger } from 'koishi-plugin-chatluna/utils/logger'
+import { Context, Logger, Schema } from 'koishi'
 import { ClaudeClient } from './client'
 
+export let logger: Logger
 export function apply(ctx: Context, config: Config) {
     const plugin = new ChatLunaPlugin<ClientConfig, Config>(
         ctx,
         config,
         'claude'
     )
+
+    logger = createLogger(ctx, 'chatluna-claude-adapter')
 
     ctx.on('ready', async () => {
         plugin.registerToService()

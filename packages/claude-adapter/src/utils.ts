@@ -224,5 +224,16 @@ export function convertDeltaToMessageChunk(delta: ClaudeDeltaResponse) {
                 additional_kwargs: {}
             })
         }
+    } else if (
+        delta.type === 'content_block_delta' &&
+        delta.delta.type === 'thinking_delta'
+    ) {
+        const thinkResult = delta.delta.thinking
+        return new AIMessageChunk({
+            content: '',
+            additional_kwargs: {
+                reasoning_content: thinkResult
+            }
+        })
     }
 }

@@ -81,11 +81,11 @@ export class DeepseekRequester
 
             let reasoningContent = ''
             let isSetReasoingTime = false
+            let reasoningTime = 0
 
             let defaultRole: ChatCompletionResponseMessageRoleEnum = 'assistant'
 
             let errorCount = 0
-            let reasoningTime = 0
 
             for await (const event of iterator) {
                 const chunk = event.data
